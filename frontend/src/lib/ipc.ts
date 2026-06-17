@@ -17,6 +17,7 @@ const mockApi = {
     getOpen: () => Promise.resolve({ success: true, data: [] }),
     getByTable: () => Promise.resolve({ success: true, data: null }),
     sendKOT: () => Promise.resolve({ success: true, data: 1 }),
+    cancelByTable: () => Promise.resolve({ success: true }),
   },
   kds: {
     getActiveTickets: () => Promise.resolve({ success: true, data: [] }),
@@ -94,7 +95,7 @@ const mockApi = {
     upsert: () => Promise.resolve({ success: true }),
   },
   shifts: (() => {
-    let activeShift: any = null;
+    let activeShift: Shift | null = null;
     return {
       getActive: () => Promise.resolve({ success: true, data: activeShift }),
       open: (_payload: { staffId: number; openingCash: number }) => {
@@ -116,10 +117,16 @@ const mockApi = {
     export: () => Promise.resolve({ success: true }),
     import: () => Promise.resolve({ success: true }),
   },
-  settings: {
-    get: () => Promise.resolve({ success: true, data: { outlet_name: 'Mock Restaurant' } }),
-    save: () => Promise.resolve({ success: true }),
-  },
+  settings: (() => {
+    let settingsStore: Record<string, unknown> = { outlet_name: 'Mock Restaurant' };
+    return {
+      get: () => Promise.resolve({ success: true, data: settingsStore }),
+      save: (payload: Record<string, unknown>) => {
+        settingsStore = { ...settingsStore, ...payload };
+        return Promise.resolve({ success: true });
+      },
+    };
+  })(),
 };
 
 export const api = (ipcApi ?? mockApi) as {
@@ -131,6 +138,7 @@ export const api = (ipcApi ?? mockApi) as {
     getOpen: () => Promise<IPCResponse<unknown>>;
     getByTable: (payload: { tableId: number }) => Promise<IPCResponse<(Order & { items: OrderItem[] }) | null>>;
     sendKOT: (payload: { tableId: number; items: CartItem[]; staffId?: number; covers?: number; note?: string }) => Promise<IPCResponse<number>>;
+    cancelByTable: (payload: { tableId: number; note?: string }) => Promise<IPCResponse<unknown>>;
   };
   kds: {
     getActiveTickets: () => Promise<IPCResponse<KDSTicket[]>>;

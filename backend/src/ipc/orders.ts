@@ -1,5 +1,8 @@
 import { ipcMain } from 'electron';
 import { getDB } from '../db';
+import Store from 'electron-store';
+
+const store = new Store();
 
 interface MenuItemRow {
   id: number;
@@ -155,7 +158,8 @@ export function registerOrdersIPC() {
           }
 
           // Auto-deduct inventory
-          if (qtyDelta !== 0) {
+          const isAutoDebitEnabled = store.get('inventory_auto_debit', true);
+          if (isAutoDebitEnabled && qtyDelta !== 0) {
             const recipe = db.prepare('SELECT inventory_item_id, qty_used FROM menu_inventory_map WHERE menu_item_id = ?').all(item.id) as { inventory_item_id: number; qty_used: number }[];
             for (const r of recipe) {
               const invDelta = -(qtyDelta * r.qty_used); // Add if negative qtyDelta (reducing KOT), deduct if positive (adding to KOT)
@@ -171,23 +175,75 @@ export function registerOrdersIPC() {
         }
 
         // 4. Remove any items that are no longer in the cart
+        const isAutoDebitEnabled = store.get('inventory_auto_debit', true);
         for (const [_, item] of existingItemMap) {
           // Restore inventory
-          const recipe = db.prepare('SELECT inventory_item_id, qty_used FROM menu_inventory_map WHERE menu_item_id = ?').all(item.menu_item_id) as { inventory_item_id: number; qty_used: number }[];
-          for (const r of recipe) {
-            const invDelta = item.qty * r.qty_used; // adding back full qty
-            db.prepare('UPDATE inventory_items SET qty_in_stock = qty_in_stock + ? WHERE id = ?').run(invDelta, r.inventory_item_id);
-            db.prepare('INSERT INTO inventory_log (item_id, type, qty_change, note) VALUES (?, ?, ?, ?)').run(
-              r.inventory_item_id,
-              'adjustment',
-              invDelta,
-              `Order #${orderId} Item Removed`
-            );
+          if (isAutoDebitEnabled) {
+            const recipe = db.prepare('SELECT inventory_item_id, qty_used FROM menu_inventory_map WHERE menu_item_id = ?').all(item.menu_item_id) as { inventory_item_id: number; qty_used: number }[];
+            for (const r of recipe) {
+              const invDelta = item.qty * r.qty_used; // adding back full qty
+              db.prepare('UPDATE inventory_items SET qty_in_stock = qty_in_stock + ? WHERE id = ?').run(invDelta, r.inventory_item_id);
+              db.prepare('INSERT INTO inventory_log (item_id, type, qty_change, note) VALUES (?, ?, ?, ?)').run(
+                r.inventory_item_id,
+                'adjustment',
+                invDelta,
+                `Order #${orderId} Item Removed`
+              );
+            }
           }
           db.prepare('DELETE FROM order_items WHERE id = ?').run(item.id);
         }
 
         return orderId;
+      })();
+
+      return { success: true, data: result };
+    } catch (e: unknown) {
+      if (e instanceof Error) { return { success: false, error: e.message }; }
+      return { success: false, error: 'Unknown error occurred' };
+    }
+  });
+
+  ipcMain.handle('orders:cancelByTable', async (_, payload: { tableId: number; note?: string }) => {
+    try {
+      const db = getDB();
+      
+      const result = db.transaction(() => {
+        // Find active order for this table
+        const order = db.prepare(`
+          SELECT * FROM orders 
+          WHERE table_id = ? AND status != 'billed' AND status != 'cancelled'
+          LIMIT 1
+        `).get(payload.tableId) as { id: number; status: string } | undefined;
+
+        if (!order) {
+          throw new Error('No active order found for this table.');
+        }
+
+        const isAutoDebitEnabled = store.get('inventory_auto_debit', true);
+
+        // Restore inventory for all items
+        if (isAutoDebitEnabled) {
+          const items = db.prepare('SELECT menu_item_id, qty FROM order_items WHERE order_id = ?').all(order.id) as { menu_item_id: number; qty: number }[];
+          for (const item of items) {
+            const recipe = db.prepare('SELECT inventory_item_id, qty_used FROM menu_inventory_map WHERE menu_item_id = ?').all(item.menu_item_id) as { inventory_item_id: number; qty_used: number }[];
+            for (const r of recipe) {
+              const invDelta = item.qty * r.qty_used; // adding back full qty
+              db.prepare('UPDATE inventory_items SET qty_in_stock = qty_in_stock + ? WHERE id = ?').run(invDelta, r.inventory_item_id);
+              db.prepare('INSERT INTO inventory_log (item_id, type, qty_change, note) VALUES (?, ?, ?, ?)').run(
+                r.inventory_item_id,
+                'adjustment',
+                invDelta,
+                `Order #${order.id} Cancelled`
+              );
+            }
+          }
+        }
+
+        // Update order status
+        db.prepare('UPDATE orders SET status = "cancelled", note = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(payload.note ?? '', order.id);
+
+        return order.id;
       })();
 
       return { success: true, data: result };

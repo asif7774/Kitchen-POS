@@ -10,9 +10,10 @@ interface Props {
   onUpdateNote: (id: number, note: string) => void;
   onSendKOT: () => void;
   onGenerateBill: () => void;
+  onVoidOrder: () => void;
 }
 
-const CartPanel: React.FC<Props> = ({ cart, onUpdateQty, onUpdateNote, onSendKOT, onGenerateBill }) => {
+const CartPanel: React.FC<Props> = ({ cart, onUpdateQty, onUpdateNote, onSendKOT, onGenerateBill, onVoidOrder }) => {
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   return (
@@ -75,6 +76,14 @@ const CartPanel: React.FC<Props> = ({ cart, onUpdateQty, onUpdateNote, onSendKOT
             disabled={cart.length === 0}
           >
             Generate Bill
+          </Button>
+          <Button 
+            variant="outline"
+            className="w-full py-3 text-red-600 border-red-600 hover:bg-red-50"
+            onClick={onVoidOrder}
+            disabled={cart.length === 0}
+          >
+            Void Order
           </Button>
         </div>
       </div>

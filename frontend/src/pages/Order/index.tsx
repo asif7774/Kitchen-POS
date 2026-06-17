@@ -5,6 +5,7 @@ import CartPanel from './components/CartPanel';
 import { CartItem, MenuItem } from '../../types/models';
 import Button from '../../components/atoms/button/button';
 import BillModal from './components/BillModal';
+import CancelOrderModal from './components/CancelOrderModal';
 import { api } from '../../lib/ipc';
 
 const OrderPage: React.FC = () => {
@@ -12,6 +13,7 @@ const OrderPage: React.FC = () => {
   const navigate = useNavigate();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showBillModal, setShowBillModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -83,6 +85,20 @@ const OrderPage: React.FC = () => {
     }
   };
 
+  const handleCancelOrder = async (note: string) => {
+    if (!tableId) {
+      return;
+    }
+    const res = await api.orders.cancelByTable({ tableId: Number(tableId), note });
+    if (res.success) {
+      setCart([]);
+      setShowCancelModal(false);
+      navigate('/tables');
+    } else {
+      console.error('Failed to cancel order:', res.error);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-white">
       {/* Header/Back Button */}
@@ -108,6 +124,7 @@ const OrderPage: React.FC = () => {
           onUpdateNote={handleUpdateNote}
           onSendKOT={() => { void handleSendKOT(); }}
           onGenerateBill={() => { setShowBillModal(true); }}
+          onVoidOrder={() => { setShowCancelModal(true); }}
         />
       </div>
 
@@ -116,6 +133,14 @@ const OrderPage: React.FC = () => {
           orderId={parseInt(tableId ?? '0')} 
           cart={cart}
           onClose={() => { setShowBillModal(false); }} 
+        />
+      )}
+
+      {showCancelModal && (
+        <CancelOrderModal
+          isOpen={showCancelModal}
+          onClose={() => { setShowCancelModal(false); }}
+          onConfirm={(note) => { void handleCancelOrder(note); }}
         />
       )}
     </div>

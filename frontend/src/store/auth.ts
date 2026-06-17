@@ -53,9 +53,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (shiftRes.success && shiftRes.data) {
         set({ activeShift: shiftRes.data });
         return true;
-      } else {
-        console.error('Failed to get active shift after opening:', shiftRes.error);
       }
+      console.error('Failed to get active shift after opening:', shiftRes.error);
     } else {
       console.error('Failed to open shift via API:', res.error);
     }

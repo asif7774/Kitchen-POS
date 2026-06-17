@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('api', {
     getOpen: () => ipcRenderer.invoke('orders:getOpen'),
     getByTable: (payload: any) => ipcRenderer.invoke('orders:getByTable', payload),
     sendKOT: (payload: any) => ipcRenderer.invoke('orders:sendKOT', payload),
+    cancelByTable: (payload: any) => ipcRenderer.invoke('orders:cancelByTable', payload),
   },
   kds: {
     getActiveTickets: () => ipcRenderer.invoke('kds:getActiveTickets'),

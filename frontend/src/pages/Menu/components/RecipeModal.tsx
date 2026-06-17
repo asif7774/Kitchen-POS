@@ -43,21 +43,27 @@ const RecipeModal: React.FC<Props> = ({ item, onClose }) => {
   }, [item.id]);
 
   const handleAddIngredient = () => {
-    if (!selectedInvId || !qtyUsed) return;
+    if (!selectedInvId || !qtyUsed) {
+      return;
+    }
     
-    const invId = Number(selectedInvId);
+    const invId = selectedInvId;
     const qty = parseFloat(qtyUsed);
     
-    if (isNaN(qty) || qty <= 0) return;
+    if (isNaN(qty) || qty <= 0) {
+      return;
+    }
     
     // Check if already in recipe
     if (recipeItems.some(ri => ri.inventory_item_id === invId)) {
-      alert('This ingredient is already in the recipe. Update the quantity instead.');
+      console.warn('This ingredient is already in the recipe. Update the quantity instead.');
       return;
     }
     
     const invItem = inventory.find(i => i.id === invId);
-    if (!invItem) return;
+    if (!invItem) {
+      return;
+    }
     
     setRecipeItems([
       ...recipeItems, 
@@ -107,13 +113,13 @@ const RecipeModal: React.FC<Props> = ({ item, onClose }) => {
             <h2 className="text-xl font-bold">Edit Recipe</h2>
             <p className="text-sm text-gray-500">{item.name}</p>
           </div>
-          <Button size="icon" variant="ghost" onClick={onClose} className="text-gray-500">✕</Button>
+          <Button size="icon" variant="ghost" onClick={() => { onClose(); }} className="text-gray-500">✕</Button>
         </div>
         
         {loading ? (
           <div className="p-8 text-center text-gray-500">Loading recipe...</div>
         ) : (
-          <form onSubmit={handleSubmit} className="p-6 overflow-y-auto flex-1 flex flex-col gap-6">
+          <form onSubmit={(e) => { void handleSubmit(e); }} className="p-6 overflow-y-auto flex-1 flex flex-col gap-6">
             
             {/* Ingredients List */}
             <div>
@@ -134,7 +140,7 @@ const RecipeModal: React.FC<Props> = ({ item, onClose }) => {
                         variant="ghost" 
                         size="sm" 
                         className="text-red-500 hover:bg-red-50"
-                        onClick={() => handleRemoveIngredient(ri.inventory_item_id)}
+                        onClick={() => { handleRemoveIngredient(ri.inventory_item_id); }}
                         type="button"
                       >
                         Remove
@@ -153,7 +159,7 @@ const RecipeModal: React.FC<Props> = ({ item, onClose }) => {
                   <label className="block text-xs font-semibold text-gray-600 mb-1">Inventory Item</label>
                   <select 
                     value={selectedInvId}
-                    onChange={(e) => setSelectedInvId(e.target.value ? Number(e.target.value) : '')}
+                    onChange={(e) => { setSelectedInvId(e.target.value ? Number(e.target.value) : ''); }}
                     className="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   >
                     <option value="">Select item...</option>
@@ -169,7 +175,7 @@ const RecipeModal: React.FC<Props> = ({ item, onClose }) => {
                     min="0"
                     step="0.001"
                     value={qtyUsed}
-                    onChange={(e) => setQtyUsed(e.target.value)}
+                    onChange={(e) => { setQtyUsed(e.target.value); }}
                     className="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     placeholder="e.g. 0.5"
                   />
@@ -177,7 +183,7 @@ const RecipeModal: React.FC<Props> = ({ item, onClose }) => {
                 <Button 
                   variant="outline" 
                   type="button" 
-                  onClick={handleAddIngredient}
+                  onClick={() => { handleAddIngredient(); }}
                   disabled={!selectedInvId || !qtyUsed}
                 >
                   Add
@@ -186,7 +192,7 @@ const RecipeModal: React.FC<Props> = ({ item, onClose }) => {
             </div>
 
             <div className="flex justify-end gap-3 mt-4 pt-4 border-t">
-              <Button variant="outline" onClick={onClose} type="button">Cancel</Button>
+              <Button variant="outline" onClick={() => { onClose(); }} type="button">Cancel</Button>
               <Button variant="primary" type="submit" isLoading={saving}>
                 Save Recipe
               </Button>

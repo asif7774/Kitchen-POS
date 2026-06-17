@@ -7,6 +7,15 @@ import CloseShiftModal from './components/CloseShiftModal';
 const SettingsPage: React.FC = () => {
   const activeShift = useAuthStore(state => state.activeShift);
   const [showCloseModal, setShowCloseModal] = useState(false);
+  const [settings, setSettings] = useState<Record<string, unknown>>({});
+
+  React.useEffect(() => {
+    void api.settings.get().then(res => {
+      if (res.success && res.data) {
+        setSettings(res.data as Record<string, unknown>);
+      }
+    });
+  }, []);
 
   const handleExport = async () => {
     await api.backup.export({});
@@ -65,6 +74,31 @@ const SettingsPage: React.FC = () => {
           ) : (
             <p className="text-sm text-gray-500">Register is currently Closed. Shift opens automatically on login.</p>
           )}
+        </section>
+
+        <section className="card p-6 shadow-sm border rounded">
+          <h2 className="text-lg font-medium border-b pb-2 mb-4">Inventory Settings</h2>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium text-gray-700">Auto-Debit Inventory on KOT</p>
+              <p className="text-sm text-gray-500">Automatically deduct ingredients from stock when an order is sent to the kitchen.</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                className="sr-only peer"
+                checked={settings.inventory_auto_debit !== false}
+                onChange={(e) => {
+                  void (async () => {
+                    const val = e.target.checked;
+                    setSettings({ ...settings, inventory_auto_debit: val });
+                    await api.settings.save({ inventory_auto_debit: val });
+                  })();
+                }}
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
         </section>
       </div>
 
