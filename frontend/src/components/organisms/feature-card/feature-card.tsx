@@ -1,7 +1,7 @@
 import { forwardRef, ComponentProps, memo } from "react";
 import { SvgIcon } from "components/atoms/svg-sprite-loader";
 
-export interface CardProps extends Omit<
+export interface FeatureCardProps extends Omit<
   ComponentProps<"div">,
   "className" | "children"
 > {
@@ -12,8 +12,8 @@ export interface CardProps extends Omit<
   borderColor?: string;
 }
 
-const Card = memo(
-  forwardRef<HTMLDivElement, CardProps>(
+const FeatureCard = memo(
+  forwardRef<HTMLDivElement, FeatureCardProps>(
     (
       {
         title,
@@ -64,6 +64,6 @@ const Card = memo(
   ),
 );
 
-Card.displayName = "Card";
+FeatureCard.displayName = "FeatureCard";
 
-export default Card;
+export default FeatureCard;

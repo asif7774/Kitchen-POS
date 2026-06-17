@@ -1,7 +1,7 @@
+import { Button } from '../../components/atoms';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth';
-import Button from '../../components/atoms/button/button';
 
 const LoginPage: React.FC = () => {
   const [pin, setPin] = useState('');

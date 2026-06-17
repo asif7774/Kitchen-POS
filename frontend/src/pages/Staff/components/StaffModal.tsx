@@ -1,6 +1,5 @@
+import { Input, Select } from '../../../components/atoms';
 import React, { useState } from 'react';
-import Input from '../../../components/atoms/input/input';
-import Select from '../../../components/atoms/select/select';
 import { Staff } from '../../../types/models';
 
 interface StaffModalProps {

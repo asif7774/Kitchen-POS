@@ -1,6 +1,6 @@
+import { Button } from '../../../components/atoms';
 import React from 'react';
 import { Category, MenuItem } from '../../../types/models';
-import Button from '../../../components/atoms/button/button';
 import { api } from '../../../lib/ipc';
 import { useModal } from '../../../hooks/useModal';
 

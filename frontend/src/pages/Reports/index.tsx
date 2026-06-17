@@ -1,8 +1,8 @@
+import { Button, Input } from '../../components/atoms';
 import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/ipc';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import Button from '../../components/atoms/button/button';
-import Input from '../../components/atoms/input/input';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/atoms/card';
 
 interface DailyReport {
   date: string;
@@ -58,7 +58,7 @@ const ReportsPage: React.FC = () => {
         </Button>
       </div>
 
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex gap-6 items-center">
+      <Card className="mb-6 flex-row items-center gap-6 p-4 border-gray-100 shadow-sm">
         <div className="w-40">
           <Input 
             type="date" 
@@ -75,45 +75,49 @@ const ReportsPage: React.FC = () => {
             onChange={e => { setEndDate(e.target.value); }}
           />
         </div>
-      </div>
+      </Card>
 
       {report && (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white p-5 border border-gray-100 rounded-xl shadow-sm">
+            <Card className="p-5 border-gray-100 shadow-sm">
               <h3 className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">Total Orders</h3>
               <p className="text-3xl font-extrabold text-gray-900">{report.totalOrders}</p>
-            </div>
-            <div className="bg-white p-5 border border-gray-100 rounded-xl shadow-sm">
+            </Card>
+            <Card className="p-5 border-gray-100 shadow-sm">
               <h3 className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">Total Revenue</h3>
               <p className="text-3xl font-extrabold text-gray-900">₹{report.totalRevenue.toFixed(2)}</p>
-            </div>
-            <div className="bg-white p-5 border border-gray-100 rounded-xl shadow-sm">
+            </Card>
+            <Card className="p-5 border-gray-100 shadow-sm">
               <h3 className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">Total CGST</h3>
               <p className="text-3xl font-extrabold text-blue-600">₹{report.totalCGST.toFixed(2)}</p>
-            </div>
-            <div className="bg-white p-5 border border-gray-100 rounded-xl shadow-sm">
+            </Card>
+            <Card className="p-5 border-gray-100 shadow-sm">
               <h3 className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">Total SGST</h3>
               <p className="text-3xl font-extrabold text-blue-600">₹{report.totalSGST.toFixed(2)}</p>
-            </div>
+            </Card>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-96">
-            <h3 className="text-lg font-bold text-gray-800 mb-6">Hourly Revenue Breakdown</h3>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={report.hourlyData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                <XAxis dataKey="hour" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} tickFormatter={(val: number) => `₹${val}`} />
-                <Tooltip 
-                  formatter={(value) => [`₹${Number(value)}`, 'Revenue']}
-                  cursor={{ fill: '#f3f4f6' }}
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                />
-                <Bar dataKey="revenue" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={50} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <Card className="h-96">
+            <CardHeader>
+              <CardTitle>Hourly Revenue Breakdown</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={report.hourlyData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                  <XAxis dataKey="hour" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} tickFormatter={(val: number) => `₹${val}`} />
+                  <Tooltip 
+                    formatter={(value) => [`₹${Number(value)}`, 'Revenue']}
+                    cursor={{ fill: '#f3f4f6' }}
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                  />
+                  <Bar dataKey="revenue" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={50} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
         </>
       )}
     </div>

@@ -1,9 +1,9 @@
+import { Button } from '../../components/atoms';
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MenuPanel from './components/MenuPanel';
 import CartPanel from './components/CartPanel';
 import { CartItem, MenuItem } from '../../types/models';
-import Button from '../../components/atoms/button/button';
 import BillModal from './components/BillModal';
 import CancelOrderModal from './components/CancelOrderModal';
 import { api } from '../../lib/ipc';
@@ -127,13 +127,25 @@ const OrderPage: React.FC = () => {
             showModal({
               title: "Generate Final Bill",
               content: <BillModal orderId={parseInt(tableId ?? '0')} cart={cart} onClose={hideModal} />,
-              size: "xl"
+              size: "xl",
+              actions: (
+                <>
+                  <Button variant="outline" onClick={hideModal}>Cancel</Button>
+                  <Button type="submit" form="bill-form" variant="primary">Confirm & Print</Button>
+                </>
+              )
             });
           }}
           onVoidOrder={() => { 
             showModal({
               title: "Void Order",
-              content: <CancelOrderModal onClose={hideModal} onConfirm={(note) => { void handleCancelOrder(note); }} />
+              content: <CancelOrderModal onClose={hideModal} onConfirm={(note) => { void handleCancelOrder(note); }} />,
+              actions: (
+                <>
+                  <Button variant="outline" onClick={hideModal}>Go Back</Button>
+                  <Button type="submit" form="cancel-order-form" variant="danger">Confirm Void Order</Button>
+                </>
+              )
             });
           }}
         />

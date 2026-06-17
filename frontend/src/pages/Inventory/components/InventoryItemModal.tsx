@@ -1,9 +1,8 @@
+import { Input, Select } from '../../../components/atoms';
 import React, { useState } from 'react';
 import { InventoryItem } from '../../../types/models';
 import { api } from '../../../lib/ipc';
-import Button from '../../../components/atoms/button/button';
-import Input from '../../../components/atoms/input/input';
-import Select from '../../../components/atoms/select/select';
+
 import { useToast } from '../../../hooks/useToast';
 
 interface Props {
@@ -17,12 +16,12 @@ export function InventoryItemModal({ onClose, onRefresh, initialData }: Props) {
   const [unit, setUnit] = useState(initialData?.unit ?? 'kg');
   const [lowStockAlertAt, setLowStockAlertAt] = useState<number | ''>(initialData?.low_stock_alert_at ?? 0);
   const [costPerUnit, setCostPerUnit] = useState<number | ''>(initialData?.cost_per_unit ?? 0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const { showToast } = useToast();
 
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+
 
     const payload = {
       ...(initialData?.id ? { id: initialData.id } : {}),
@@ -40,7 +39,7 @@ export function InventoryItemModal({ onClose, onRefresh, initialData }: Props) {
           onClose();
         } else {
           showToast({ message: res.error ?? 'Failed to save inventory item', variant: 'error' });
-          setIsSubmitting(false);
+
         }
       })
       .catch((err: unknown) => {
@@ -49,12 +48,12 @@ export function InventoryItemModal({ onClose, onRefresh, initialData }: Props) {
         } else {
           showToast({ message: String(err), variant: 'error' });
         }
-        setIsSubmitting(false);
+
       });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form id="inventory-item-form" onSubmit={handleSubmit} className="space-y-4">
       <Input
         label="Item Name"
         type="text"
@@ -98,22 +97,7 @@ export function InventoryItemModal({ onClose, onRefresh, initialData }: Props) {
         />
       </div>
 
-      <div className="-mx-6 -mb-4 px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 mt-8">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => { onClose(); }}
-        >
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          variant="primary"
-          isLoading={isSubmitting}
-        >
-          Save Item
-        </Button>
-      </div>
+
     </form>
   );
 }

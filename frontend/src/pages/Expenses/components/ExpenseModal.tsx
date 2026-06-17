@@ -1,6 +1,5 @@
+import { Input, Select } from '../../../components/atoms';
 import React, { useState, useEffect } from 'react';
-import Input from '../../../components/atoms/input/input';
-import Select from '../../../components/atoms/select/select';
 
 interface ExpenseModalProps {
   onClose: () => void;

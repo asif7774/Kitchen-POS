@@ -1,14 +1,9 @@
+import { Input, Textarea } from '../../../components/atoms';
 import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../../../store/auth';
 import { api } from '../../../lib/ipc';
-import Button from '../../../components/atoms/button/button';
-import Input from '../../../components/atoms/input/input';
-import Textarea from '../../../components/atoms/textarea/textarea';
-import { useToast } from '../../../hooks/useToast';
 
-interface Props {
-  onClose: () => void;
-}
+import { useToast } from '../../../hooks/useToast';
 
 interface PaymentTotals {
   cash: number;
@@ -17,7 +12,7 @@ interface PaymentTotals {
   complimentary: number;
 }
 
-export default function CloseShiftModal({ onClose }: Props) {
+const CloseShiftModal: React.FC = () => {
   const activeShift = useAuthStore(state => state.activeShift);
   const closeShift = useAuthStore(state => state.closeShift);
   const logout = useAuthStore(state => state.logout);
@@ -26,7 +21,7 @@ export default function CloseShiftModal({ onClose }: Props) {
   const [loading, setLoading] = useState(true);
   const [closingCash, setClosingCash] = useState<number | ''>('');
   const [note, setNote] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -71,7 +66,7 @@ export default function CloseShiftModal({ onClose }: Props) {
       return;
     }
 
-    setIsSubmitting(true);
+
 
     // If discrepancy is present, append automated remarks
     const discrepancy = cashVal - expectedCash;
@@ -88,22 +83,21 @@ export default function CloseShiftModal({ onClose }: Props) {
           logout(); // Shift close logs staff out automatically
         } else {
           showToast({ message: 'Failed to close shift register', variant: 'error' });
-          setIsSubmitting(false);
+
         }
       })
       .catch((err: unknown) => {
         if (!(err instanceof Error)) {
           showToast({ message: String(err), variant: 'error' });
         }
-        setIsSubmitting(false);
+
       });
   };
 
   return (
     <>
-      <div className="bg-red-600 px-6 py-4 text-white -mx-6 -mt-4 mb-4 rounded-t-xl">
-        <h2 className="text-xl font-bold">Close Shift Register</h2>
-        <p className="text-red-100 text-xs mt-1">Reconcile cash drawer float and payments before logout</p>
+      <div className="mb-4">
+        <p className="text-gray-500 text-sm">Reconcile cash drawer float and payments before logout.</p>
       </div>
 
       {loading ? (
@@ -112,7 +106,7 @@ export default function CloseShiftModal({ onClose }: Props) {
           Calculating shift aggregates...
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form id="close-shift-form" onSubmit={handleSubmit} className="space-y-4">
 
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-gray-50 p-3.5 border rounded-lg">
@@ -192,24 +186,10 @@ export default function CloseShiftModal({ onClose }: Props) {
             rows={2}
           />
 
-          <div className="-mx-6 -mb-4 px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 mt-8">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="danger"
-              isLoading={isSubmitting}
-            >
-              Reconcile & Close Shift
-            </Button>
-          </div>
         </form>
       )}
     </>
   );
-}
+};
+
+export default CloseShiftModal;

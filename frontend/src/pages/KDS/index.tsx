@@ -1,7 +1,7 @@
+import { Button } from '../../components/atoms';
 import { useEffect, useState, useCallback } from 'react';
 import { api } from '../../lib/ipc';
 import { KDSTicket, KDSTicketItem } from '../../types/models';
-import Button from '../../components/atoms/button/button';
 
 export default function KDSPage() {
   const [tickets, setTickets] = useState<KDSTicket[]>([]);

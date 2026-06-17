@@ -1,9 +1,7 @@
+import { Button, Input, Select } from '../../../components/atoms';
 import React, { useState } from 'react';
 import { api } from '../../../lib/ipc';
 import { CartItem } from '../../../types/models';
-import Button from '../../../components/atoms/button/button';
-import Input from '../../../components/atoms/input/input';
-import Select from '../../../components/atoms/select/select';
 import { useToast } from '../../../hooks/useToast';
 
 interface Props {
@@ -48,7 +46,14 @@ const BillModal: React.FC<Props> = ({ orderId, cart, onClose }) => {
   };
 
   const handleConfirm = async () => {
-    if (!isBalanced) {return;}
+    if (!isBalanced) {
+      showToast({ message: 'Payments must balance the grand total', variant: 'warning' });
+      return;
+    }
+    if (finalTotal === 0 && discount < taxableTotal) {
+      showToast({ message: 'Invalid final total', variant: 'error' });
+      return;
+    }
     try {
       const res = await api.billing.createBill({
          orderId,
@@ -69,7 +74,7 @@ const BillModal: React.FC<Props> = ({ orderId, cart, onClose }) => {
   };
 
   return (
-    <>
+    <form id="bill-form" onSubmit={(e) => { e.preventDefault(); void handleConfirm(); }}>
       <div className="flex-1 overflow-auto p-6 flex flex-col md:flex-row gap-8">
         {/* Left Side - Itemized Breakdown */}
         <div className="flex-1">
@@ -198,18 +203,7 @@ const BillModal: React.FC<Props> = ({ orderId, cart, onClose }) => {
           </div>
         </div>
       </div>
-
-      <div className="-mx-6 -mb-4 px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 mt-4">
-        <Button variant="outline" onClick={onClose} type="button">Cancel</Button>
-        <Button 
-          variant="primary"
-          onClick={() => { void handleConfirm(); }} 
-          disabled={!isBalanced || finalTotal === 0}
-        >
-          Confirm & Print
-        </Button>
-      </div>
-    </>
+    </form>
   );
 };
 

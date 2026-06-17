@@ -1,8 +1,6 @@
+import { Button, Input, Autosearch } from '../../../components/atoms';
 import React, { useState, useEffect } from 'react';
 import { MenuItem, InventoryItem, RecipeItem } from '../../../types/models';
-import Button from '../../../components/atoms/button/button';
-import Input from '../../../components/atoms/input/input';
-import Autosearch from '../../../components/atoms/autosearch/autosearch';
 import { api } from '../../../lib/ipc';
 import { useToast } from '../../../hooks/useToast';
 
@@ -15,7 +13,7 @@ const RecipeModal: React.FC<Props> = ({ item, onClose }) => {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [recipeItems, setRecipeItems] = useState<RecipeItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+
   const { showToast } = useToast();
   
   // New item form
@@ -91,7 +89,7 @@ const RecipeModal: React.FC<Props> = ({ item, onClose }) => {
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
-    setSaving(true);
+
     try {
       const res = await api.menu.updateRecipe({
         menu_item_id: item.id,
@@ -110,8 +108,6 @@ const RecipeModal: React.FC<Props> = ({ item, onClose }) => {
     } catch (err) {
       console.error(err);
       showToast({ message: 'An unexpected error occurred', variant: 'error' });
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -120,7 +116,7 @@ const RecipeModal: React.FC<Props> = ({ item, onClose }) => {
       {loading ? (
         <div className="p-8 text-center text-gray-500">Loading recipe...</div>
       ) : (
-        <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-4">
+        <form id="recipe-form" onSubmit={(e) => { void handleSubmit(e); }} className="space-y-4">
           
           {/* Ingredients List */}
           <div>
@@ -191,12 +187,6 @@ const RecipeModal: React.FC<Props> = ({ item, onClose }) => {
             </div>
           </div>
 
-          <div className="-mx-6 -mb-4 px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 mt-8">
-            <Button variant="outline" onClick={() => { onClose(); }} type="button">Cancel</Button>
-            <Button variant="primary" type="submit" isLoading={saving}>
-              Save Recipe
-            </Button>
-          </div>
         </form>
       )}
     </>

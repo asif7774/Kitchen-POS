@@ -1,18 +1,17 @@
+import { Button, Input } from '../../../components/atoms';
 import React, { useState } from 'react';
 import { MenuItem } from '../../../types/models';
-import Button from '../../../components/atoms/button/button';
-import Input from '../../../components/atoms/input/input';
 import { api } from '../../../lib/ipc';
 import { useToast } from '../../../hooks/useToast';
 
 interface Props {
   item: MenuItem | null;
   categoryId: number;
-  onClose: () => void;
+
   onSuccess: () => void;
 }
 
-const MenuItemModal: React.FC<Props> = ({ item, categoryId, onClose, onSuccess }) => {
+const MenuItemModal: React.FC<Props> = ({ item, categoryId, onSuccess }) => {
   const [name, setName] = useState(item?.name ?? '');
   const [price, setPrice] = useState(item ? item.price.toString() : '');
   const [isVeg, setIsVeg] = useState(item ? item.is_veg === 1 : true);
@@ -20,14 +19,14 @@ const MenuItemModal: React.FC<Props> = ({ item, categoryId, onClose, onSuccess }
   const [sgst, setSgst] = useState(item?.sgst_rate?.toString() ?? '2.5');
   const [hsn, setHsn] = useState(item?.hsn_code ?? '');
   
-  const [loading, setLoading] = useState(false);
+
   const { showToast } = useToast();
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (!name.trim() || !price) {return;}
 
-    setLoading(true);
+
     try {
       const payload: Partial<MenuItem> = {
         name,
@@ -52,8 +51,6 @@ const MenuItemModal: React.FC<Props> = ({ item, categoryId, onClose, onSuccess }
     } catch (err) {
       console.error(err);
       showToast({ message: 'An unexpected error occurred', variant: 'error' });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -137,12 +134,6 @@ const MenuItemModal: React.FC<Props> = ({ item, categoryId, onClose, onSuccess }
         </div>
       </div>
 
-      <div className="-mx-6 -mb-4 px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 mt-8">
-        <Button variant="outline" onClick={onClose} type="button">Cancel</Button>
-        <Button variant="primary" type="submit" isLoading={loading}>
-          Save Dish
-        </Button>
-      </div>
     </form>
   );
 };

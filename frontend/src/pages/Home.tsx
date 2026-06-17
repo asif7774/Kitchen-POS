@@ -4,7 +4,7 @@ import { SvgIcon } from "components/atoms/svg-sprite-loader";
 import { useToast } from "hooks/useToast";
 
 // Lazy load heavy components
-const Card = lazy(() => import("components/organisms/card"));
+const FeatureCard = lazy(() => import("components/organisms/feature-card/feature-card"));
 const Button = lazy(() => import("components/atoms/button"));
 
 // Move data outside component to avoid recreation
@@ -231,7 +231,7 @@ function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {features.map((props, index) => (
               <article key={index}>
-                <Card
+                <FeatureCard
                   title={props.name}
                   description={props.description}
                   icon={props.icon}

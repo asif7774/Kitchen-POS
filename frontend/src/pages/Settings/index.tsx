@@ -1,7 +1,7 @@
+import { Button, Input, Toggle } from '../../components/atoms';
 import React, { useState } from 'react';
 import { api } from '../../lib/ipc';
-import Button from '../../components/atoms/button/button';
-import Input from '../../components/atoms/input/input';
+import { Card, CardHeader, CardTitle, CardContent } from '../../components/atoms/card';
 import { useAuthStore } from '../../store/auth';
 import CloseShiftModal from './components/CloseShiftModal';
 import { useModal } from '../../hooks/useModal';
@@ -36,86 +36,100 @@ const SettingsPage: React.FC = () => {
       <h1 className="text-2xl font-bold mb-6">Settings</h1>
       
       <div className="space-y-8">
-        <section className="card p-6 shadow-sm border rounded">
-          <h2 className="text-lg font-medium border-b pb-2 mb-4">Outlet Details</h2>
-          <div className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Outlet Details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
              <Input label="Outlet Name" placeholder="My Restaurant" />
              <Input label="GSTIN" placeholder="22AAAAA0000A1Z5" />
-          </div>
-        </section>
+          </CardContent>
+        </Card>
 
-        <section className="card p-6 shadow-sm border rounded">
-          <h2 className="text-lg font-medium border-b pb-2 mb-4">Printer</h2>
-          <Button variant="secondary" onClick={() => { void Promise.resolve(); }} className="w-full text-left justify-start">
-            Test Print
-          </Button>
-        </section>
+        <Card>
+          <CardHeader>
+            <CardTitle>Printer</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button variant="secondary" onClick={() => { void Promise.resolve(); }} className="w-full text-left justify-start">
+              Test Print
+            </Button>
+          </CardContent>
+        </Card>
 
-        <section className="card p-6 shadow-sm border rounded">
-          <h2 className="text-lg font-medium border-b pb-2 mb-4">Backup & Restore</h2>
-          <div className="space-x-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Backup & Restore</CardTitle>
+          </CardHeader>
+          <CardContent className="space-x-4">
             <Button variant="secondary" onClick={() => { void handleExport(); }}>
                Export Backup
             </Button>
             <Button variant="outline" className="text-red-500 border-red-500 hover:bg-red-50">
                Import Backup
             </Button>
-          </div>
-        </section>
+          </CardContent>
+        </Card>
 
-        <section className="card p-6 shadow-sm border rounded">
-          <h2 className="text-lg font-medium border-b pb-2 mb-4">Shift Register</h2>
-          {activeShift ? (
-            <div className="space-y-4">
-              <p className="text-sm text-gray-600">
-                Register is currently <strong>Open</strong> since{' '}
-                <strong>{new Date(activeShift.opened_at).toLocaleString()}</strong>.
-              </p>
-              <Button variant="danger" onClick={() => { 
-                showModal({
-                  title: '',
-                  content: <CloseShiftModal onClose={hideModal} />
+        <Card>
+          <CardHeader>
+            <CardTitle>Shift Register</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {activeShift ? (
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  Register is currently <strong>Open</strong> since{' '}
+                  <strong>{new Date(activeShift.opened_at).toLocaleString()}</strong>.
+                </p>
+                <Button variant="danger" onClick={() => { 
+                  showModal({
+                  title: 'Close Shift Register',
+                  content: <CloseShiftModal />,
+                  actions: (
+                    <>
+                      <Button variant="outline" onClick={hideModal}>Cancel</Button>
+                      <Button type="submit" form="close-shift-form" variant="danger">Reconcile & Close Shift</Button>
+                    </>
+                  )
                 });
-              }}>
-                Close Shift Register
-              </Button>
-            </div>
-          ) : (
-            <p className="text-sm text-gray-500">Register is currently Closed. Shift opens automatically on login.</p>
-          )}
-        </section>
+                }}>
+                  Close Shift Register
+                </Button>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">Register is currently Closed. Shift opens automatically on login.</p>
+            )}
+          </CardContent>
+        </Card>
 
-        <section className="card p-6 shadow-sm border rounded">
-          <h2 className="text-lg font-medium border-b pb-2 mb-4">Inventory Settings</h2>
-          <div className="flex items-center justify-between">
+        <Card>
+          <CardHeader>
+            <CardTitle>Inventory Settings</CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center justify-between">
             <div>
               <p className="font-medium text-gray-700">Auto-Debit Inventory on KOT</p>
               <p className="text-sm text-gray-500">Automatically deduct ingredients from stock when an order is sent to the kitchen.</p>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input 
-                type="checkbox" 
-                className="sr-only peer"
-                checked={settings.inventory_auto_debit !== false}
-                onChange={(e) => {
-                  void (async () => {
-                    try {
-                      const val = e.target.checked;
-                      setSettings({ ...settings, inventory_auto_debit: val });
-                      await api.settings.save({ inventory_auto_debit: val });
-                      showToast({ message: 'Settings saved', variant: 'success' });
-                    } catch (err) {
-                      console.error(err);
-                      showToast({ message: 'Failed to save settings', variant: 'error' });
-                      // Revert optimism if needed, simplified here
-                    }
-                  })();
-                }}
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-        </section>
+            <Toggle
+              checked={settings.inventory_auto_debit !== false}
+              onChange={(e) => {
+                void (async () => {
+                  try {
+                    const val = e.target.checked;
+                    setSettings({ ...settings, inventory_auto_debit: val });
+                    await api.settings.save({ inventory_auto_debit: val });
+                    showToast({ message: 'Settings saved', variant: 'success' });
+                  } catch (err) {
+                    console.error(err);
+                    showToast({ message: 'Failed to save settings', variant: 'error' });
+                  }
+                })();
+              }}
+            />
+          </CardContent>
+        </Card>
       </div>
 
     </div>

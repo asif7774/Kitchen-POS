@@ -1,9 +1,9 @@
+import { Button } from '../../components/atoms';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/ipc';
 import TableStatusCard from './components/TableStatusCard';
 import { useOrderStore } from '../../store/order';
-import Button from '../../components/atoms/button/button';
 import TableModal from './components/TableModal';
 import { useModal } from '../../hooks/useModal';
 
@@ -46,7 +46,13 @@ const TablesPage: React.FC = () => {
   const handleEdit = (table: Table) => {
     showModal({
       title: 'Edit Table',
-      content: <TableModal table={table} onClose={hideModal} onSaved={() => { hideModal(); void loadData(); }} />
+      content: <TableModal table={table} onSaved={() => { hideModal(); void loadData(); }} />,
+      actions: (
+        <>
+          <Button variant="outline" onClick={hideModal}>Cancel</Button>
+          <Button type="submit" form="table-form" variant="primary">Update</Button>
+        </>
+      )
     });
   };
 
@@ -75,8 +81,14 @@ const TablesPage: React.FC = () => {
           icon="plus" 
           onClick={() => { 
             showModal({
-              title: 'Add New Table',
-              content: <TableModal onClose={hideModal} onSaved={() => { hideModal(); void loadData(); }} />
+              title: "Add New Table",
+              content: <TableModal onSaved={() => { hideModal(); void loadData(); }} />,
+              actions: (
+                <>
+                  <Button variant="outline" onClick={hideModal}>Cancel</Button>
+                  <Button type="submit" form="table-form" variant="primary">Create</Button>
+                </>
+              )
             });
           }}
         >

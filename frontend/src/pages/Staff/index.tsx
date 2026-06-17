@@ -1,7 +1,8 @@
+import { Button } from '../../components/atoms';
 import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/ipc';
 import { Staff } from '../../types/models';
-import Button from '../../components/atoms/button/button';
+import { Card } from '../../components/atoms/card';
 import StaffModal from './components/StaffModal';
 import { useModal } from '../../hooks/useModal';
 
@@ -109,7 +110,7 @@ const StaffPage: React.FC = () => {
         </Button>
       </div>
 
-      <div className="flex-1 overflow-hidden bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col">
+      <Card className="flex-1 border-gray-100">
         <div className="overflow-x-auto flex-1">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-gray-50 border-b border-gray-100 sticky top-0 z-10">
@@ -159,7 +160,7 @@ const StaffPage: React.FC = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

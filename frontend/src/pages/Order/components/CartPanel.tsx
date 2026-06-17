@@ -1,9 +1,7 @@
+import { Button, Input, Stepper } from '../../../components/atoms';
 import React from 'react';
 
 import { CartItem } from '../../../types/models';
-import Button from '../../../components/atoms/button/button';
-import Input from '../../../components/atoms/input/input';
-import Stepper from '../../../components/atoms/stepper/stepper';
 
 interface Props {
   cart: CartItem[];

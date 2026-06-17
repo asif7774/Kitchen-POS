@@ -1,9 +1,10 @@
+import { Button } from '../../components/atoms';
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../../lib/ipc';
 import { InventoryItem } from '../../types/models';
 import { InventoryItemModal } from './components/InventoryItemModal';
 import { StockAdjustmentModal } from './components/StockAdjustmentModal';
-import Button from '../../components/atoms/button/button';
+import { Card } from '../../components/atoms/card';
 import { useModal } from '../../hooks/useModal';
 
 export default function InventoryPage() {
@@ -61,21 +62,39 @@ export default function InventoryPage() {
   const handleCreate = () => {
     showModal({
       title: "Add Inventory Item",
-      content: <InventoryItemModal initialData={null} onClose={hideModal} onRefresh={() => { fetchInventory(); }} />
+      content: <InventoryItemModal initialData={null} onClose={hideModal} onRefresh={() => { fetchInventory(); }} />,
+      actions: (
+        <>
+          <Button variant="outline" onClick={hideModal}>Cancel</Button>
+          <Button type="submit" form="inventory-item-form" variant="primary">Save Item</Button>
+        </>
+      )
     });
   };
 
   const handleEdit = (item: InventoryItem) => {
     showModal({
       title: "Edit Inventory Item",
-      content: <InventoryItemModal initialData={item} onClose={hideModal} onRefresh={() => { fetchInventory(); }} />
+      content: <InventoryItemModal initialData={item} onClose={hideModal} onRefresh={() => { fetchInventory(); }} />,
+      actions: (
+        <>
+          <Button variant="outline" onClick={hideModal}>Cancel</Button>
+          <Button type="submit" form="inventory-item-form" variant="primary">Save Item</Button>
+        </>
+      )
     });
   };
 
   const handleAdjust = (item: InventoryItem) => {
     showModal({
       title: `Adjust Stock: ${item.name}`,
-      content: <StockAdjustmentModal item={item} onClose={hideModal} onRefresh={() => { fetchInventory(); }} />
+      content: <StockAdjustmentModal item={item} onClose={hideModal} onRefresh={() => { fetchInventory(); }} />,
+      actions: (
+        <>
+          <Button variant="outline" onClick={hideModal}>Cancel</Button>
+          <Button type="submit" form="stock-adjust-form" variant="primary">Confirm</Button>
+        </>
+      )
     });
   };
 
@@ -102,7 +121,7 @@ export default function InventoryPage() {
         </Button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <Card>
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-500">
@@ -170,7 +189,7 @@ export default function InventoryPage() {
             )}
           </tbody>
         </table>
-      </div>
+      </Card>
 
 
     </div>

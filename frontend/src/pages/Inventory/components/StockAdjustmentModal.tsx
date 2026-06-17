@@ -1,10 +1,8 @@
+import { Input, Select, Textarea } from '../../../components/atoms';
 import React, { useState } from 'react';
 import { InventoryItem } from '../../../types/models';
 import { api } from '../../../lib/ipc';
-import Button from '../../../components/atoms/button/button';
-import Input from '../../../components/atoms/input/input';
-import Select from '../../../components/atoms/select/select';
-import Textarea from '../../../components/atoms/textarea/textarea';
+
 import { useToast } from '../../../hooks/useToast';
 
 interface Props {
@@ -17,7 +15,7 @@ export function StockAdjustmentModal({ onClose, onRefresh, item }: Props) {
   const [type, setType] = useState<'purchase' | 'adjustment' | 'wastage'>('purchase');
   const [qtyChange, setQtyChange] = useState<number | ''>('');
   const [note, setNote] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const { showToast } = useToast();
 
   const handleSubmit = (e: React.SyntheticEvent) => {
@@ -27,7 +25,7 @@ export function StockAdjustmentModal({ onClose, onRefresh, item }: Props) {
       return;
     }
 
-    setIsSubmitting(true);
+
 
     // If wastage or a negative adjustment, quantity should be negative
     let finalQty = qtyChange;
@@ -48,7 +46,7 @@ export function StockAdjustmentModal({ onClose, onRefresh, item }: Props) {
           onClose();
         } else {
           showToast({ message: res.error ?? 'Failed to adjust stock', variant: 'error' });
-          setIsSubmitting(false);
+
         }
       })
       .catch((err: unknown) => {
@@ -57,12 +55,12 @@ export function StockAdjustmentModal({ onClose, onRefresh, item }: Props) {
         } else {
           showToast({ message: String(err), variant: 'error' });
         }
-        setIsSubmitting(false);
+
       });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form id="stock-adjust-form" onSubmit={handleSubmit} className="space-y-4">
 
       <div className="bg-blue-50 text-blue-800 p-3 rounded-md text-sm mb-4">
         Current Stock: <strong>{item.qty_in_stock} {item.unit}</strong>
@@ -97,22 +95,7 @@ export function StockAdjustmentModal({ onClose, onRefresh, item }: Props) {
         rows={2}
       />
 
-      <div className="-mx-6 -mb-4 px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 mt-8">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => { onClose(); }}
-        >
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          variant={type === 'wastage' ? 'danger' : 'primary'}
-          isLoading={isSubmitting}
-        >
-          Confirm
-        </Button>
-      </div>
+
     </form>
   );
 }

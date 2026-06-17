@@ -1,6 +1,6 @@
+import { Button, Toggle } from '../../../components/atoms';
 import React from 'react';
 import { Category, MenuItem } from '../../../types/models';
-import Button from '../../../components/atoms/button/button';
 import { api } from '../../../lib/ipc';
 import { useModal } from '../../../hooks/useModal';
 import { useToast } from '../../../hooks/useToast';
@@ -101,17 +101,15 @@ const MenuItemList: React.FC<Props> = ({ category, onEdit, onRecipeEdit, onAdd, 
                 </div>
 
                 <div className="flex justify-between items-center pt-3 border-t">
-                  <label className="flex items-center cursor-pointer gap-2">
-                    <input 
-                      type="checkbox" 
-                      className="form-checkbox text-blue-600 rounded"
+                  <div className="flex items-center gap-2">
+                    <Toggle
                       checked={item.is_available === 1}
                       onChange={() => { void handleToggle(item); }}
                     />
                     <span className={`text-sm font-medium ${item.is_available === 1 ? 'text-green-600' : 'text-gray-400'}`}>
                       {item.is_available === 1 ? 'In Stock' : 'Out of Stock'}
                     </span>
-                  </label>
+                  </div>
                   
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={() => { onRecipeEdit(item); }}>Recipe</Button>

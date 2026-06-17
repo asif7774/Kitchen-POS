@@ -1,20 +1,19 @@
+import { Input, Stepper } from '../../../components/atoms';
 import React, { useState } from 'react';
-import Input from '../../../components/atoms/input/input';
-import Stepper from '../../../components/atoms/stepper/stepper';
-import Button from '../../../components/atoms/button/button';
+
 import { api } from '../../../lib/ipc';
 import { Table } from '../../../types/models';
 
 interface Props {
-  onClose: () => void;
+
   onSaved: () => void;
   table?: Table;
 }
 
-export default function TableModal({ onClose, onSaved, table }: Props) {
+export default function TableModal({ onSaved, table }: Props) {
   const [name, setName] = useState(table?.name ?? '');
   const [capacity, setCapacity] = useState<number>(table?.capacity ?? 4);
-  const [isSaving, setIsSaving] = useState(false);
+
   const [error, setError] = useState('');
 
 
@@ -31,7 +30,7 @@ export default function TableModal({ onClose, onSaved, table }: Props) {
       return;
     }
 
-    setIsSaving(true);
+
     setError('');
 
     try {
@@ -56,13 +55,11 @@ export default function TableModal({ onClose, onSaved, table }: Props) {
       } else {
         setError(String(err));
       }
-    } finally {
-      setIsSaving(false);
     }
   };
 
   return (
-    <form onSubmit={(e) => { void handleSave(e); }} className="space-y-4">
+    <form id="table-form" onSubmit={(e) => { void handleSave(e); }} className="space-y-4">
       {error && (
         <div className="p-3 bg-red-50 text-red-700 text-sm rounded-md">
           {error}
@@ -86,14 +83,6 @@ export default function TableModal({ onClose, onSaved, table }: Props) {
         />
       </div>
 
-      <div className="-mx-6 -mb-4 px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 mt-8">
-        <Button variant="ghost" onClick={onClose} disabled={isSaving} type="button">
-          Cancel
-        </Button>
-        <Button type="submit" variant="primary" isLoading={isSaving}>
-          {table ? 'Update' : 'Create'}
-        </Button>
-      </div>
     </form>
   );
 }

@@ -1,8 +1,8 @@
+import { Button, Input } from '../../components/atoms';
 import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/ipc';
 import { Expense } from '../../types/models';
-import Button from '../../components/atoms/button/button';
-import Input from '../../components/atoms/input/input';
+import { Card } from '../../components/atoms/card';
 import { useAuthStore } from '../../store/auth';
 import ExpenseModal from './components/ExpenseModal';
 import { useModal } from '../../hooks/useModal';
@@ -101,7 +101,7 @@ const ExpensesPage: React.FC = () => {
         </Button>
       </div>
 
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex gap-6 items-center shrink-0">
+      <Card className="p-4 border-gray-100 mb-6 flex-row gap-6 items-center shrink-0">
         <div className="w-40">
           <Input 
             type="date" 
@@ -122,9 +122,9 @@ const ExpensesPage: React.FC = () => {
           <p className="text-sm font-medium text-blue-800">Total Expenses</p>
           <p className="text-2xl font-bold text-blue-900">₹{totalAmount.toFixed(2)}</p>
         </div>
-      </div>
+      </Card>
 
-      <div className="flex-1 overflow-hidden bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col">
+      <Card className="flex-1 border-gray-100">
         <div className="overflow-x-auto flex-1">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-gray-50 border-b border-gray-100 sticky top-0 z-10">
@@ -179,7 +179,7 @@ const ExpensesPage: React.FC = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

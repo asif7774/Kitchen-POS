@@ -1,7 +1,7 @@
+import { Button } from '../../../components/atoms';
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { SvgIcon } from '../../../components/atoms/svg-sprite-loader';
-import Button from '../../../components/atoms/button/button';
 
 interface SidebarProps {
   isCollapsed: boolean;

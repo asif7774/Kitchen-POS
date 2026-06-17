@@ -1,6 +1,6 @@
+import { Button } from '../../../components/atoms';
 import React from 'react';
 import { SvgIcon } from '../../../components/atoms/svg-sprite-loader';
-import Button from '../../../components/atoms/button/button';
 
 interface HeaderProps {
   isSidebarPermanent: boolean;

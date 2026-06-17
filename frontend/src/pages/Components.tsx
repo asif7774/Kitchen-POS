@@ -1,13 +1,8 @@
+import { Button, Input, Select, Textarea, Autosearch, Stepper } from 'components/atoms';
 import React from "react";
-import Button from "components/atoms/button";
 import LazyImage from "components/atoms/lazy-image";
-import Card from "components/organisms/card";
+import FeatureCard from "../components/organisms/feature-card/feature-card";
 import { useToast } from "hooks/useToast";
-import Input from "components/atoms/input/input";
-import Select from "components/atoms/select/select";
-import Textarea from "components/atoms/textarea/textarea";
-import Autosearch from "components/atoms/autosearch/autosearch";
-import Stepper from "components/atoms/stepper/stepper";
 
 import { useModal } from "hooks/useModal";
 
@@ -396,21 +391,21 @@ const Components: React.FC = () => {
       <section>
         <h2 className="text-2xl font-semibold mb-6 border-b pb-2">Card</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card
+          <FeatureCard
             title="Dashboard"
             description="A central hub for tracking analytics, metrics, and key performance indicators."
             icon="dashboard"
             href="#"
             borderColor="border-t-blue-500"
           />
-          <Card
+          <FeatureCard
             title="Objectives"
             description="Set targets and measure your team's success with clear goals."
             icon="target"
             href="#"
             borderColor="border-t-teal-500"
           />
-          <Card
+          <FeatureCard
             title="Deployments"
             description="Ship your application to production quickly and safely."
             icon="launch"
