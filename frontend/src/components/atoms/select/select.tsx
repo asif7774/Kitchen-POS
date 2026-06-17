@@ -29,7 +29,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           const props = child.props as React.ComponentProps<"option">;
           return {
             value: props.value as string,
-            label: props.children as React.ReactNode,
+            label: props.children,
           };
         }
         return null;
