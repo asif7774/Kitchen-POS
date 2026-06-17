@@ -1,0 +1,106 @@
+import { app, BrowserWindow, ipcMain, Menu, Tray } from 'electron';
+import * as path from 'path';
+import { runMigrations } from './db/migrate';
+import { getDB } from './db';
+import { registerOrdersIPC } from './ipc/orders';
+import { registerMenuIPC } from './ipc/menu';
+import { registerTablesIPC } from './ipc/tables';
+import { registerBillingIPC } from './ipc/billing';
+import { registerInventoryIPC } from './ipc/inventory';
+import { registerStaffIPC } from './ipc/staff';
+import { registerReportsIPC } from './ipc/reports';
+import { registerBackupIPC } from './ipc/backup';
+import { registerSettingsIPC } from './ipc/settings';
+import { registerPrinterIPC } from './ipc/printer';
+
+let mainWindow: BrowserWindow | null = null;
+let tray: Tray | null = null;
+
+async function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 1200,
+    height: 800,
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+      preload: path.join(__dirname, 'preload.js'),
+    },
+  });
+
+  const isDev = !app.isPackaged && process.env.NODE_ENV !== 'production';
+
+  if (isDev) {
+    mainWindow.loadURL('http://localhost:5205');
+  } else {
+    mainWindow.loadFile(path.join(__dirname, '../../frontend/dist/index.html'));
+  }
+
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
+}
+
+function createTray() {
+  const iconPath = path.join(__dirname, '../../../assets/icon.png'); // Example icon path, make sure it exists or update logic
+  // For now using a native image or resolving later is fine, but here is standard setup.
+  // Using an empty NativeImage for robust execution
+  import('electron').then(({ nativeImage }) => {
+     let trayIcon = nativeImage.createEmpty();
+     try {
+       trayIcon = nativeImage.createFromPath(iconPath);
+     } catch (e) {}
+
+    tray = new Tray(trayIcon);
+    const contextMenu = Menu.buildFromTemplate([
+      { label: 'Open', click: () => {
+          if (mainWindow) {
+             if (mainWindow.isMinimized()) mainWindow.restore();
+             mainWindow.focus();
+          } else {
+             createWindow();
+          }
+      }},
+      { label: 'Quit', click: () => {
+          app.quit();
+      }}
+    ]);
+    tray.setToolTip('Restaurant POS');
+    tray.setContextMenu(contextMenu);
+  });
+}
+
+function registerAllIPC() {
+  registerOrdersIPC();
+  registerMenuIPC();
+  registerTablesIPC();
+  registerBillingIPC();
+  registerInventoryIPC();
+  registerStaffIPC();
+  registerReportsIPC();
+  registerBackupIPC();
+  registerSettingsIPC();
+  registerPrinterIPC();
+}
+
+app.whenReady().then(async () => {
+  // Initialize DB and Run migrations before registering IPC
+  getDB();
+  runMigrations();
+
+  registerAllIPC();
+
+  createWindow();
+  createTray();
+
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});

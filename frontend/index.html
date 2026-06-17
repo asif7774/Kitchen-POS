@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Defer non-critical resources - load after page is interactive -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Manifest is deferred to avoid blocking critical rendering path -->
+    <script>
+      // Load manifest asynchronously after page is interactive
+      (function() {
+        function loadManifest() {
+          const link = document.createElement('link');
+          link.rel = 'manifest';
+          link.href = '/manifest.webmanifest';
+          document.head.appendChild(link);
+        }
+        // Wait for page to be interactive before loading manifest
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', function() {
+            // Defer further to avoid blocking - use requestIdleCallback if available
+            if (window.requestIdleCallback) {
+              window.requestIdleCallback(loadManifest, { timeout: 2000 });
+            } else {
+              setTimeout(loadManifest, 100);
+            }
+          });
+        } else {
+          if (window.requestIdleCallback) {
+            window.requestIdleCallback(loadManifest, { timeout: 2000 });
+          } else {
+            setTimeout(loadManifest, 100);
+          }
+        }
+      })();
+    </script>
+    
+    <!-- SEO Meta Tags -->
+    <title>React + TypeScript + Tailwind @ Vite Template</title>
+    <meta name="description" content="Create modern React apps with Vital (speed)" />
+    <meta name="keywords" content="React, TypeScript, Tailwind, Vite, Template, Boilerplate, Starter, Modern, Optimized, Tailwind-CSS-4, React-19, Vitest, ESLint" />
+    <meta name="author" content="Asif Ansari" />
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="React + TypeScript + Tailwind @ Vite Template" />
+    <meta property="og:description" content="Create modern React apps with Vital (speed)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://github.com/asif7774/vital" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="React + TypeScript + Tailwind @ Vite Template" />
+    <meta name="twitter:description" content="Create modern React apps with Vital (speed)" />
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#2563eb" />
+  </head>
+  <body>
+    <!-- Skip Links for Accessibility -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 bg-blue-600 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+      Skip to main content
+    </a>
+    <a href="#navigation" class="sr-only focus:not-sr-only focus:absolute focus:top-16 focus:left-4 focus:z-50 bg-blue-600 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+      Skip to navigation
+    </a>
+    
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

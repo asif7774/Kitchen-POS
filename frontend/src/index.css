@@ -1,0 +1,217 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-display: swap;
+  }
+
+  /* Remove the animated background from main as it's not used in our app */
+  main {
+    @apply min-h-screen w-full;
+  }
+}
+
+@layer components {
+  /* Optimized button component */
+  .btn-primary {
+    @apply w-full sm:w-auto flex-none bg-blue-600 hover:bg-blue-700 text-white text-lg leading-6 font-semibold py-3 px-6 border border-transparent rounded-xl focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-500 focus:outline-none transition-all duration-200 shadow-lg hover:shadow-xl;
+  }
+  
+  .btn-secondary {
+    @apply w-full sm:w-auto flex-none bg-gray-100 hover:bg-gray-200 text-gray-800 font-mono leading-6 py-3 px-2 sm:px-6 border border-gray-200 rounded-xl flex items-center justify-center space-x-2 sm:space-x-4 focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-gray-300 focus:outline-none transition-all duration-200;
+  }
+  
+  /* Card component optimizations */
+  .card {
+    @apply bg-white/5 rounded-lg shadow-lg p-6 relative overflow-hidden h-full transition-all duration-300 hover:shadow-xl hover:bg-white/10;
+  }
+  
+  .card-header {
+    @apply text-2xl font-bold text-blue-500 mb-2;
+  }
+  
+  .card-body {
+    @apply text-base text-black flex-1 leading-relaxed;
+  }
+  
+  .card-footer {
+    @apply pt-6 mt-auto;
+  }
+  
+  .card-link {
+    @apply text-white font-bold transition-all duration-200 tracking-wide hover:text-blue-400 hover:underline;
+  }
+  
+  /* Layout utilities */
+  .container-responsive {
+    @apply max-w-screen-lg xl:max-w-screen-xl mx-auto;
+  }
+  
+  .grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6;
+  }
+  
+  /* Typography utilities */
+  .heading-primary {
+    @apply text-6xl lg:text-7xl leading-none font-extrabold tracking-tight text-purple-400;
+  }
+  
+  .heading-secondary {
+    @apply text-2xl sm:text-4xl leading-none font-bold tracking-tight text-purple-200;
+  }
+  
+  .text-body {
+    @apply text-lg sm:text-xl text-gray-300 font-medium leading-relaxed;
+  }
+  
+  .text-code {
+    @apply font-mono text-blue-500 font-bold bg-gray-800 px-2 py-1 rounded;
+  }
+}
+
+@layer utilities {
+  /* Animation keyframes */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes bounceGentle {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+  
+  .animate-bounce-gentle {
+    animation: bounceGentle 2s infinite;
+  }
+  
+  /* Focus utilities */
+  .focus-ring {
+    @apply focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:outline-none;
+  }
+  
+  /* Hover utilities */
+  .hover-lift {
+    @apply transition-transform duration-200 hover:-translate-y-1;
+  }
+  
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25;
+  }
+  
+  /* Accessibility utilities */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  
+  .sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: inherit;
+    margin: inherit;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+  
+  /* Skip links for accessibility */
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 4px;
+    z-index: 100;
+    background: #2563eb;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: top 0.2s ease-in-out;
+  }
+  
+  .skip-link:focus {
+    top: 4px;
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+  
+  .skip-link-second:focus {
+    top: 60px;
+  }
+  
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .text-gray-600 {
+      color: #000000;
+    }
+    
+    .text-gray-500 {
+      color: #000000;
+    }
+    
+    .border-gray-300 {
+      border-color: #000000;
+    }
+  }
+  
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  
+  /* Tooltip Polyfill Adjustments */
+  [popover] {
+    inset: auto;
+  }
+  
+  .tooltip-popover {
+    inset: auto !important; /* Tailwind's dialog reset overrides this */
+  }
+}

@@ -1,0 +1,23 @@
+appId: com.restaurantpos.app
+productName: Restaurant POS
+directories:
+  output: dist-electron
+files:
+  - backend/dist/**/*
+  - frontend/dist/**/*
+extraResources:
+  - from: backend/src/db/migrations
+    to: migrations
+win:
+  target: nsis
+  icon: assets/icon.ico
+mac:
+  target: dmg
+  icon: assets/icon.icns
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+publish:
+  provider: github
+  owner: REPLACE_WITH_GITHUB_USERNAME
+  repo: restaurant-pos

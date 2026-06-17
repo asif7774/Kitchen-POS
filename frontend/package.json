@@ -1,0 +1,79 @@
+{
+  "name": "kitchen-pos",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Kitchen POS Frontend Application",
+  "keywords": [
+    "vite",
+    "react",
+    "typescript",
+    "tailwind",
+    "template",
+    "boilerplate",
+    "starter",
+    "modern",
+    "optimized",
+    "tailwind-css-4",
+    "react-19",
+    "vitest",
+    "eslint"
+  ],
+  "author": "",
+  "license": "MIT",
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not IE 11"
+  ],
+  "engines": {
+    "node": ">=18",
+    "yarn": ">=1.22.5"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:ui": "vitest --ui",
+    "tsc": "tsc --noEmit",
+    "generate-sprite": "node scripts/generate-svg-sprite.js",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@oddbird/css-anchor-positioning": "^0.9.0",
+    "@oddbird/popover-polyfill": "^0.6.1",
+    "interestfor": "^1.0.8",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-router-dom": "^7.17.0",
+    "recharts": "^3.8.1",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@tailwindcss/postcss": "^4.3.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^25.9.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.2",
+    "@vitest/ui": "^4.1.8",
+    "eslint": "^10.5.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.3",
+    "husky": "^9.1.7",
+    "jsdom": "^29.1.1",
+    "lint-staged": "^15.2.10",
+    "postcss": "^8.5.15",
+    "prettier": "^3.8.4",
+    "tailwindcss": "^4.3.1",
+    "terser": "^5.48.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.0",
+    "vite": "^8.0.16",
+    "vitest": "^4.1.8"
+  }
+}

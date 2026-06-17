@@ -1,0 +1,17 @@
+{
+  "name": "restaurant-pos",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\" \"wait-on http://localhost:5205 && electron backend/dist/main.js\"",
+    "build": "npm run build --prefix backend && npm run build --prefix frontend",
+    "package": "npm run build && electron-builder"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^3.7.2",
+    "concurrently": "^8.2.0",
+    "electron": "^30.0.0",
+    "electron-builder": "^24.9.1",
+    "wait-on": "^7.2.0"
+  }
+}

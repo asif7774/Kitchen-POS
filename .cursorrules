@@ -1,0 +1,5 @@
+# Cursor Agent Instructions
+
+Please refer to the `AI_WORKFLOW.md` file in the root of this repository for strict coding guidelines, linting constraints, and required validation commands (`npm run lint` and `npm run build`) that must be executed at the end of every task.
+
+Always follow the instructions in `AI_WORKFLOW.md` when modifying this codebase.

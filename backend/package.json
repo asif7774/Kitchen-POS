@@ -1,0 +1,21 @@
+{
+  "name": "pos-backend",
+  "version": "1.0.0",
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.3",
+    "electron-store": "^8.1.0",
+    "escpos": "^3.0.0-alpha.6",
+    "escpos-usb": "^3.0.0-alpha.4",
+    "archiver": "^6.0.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.8",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  }
+}

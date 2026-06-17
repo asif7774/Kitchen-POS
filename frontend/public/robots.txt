@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://github.com/asif7774/vital/sitemap.xml
