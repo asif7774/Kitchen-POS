@@ -8,6 +8,12 @@ contextBridge.exposeInMainWorld('api', {
     removeItem: (payload: any) => ipcRenderer.invoke('orders:removeItem', payload),
     getOpen: () => ipcRenderer.invoke('orders:getOpen'),
     getByTable: (payload: any) => ipcRenderer.invoke('orders:getByTable', payload),
+    sendKOT: (payload: any) => ipcRenderer.invoke('orders:sendKOT', payload),
+  },
+  kds: {
+    getActiveTickets: () => ipcRenderer.invoke('kds:getActiveTickets'),
+    updateItemStatus: (payload: any) => ipcRenderer.invoke('kds:updateItemStatus', payload),
+    updateOrderStatus: (payload: any) => ipcRenderer.invoke('kds:updateOrderStatus', payload),
   },
   menu: {
     getAll: () => ipcRenderer.invoke('menu:getAll'),
@@ -39,6 +45,12 @@ contextBridge.exposeInMainWorld('api', {
     login: (payload: any) => ipcRenderer.invoke('staff:login', payload),
     getAll: () => ipcRenderer.invoke('staff:getAll'),
     upsert: (payload: any) => ipcRenderer.invoke('staff:upsert', payload),
+  },
+  shifts: {
+    getActive: () => ipcRenderer.invoke('shifts:getActive'),
+    open: (payload: any) => ipcRenderer.invoke('shifts:open', payload),
+    close: (payload: any) => ipcRenderer.invoke('shifts:close', payload),
+    getTotals: (payload: any) => ipcRenderer.invoke('shifts:getTotals', payload),
   },
   reports: {
     daily: (payload: any) => ipcRenderer.invoke('reports:daily', payload),

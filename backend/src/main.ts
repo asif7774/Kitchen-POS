@@ -12,6 +12,8 @@ import { registerReportsIPC } from './ipc/reports';
 import { registerBackupIPC } from './ipc/backup';
 import { registerSettingsIPC } from './ipc/settings';
 import { registerPrinterIPC } from './ipc/printer';
+import { registerKDSIPC } from './ipc/kds';
+import { registerShiftsIPC } from './ipc/shifts';
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -80,6 +82,8 @@ function registerAllIPC() {
   registerBackupIPC();
   registerSettingsIPC();
   registerPrinterIPC();
+  registerKDSIPC();
+  registerShiftsIPC();
 }
 
 app.whenReady().then(async () => {

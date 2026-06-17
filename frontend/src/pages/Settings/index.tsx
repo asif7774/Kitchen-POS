@@ -1,8 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { api } from '../../lib/ipc';
 import Button from '../../components/atoms/button/button';
+import { useAuthStore } from '../../store/auth';
+import CloseShiftModal from './components/CloseShiftModal';
 
 const SettingsPage: React.FC = () => {
+  const activeShift = useAuthStore(state => state.activeShift);
+  const [showCloseModal, setShowCloseModal] = useState(false);
+
   const handleExport = async () => {
     await api.backup.export({});
   };
@@ -44,7 +49,28 @@ const SettingsPage: React.FC = () => {
             </Button>
           </div>
         </section>
+
+        <section className="card p-6 shadow-sm border rounded">
+          <h2 className="text-lg font-medium border-b pb-2 mb-4">Shift Register</h2>
+          {activeShift ? (
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Register is currently <strong>Open</strong> since{' '}
+                <strong>{new Date(activeShift.opened_at).toLocaleString()}</strong>.
+              </p>
+              <Button variant="danger" onClick={() => { setShowCloseModal(true); }}>
+                Close Shift Register
+              </Button>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">Register is currently Closed. Shift opens automatically on login.</p>
+          )}
+        </section>
       </div>
+
+      {showCloseModal && (
+        <CloseShiftModal isOpen={showCloseModal} onClose={() => { setShowCloseModal(false); }} />
+      )}
     </div>
   );
 };

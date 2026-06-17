@@ -1,4 +1,4 @@
-import { Category, MenuItem, InventoryItem } from '../types/models';
+import { Category, MenuItem, InventoryItem, Order, OrderItem, CartItem, KDSTicket, Shift } from '../types/models';
 
 export interface IPCResponse<T> {
   success: boolean;
@@ -10,12 +10,18 @@ const ipcApi = (window as unknown as { api: unknown }).api;
 
 const mockApi = {
   orders: {
-    create: () => Promise.resolve({ success: true, data: { id: 1 } }),
+    create: () => Promise.resolve({ success: true, data: 1 }),
     addItem: () => Promise.resolve({ success: true }),
     updateItem: () => Promise.resolve({ success: true }),
     removeItem: () => Promise.resolve({ success: true }),
     getOpen: () => Promise.resolve({ success: true, data: [] }),
-    getByTable: () => Promise.resolve({ success: true, data: [] }),
+    getByTable: () => Promise.resolve({ success: true, data: null }),
+    sendKOT: () => Promise.resolve({ success: true, data: 1 }),
+  },
+  kds: {
+    getActiveTickets: () => Promise.resolve({ success: true, data: [] }),
+    updateItemStatus: () => Promise.resolve({ success: true }),
+    updateOrderStatus: () => Promise.resolve({ success: true }),
   },
   menu: {
     getAll: () => Promise.resolve({
@@ -85,6 +91,12 @@ const mockApi = {
     getAll: () => Promise.resolve({ success: true, data: [] }),
     upsert: () => Promise.resolve({ success: true }),
   },
+  shifts: {
+    getActive: () => Promise.resolve({ success: true, data: null }),
+    open: (_payload: { staffId: number; openingCash: number }) => Promise.resolve({ success: true, data: { id: 1 } }),
+    close: (_payload: { shiftId: number; closingCash: number; note?: string }) => Promise.resolve({ success: true }),
+    getTotals: (_payload: { openedAt: string }) => Promise.resolve({ success: true, data: { cash: 0, card: 0, upi: 0, complimentary: 0 } }),
+  },
   reports: {
     daily: () => Promise.resolve({ success: true, data: {} }),
     gst: () => Promise.resolve({ success: true, data: {} }),
@@ -101,12 +113,18 @@ const mockApi = {
 
 export const api = (ipcApi ?? mockApi) as {
   orders: {
-    create: (payload: unknown) => Promise<IPCResponse<unknown>>;
+    create: (payload: { tableId: number; staffId?: number; covers?: number; note?: string }) => Promise<IPCResponse<number>>;
     addItem: (payload: unknown) => Promise<IPCResponse<unknown>>;
     updateItem: (payload: unknown) => Promise<IPCResponse<unknown>>;
     removeItem: (payload: unknown) => Promise<IPCResponse<unknown>>;
     getOpen: () => Promise<IPCResponse<unknown>>;
-    getByTable: (payload: unknown) => Promise<IPCResponse<unknown>>;
+    getByTable: (payload: { tableId: number }) => Promise<IPCResponse<(Order & { items: OrderItem[] }) | null>>;
+    sendKOT: (payload: { tableId: number; items: CartItem[]; staffId?: number; covers?: number; note?: string }) => Promise<IPCResponse<number>>;
+  };
+  kds: {
+    getActiveTickets: () => Promise<IPCResponse<KDSTicket[]>>;
+    updateItemStatus: (payload: { itemId: number; status: 'pending' | 'preparing' | 'ready' | 'served' }) => Promise<IPCResponse<unknown>>;
+    updateOrderStatus: (payload: { orderId: number; status: 'pending' | 'preparing' | 'ready' | 'served' }) => Promise<IPCResponse<unknown>>;
   };
   menu: {
     getAll: () => Promise<IPCResponse<(Category & { items: MenuItem[] })[]>>;
@@ -135,9 +153,15 @@ export const api = (ipcApi ?? mockApi) as {
     upsertItem: (payload: Partial<InventoryItem>) => Promise<IPCResponse<{ id: number }>>;
   };
   staff: {
-    login: (payload: unknown) => Promise<IPCResponse<unknown>>;
+    login: (payload: { pin: string }) => Promise<IPCResponse<{ id: number; name: string; role: string }>>;
     getAll: () => Promise<IPCResponse<unknown>>;
     upsert: (payload: unknown) => Promise<IPCResponse<unknown>>;
+  };
+  shifts: {
+    getActive: () => Promise<IPCResponse<Shift | null>>;
+    open: (payload: { staffId: number; openingCash: number }) => Promise<IPCResponse<{ id: number }>>;
+    close: (payload: { shiftId: number; closingCash: number; note?: string }) => Promise<IPCResponse<unknown>>;
+    getTotals: (payload: { openedAt: string }) => Promise<IPCResponse<{ cash: number; card: number; upi: number; complimentary: number }>>;
   };
   reports: {
     daily: (payload: unknown) => Promise<IPCResponse<unknown>>;

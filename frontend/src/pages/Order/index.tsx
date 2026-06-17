@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MenuPanel from './components/MenuPanel';
 import CartPanel from './components/CartPanel';
@@ -12,6 +12,29 @@ const OrderPage: React.FC = () => {
   const navigate = useNavigate();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showBillModal, setShowBillModal] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    if (tableId) {
+      api.orders.getByTable({ tableId: Number(tableId) })
+        .then(res => {
+          if (active && res.success && res.data) {
+            const items: CartItem[] = res.data.items.map(i => ({
+              id: i.menu_item_id,
+              name: i.name,
+              price: i.unit_price,
+              qty: i.qty,
+              note: i.note ?? ''
+            }));
+            setCart(items);
+          }
+        })
+        .catch((err: unknown) => {
+          console.error(err);
+        });
+    }
+    return () => { active = false; };
+  }, [tableId]);
 
   const handleAddItem = (menuItem: MenuItem) => {
     setCart(prev => {
@@ -48,12 +71,15 @@ const OrderPage: React.FC = () => {
   };
 
   const handleSendKOT = async () => {
-    if (cart.length === 0) {return;}
+    if (cart.length === 0 || !tableId) { return; }
     
-    // Simulate updating DB to create/update order and print KOT
-    const res = await api.print.kot({ items: cart, tableName: `Table ${tableId}`, orderNote: '' });
+    const res = await api.orders.sendKOT({ 
+      tableId: Number(tableId), 
+      items: cart 
+    });
     if (res.success) {
-      // Alert removed for lint compliance
+      await api.print.kot({ items: cart, tableName: `Table ${tableId}`, orderNote: '' });
+      navigate('/tables');
     }
   };
 

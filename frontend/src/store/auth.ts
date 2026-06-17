@@ -1,29 +1,70 @@
 import { create } from 'zustand';
 import { api } from '../lib/ipc';
-
-interface Staff {
-  id: number;
-  name: string;
-  role: string;
-}
+import { Shift, Staff } from '../types/models';
 
 interface AuthState {
   staff: Staff | null;
   isAuthenticated: boolean;
+  activeShift: Shift | null;
   login: (pin: string) => Promise<boolean>;
   logout: () => void;
+  fetchActiveShift: () => Promise<void>;
+  openShift: (openingCash: number) => Promise<boolean>;
+  closeShift: (closingCash: number, note?: string) => Promise<boolean>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   staff: null,
   isAuthenticated: false,
+  activeShift: null,
   login: async (pin: string) => {
     const res = await api.staff.login({ pin });
     if (res.success && res.data) {
       set({ staff: res.data, isAuthenticated: true });
+      // Immediately fetch if there is an active shift
+      const shiftRes = await api.shifts.getActive();
+      if (shiftRes.success && shiftRes.data) {
+        set({ activeShift: shiftRes.data });
+      } else {
+        set({ activeShift: null });
+      }
       return true;
     }
     return false;
   },
-  logout: () => { set({ staff: null, isAuthenticated: false }); },
+  logout: () => { 
+    set({ staff: null, isAuthenticated: false, activeShift: null }); 
+  },
+  fetchActiveShift: async () => {
+    const res = await api.shifts.getActive();
+    if (res.success && res.data) {
+      set({ activeShift: res.data });
+    } else {
+      set({ activeShift: null });
+    }
+  },
+  openShift: async (openingCash: number) => {
+    const staff = get().staff;
+    if (!staff) { return false; }
+    const res = await api.shifts.open({ staffId: staff.id, openingCash });
+    if (res.success && res.data) {
+      // Re-fetch active shift
+      const shiftRes = await api.shifts.getActive();
+      if (shiftRes.success && shiftRes.data) {
+        set({ activeShift: shiftRes.data });
+        return true;
+      }
+    }
+    return false;
+  },
+  closeShift: async (closingCash: number, note?: string) => {
+    const activeShift = get().activeShift;
+    if (!activeShift) { return false; }
+    const res = await api.shifts.close({ shiftId: activeShift.id, closingCash, note });
+    if (res.success) {
+      set({ activeShift: null });
+      return true;
+    }
+    return false;
+  }
 }));

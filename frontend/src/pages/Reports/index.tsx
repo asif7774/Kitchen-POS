@@ -18,30 +18,17 @@ const ReportsPage: React.FC = () => {
   const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
 
   useEffect(() => {
-    const fetchReport = async () => {
-      const res = await api.reports.daily({ start: startDate, end: endDate });
-      if (res.success && res.data) {
-        // Mock mapping since IPC returns unknown structure
-        const mockData: DailyReport = {
-          date: startDate,
-          totalOrders: 142,
-          totalRevenue: 24500,
-          totalCGST: 612.5,
-          totalSGST: 612.5,
-          hourlyData: [
-            { hour: '12 PM', orders: 15, revenue: 2500 },
-            { hour: '1 PM', orders: 28, revenue: 5600 },
-            { hour: '2 PM', orders: 22, revenue: 4200 },
-            { hour: '3 PM', orders: 10, revenue: 1500 },
-            { hour: '7 PM', orders: 35, revenue: 6500 },
-            { hour: '8 PM', orders: 45, revenue: 8500 },
-            { hour: '9 PM', orders: 30, revenue: 5200 },
-          ]
-        };
-        setReport(mockData);
-      }
-    };
-    void fetchReport();
+    let active = true;
+    api.reports.daily({ start: startDate, end: endDate })
+      .then(res => {
+        if (active && res.success && res.data) {
+          setReport(res.data as DailyReport);
+        }
+      })
+      .catch((err: unknown) => {
+        console.error(err);
+      });
+    return () => { active = false; };
   }, [startDate, endDate]);
 
   const handleExportCSV = async () => {

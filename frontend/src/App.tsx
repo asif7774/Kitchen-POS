@@ -9,10 +9,21 @@ import MenuPage from './pages/Menu';
 import InventoryPage from './pages/Inventory';
 import ReportsPage from './pages/Reports';
 import SettingsPage from './pages/Settings';
+import KDSPage from './pages/KDS';
+import OpenShiftModal from './components/organisms/modal/OpenShiftModal';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  if (!isAuthenticated) {return <Navigate to="/login" replace />;}
+  const activeShift = useAuthStore((state) => state.activeShift);
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!activeShift) {
+    return <OpenShiftModal />;
+  }
+
   return <>{children}</>;
 };
 
@@ -49,6 +60,14 @@ const App: React.FC = () => {
         element={
           <ProtectedRoute>
             <InventoryPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/kds" 
+        element={
+          <ProtectedRoute>
+            <KDSPage />
           </ProtectedRoute>
         } 
       />
