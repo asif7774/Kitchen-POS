@@ -33,8 +33,6 @@ const SettingsPage: React.FC = () => {
 
   return (
     <div className="container-responsive p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Settings</h1>
-      
       <div className="space-y-8">
         <Card>
           <CardHeader>
@@ -85,7 +83,7 @@ const SettingsPage: React.FC = () => {
                 <Button variant="danger" onClick={() => { 
                   showModal({
                   title: 'Close Shift Register',
-                  content: <CloseShiftModal />,
+                  content: <CloseShiftModal onSuccess={hideModal} />,
                   actions: (
                     <>
                       <Button variant="outline" onClick={hideModal}>Cancel</Button>

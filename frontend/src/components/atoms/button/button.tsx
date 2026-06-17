@@ -44,7 +44,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     {
       children,
       variant = "primary",
-      size = "md",
+      size = "sm",
       icon,
       iconPosition = "left",
       isLoading = false,

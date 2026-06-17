@@ -113,7 +113,7 @@ const OrderPage: React.FC = () => {
         <MenuPanel onAddItem={handleAddItem} />
       </div>
 
-      <div className="w-96 bg-white p-6 pt-20 flex flex-col shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] z-0">
+      <div className="w-96 bg-white p-6 pt-6 flex flex-col shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] z-0">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-gray-800">Current Order</h2>
           <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-bold">Table {tableId}</span>
@@ -139,7 +139,7 @@ const OrderPage: React.FC = () => {
           onVoidOrder={() => { 
             showModal({
               title: "Void Order",
-              content: <CancelOrderModal onClose={hideModal} onConfirm={(note) => { void handleCancelOrder(note); }} />,
+              content: <CancelOrderModal onConfirm={(note) => { void handleCancelOrder(note); }} />,
               actions: (
                 <>
                   <Button variant="outline" onClick={hideModal}>Go Back</Button>

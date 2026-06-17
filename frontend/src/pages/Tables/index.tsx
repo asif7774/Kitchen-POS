@@ -75,7 +75,6 @@ const TablesPage: React.FC = () => {
   return (
     <div className="container-responsive p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Floor Plan</h1>
         <Button 
           variant="primary" 
           icon="plus" 

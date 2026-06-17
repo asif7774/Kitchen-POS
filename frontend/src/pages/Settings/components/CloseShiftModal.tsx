@@ -12,7 +12,11 @@ interface PaymentTotals {
   complimentary: number;
 }
 
-const CloseShiftModal: React.FC = () => {
+interface Props {
+  onSuccess: () => void;
+}
+
+const CloseShiftModal: React.FC<Props> = ({ onSuccess }) => {
   const activeShift = useAuthStore(state => state.activeShift);
   const closeShift = useAuthStore(state => state.closeShift);
   const logout = useAuthStore(state => state.logout);
@@ -80,6 +84,7 @@ const CloseShiftModal: React.FC = () => {
       .then(success => {
         if (success) {
           showToast({ message: 'Shift closed successfully', variant: 'success' });
+          onSuccess();
           logout(); // Shift close logs staff out automatically
         } else {
           showToast({ message: 'Failed to close shift register', variant: 'error' });

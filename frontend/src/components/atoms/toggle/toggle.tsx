@@ -19,36 +19,38 @@ const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
   ) => {
     return (
       <label
-        className={`relative inline-flex items-center ${
-          disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+        className={`relative inline-flex ${
+          description ? "items-start" : "items-center"
+        } gap-3 ${
+          disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
         } ${containerClassName}`}
       >
-        <div className="relative flex items-center">
+        <div className={`relative shrink-0 flex items-center justify-center ${description ? "mt-0.5" : ""}`}>
           <input
             type="checkbox"
-            className="sr-only peer focus:outline-none"
+            className="peer sr-only"
             disabled={disabled}
             ref={ref}
             {...rest}
           />
-          {/* 
-            Using a permanent transparent outline to guarantee absolutely zero width shifting on focus.
-            The outline will simply change color when focused, preventing any browser layout recalculation.
-          */}
-          <div className="w-11 h-6 shrink-0 bg-gray-200 rounded-full outline outline-2 outline-offset-2 outline-transparent peer-focus-visible:outline-blue-500 peer-checked:bg-blue-600 transition-all"></div>
+          {/* Track */}
+          <div className="h-6 w-11 rounded-full bg-gray-200 shadow-inner transition-colors duration-200 ease-in-out peer-checked:bg-blue-600 peer-focus-visible:ring-2 peer-focus-visible:ring-blue-500 peer-focus-visible:ring-offset-2" />
           
-          <div className="absolute left-[2px] top-[2px] bg-white border border-gray-300 rounded-full h-5 w-5 transition-transform peer-checked:translate-x-[20px] peer-checked:border-white shadow-sm"></div>
+          {/* Thumb */}
+          <div className="absolute left-[2px] top-[2px] h-5 w-5 rounded-full bg-white shadow border border-gray-100 transition-transform duration-200 ease-in-out peer-checked:translate-x-5 peer-checked:border-blue-100" />
         </div>
 
-        {(label ?? description) !== undefined && (label !== '' || description !== '') && (
-          <div className="ml-3 flex flex-col">
+        {(label ?? description) && (
+          <div className="flex flex-col">
             {label && (
-              <span className="text-sm font-medium text-gray-900">
+              <span className="text-sm font-medium text-gray-900 select-none">
                 {label}
               </span>
             )}
             {description && (
-              <span className="text-sm text-gray-500">{description}</span>
+              <span className="text-sm text-gray-500 select-none mt-0.5">
+                {description}
+              </span>
             )}
           </div>
         )}

@@ -102,9 +102,8 @@ const StaffPage: React.FC = () => {
   };
 
   return (
-    <div className="container-responsive p-6 max-w-5xl mx-auto h-full flex flex-col">
-      <div className="flex justify-between items-center mb-6 shrink-0">
-        <h1 className="text-2xl font-bold text-gray-800">Staff Management</h1>
+    <div className="container-responsive p-6 mx-auto h-full flex flex-col">
+      <div className="flex justify-between items-center mb-6">
         <Button variant="primary" onClick={openAddModal}>
           + Add Staff
         </Button>

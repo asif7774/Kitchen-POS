@@ -107,10 +107,9 @@ export default function InventoryPage() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto h-full overflow-y-auto">
+    <div className="container-responsive p-6 mx-auto h-full flex flex-col">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Inventory Management</h1>
           <p className="text-sm text-gray-500 mt-1">Track stock levels, unit costs, and adjustments</p>
         </div>
         <Button

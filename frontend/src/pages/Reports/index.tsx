@@ -52,7 +52,6 @@ const ReportsPage: React.FC = () => {
   return (
     <div className="p-6 bg-gray-50 h-full overflow-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Reports & Analytics</h1>
         <Button variant="outline" onClick={() => { void handleExportCSV(); }}>
           Export CSV
         </Button>
