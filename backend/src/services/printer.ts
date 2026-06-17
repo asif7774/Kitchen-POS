@@ -74,7 +74,7 @@ export async function printKOT(items: KOTPrintItem[], tableName: string, orderNo
         }
       });
     });
-  } catch (e: unknown) {
+  } catch (_e: unknown) {
     // Robust Mock Fallback
     console.log('\n=== MOCK THERMAL PRINT SLIP (KOT) ===');
     console.log('====================================');
@@ -152,12 +152,12 @@ export async function printBill(bill: BillPrintPayload, orderItems: BillItemPrin
         }
       });
     });
-  } catch (e: unknown) {
+  } catch (_e: unknown) {
     // Robust Mock Fallback
     console.log('\n=== MOCK THERMAL PRINT SLIP (BILL) ===');
     console.log('====================================');
     console.log((settings.outlet_name ?? 'Restaurant POS').toUpperCase().padStart(26));
-    if (settings.address) console.log(settings.address.padStart(26));
+    if (settings.address) {console.log(settings.address.padStart(26));}
     console.log(`GSTIN: ${settings.gstin ?? 'N/A'}`.padStart(26));
     console.log('====================================');
     console.log(`Invoice: ${bill.bill_number.padEnd(14)} Time: ${new Date().toLocaleTimeString()}`);

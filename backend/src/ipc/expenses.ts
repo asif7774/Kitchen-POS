@@ -43,8 +43,8 @@ export function registerExpensesIPC() {
         payload.date,
         payload.category,
         payload.amount,
-        payload.description || null,
-        payload.staff_id || null
+        payload.description ?? null,
+        payload.staff_id ?? null
       );
       
       return { success: true, data: { id: info.lastInsertRowid } };

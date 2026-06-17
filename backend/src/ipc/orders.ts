@@ -81,7 +81,7 @@ export function registerOrdersIPC() {
       
       const result = db.transaction(() => {
         // 1. Find or create active order for this table
-        let order = db.prepare(`
+        const order = db.prepare(`
           SELECT * FROM orders 
           WHERE table_id = ? AND status != 'billed' AND status != 'cancelled'
           LIMIT 1
@@ -149,8 +149,8 @@ export function registerOrdersIPC() {
                 menuDetails.name,
                 item.qty,
                 menuDetails.price,
-                menuDetails.cgst_rate ?? 0,
-                menuDetails.sgst_rate ?? 0,
+                menuDetails.cgst_rate,
+                menuDetails.sgst_rate,
                 menuDetails.hsn_code,
                 item.note
               );

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, Tray } from 'electron';
+import { app, BrowserWindow, Menu, Tray } from 'electron';
 import * as path from 'path';
 import { runMigrations } from './db/migrate';
 import { getDB } from './db';
@@ -33,9 +33,9 @@ async function createWindow() {
   const isDev = !app.isPackaged && process.env.NODE_ENV !== 'production';
 
   if (isDev) {
-    mainWindow.loadURL('http://localhost:5205');
+    void mainWindow.loadURL('http://localhost:5205');
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../../frontend/dist/index.html'));
+    void mainWindow.loadFile(path.join(__dirname, '../../frontend/dist/index.html'));
   }
 
   mainWindow.on('closed', () => {
@@ -47,20 +47,20 @@ function createTray() {
   const iconPath = path.join(__dirname, '../../../assets/icon.png'); // Example icon path, make sure it exists or update logic
   // For now using a native image or resolving later is fine, but here is standard setup.
   // Using an empty NativeImage for robust execution
-  import('electron').then(({ nativeImage }) => {
+  void import('electron').then(({ nativeImage }) => {
      let trayIcon = nativeImage.createEmpty();
      try {
        trayIcon = nativeImage.createFromPath(iconPath);
-     } catch (e) {}
+     } catch (_e) { /* Ignore invalid icon paths */ }
 
     tray = new Tray(trayIcon);
     const contextMenu = Menu.buildFromTemplate([
       { label: 'Open', click: () => {
           if (mainWindow) {
-             if (mainWindow.isMinimized()) mainWindow.restore();
+             if (mainWindow.isMinimized()) {mainWindow.restore();}
              mainWindow.focus();
           } else {
-             createWindow();
+             void createWindow();
           }
       }},
       { label: 'Quit', click: () => {
@@ -88,19 +88,19 @@ function registerAllIPC() {
   registerExpensesIPC();
 }
 
-app.whenReady().then(async () => {
+void app.whenReady().then(async () => {
   // Initialize DB and Run migrations before registering IPC
   getDB();
   runMigrations();
 
   registerAllIPC();
 
-  createWindow();
+  void createWindow();
   createTray();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
+      void createWindow();
     }
   });
 });

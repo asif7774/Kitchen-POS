@@ -19,11 +19,11 @@ export function registerTablesIPC() {
         db.prepare('UPDATE tables SET name = ?, capacity = ? WHERE id = ?')
           .run(table.name, table.capacity, table.id);
         return { success: true };
-      } else {
+      } 
         const result = db.prepare('INSERT INTO tables (name, capacity) VALUES (?, ?)')
           .run(table.name, table.capacity);
         return { success: true, data: { id: result.lastInsertRowid, ...table } };
-      }
+      
     } catch (e: any) {
       return { success: false, error: e.message };
     }

@@ -47,13 +47,13 @@ export function registerInventoryIPC() {
           WHERE id = ?
         `).run(payload.name, payload.unit, payload.low_stock_alert_at ?? 0, payload.cost_per_unit ?? 0, payload.id);
         return { success: true, data: { id: payload.id } };
-      } else {
+      } 
         const result = db.prepare(`
           INSERT INTO inventory_items (name, unit, low_stock_alert_at, cost_per_unit, qty_in_stock)
           VALUES (?, ?, ?, ?, 0)
         `).run(payload.name, payload.unit, payload.low_stock_alert_at ?? 0, payload.cost_per_unit ?? 0);
         return { success: true, data: { id: result.lastInsertRowid } };
-      }
+      
     } catch (e: unknown) {
       if (e instanceof Error) { return { success: false, error: e.message }; }
       return { success: false, error: 'Unknown error' };

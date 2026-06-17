@@ -34,11 +34,11 @@ export function calcBillTotals(items: OrderItem[]) {
   let total_amount = 0;
 
   for (const item of items) {
-    const tax = calcLineItemTax(item.unit_price, item.qty, item.cgst_rate, item.sgst_rate, item.discount || 0);
+    const tax = calcLineItemTax(item.unit_price, item.qty, item.cgst_rate, item.sgst_rate, item.discount ?? 0);
     taxable_amount += tax.taxableAmount;
     cgst_amount += tax.cgstAmount;
     sgst_amount += tax.sgstAmount;
-    discount_amount += (item.discount || 0);
+    discount_amount += (item.discount ?? 0);
     total_amount += tax.totalAmount;
   }
 

@@ -89,15 +89,32 @@ const BillModal: React.FC<Props> = ({ orderId, cart, onClose }) => {
               <span>Taxable Amount</span>
               <span>₹{taxableTotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span>Discount</span>
-              <input 
-                type="number" 
-                className="border rounded p-1 w-24 text-right"
-                value={discount}
-                onChange={e => { setDiscount(Number(e.target.value) || 0); }}
-                min="0"
-              />
+            <div className="flex flex-col gap-1 my-1">
+              <div className="flex justify-between items-center">
+                <span>Discount</span>
+                <input 
+                  type="number" 
+                  className="border rounded p-1 w-24 text-right focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  value={discount}
+                  onChange={e => { setDiscount(Number(e.target.value) || 0); }}
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+              <div className="flex flex-wrap justify-end gap-1.5 mt-1">
+                {[5, 10, 15, 20, 25, 30].map(pct => (
+                  <Button
+                    key={pct}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => { setDiscount(Math.round(taxableTotal * (pct / 100) * 100) / 100); }}
+                    className="!rounded-full !px-2 !py-0.5 !text-xs"
+                  >
+                    {pct}%
+                  </Button>
+                ))}
+              </div>
             </div>
             <div className="flex justify-between text-gray-600">
               <span>CGST (2.5%)</span>

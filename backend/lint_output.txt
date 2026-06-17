@@ -1,0 +1,319 @@
+
+> pos-backend@1.0.0 lint
+> eslint .
+
+
+/Volumes/Data/RND/Kitchen-POS/backend/src/ipc/backup.ts
+  4:44  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+  5:44  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+
+/Volumes/Data/RND/Kitchen-POS/backend/src/ipc/billing.ts
+   5:63  error  Async arrow function has no 'await' expression                                                             @typescript-eslint/require-await
+   7:13  error  Unsafe assignment of an `any` value                                                                        @typescript-eslint/no-unsafe-assignment
+   8:30  error  Unsafe argument of type `any` assigned to a parameter of type `number`                                     @typescript-eslint/no-unsafe-argument
+   8:39  error  Unsafe argument of type `any` assigned to a parameter of type `any[]`                                      @typescript-eslint/no-unsafe-argument
+   8:49  error  Unsafe argument of type `any` assigned to a parameter of type `number`                                     @typescript-eslint/no-unsafe-argument
+   8:58  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  @typescript-eslint/prefer-nullish-coalescing
+  10:17  error  Unexpected any. Specify a different type                                                                   @typescript-eslint/no-explicit-any
+  11:32  error  Unsafe assignment of an `any` value                                                                        @typescript-eslint/no-unsafe-assignment
+  11:41  error  Unsafe member access .message on an `any` value                                                            @typescript-eslint/no-unsafe-member-access
+  15:46  error  Async arrow function has no 'await' expression                                                             @typescript-eslint/require-await
+
+/Volumes/Data/RND/Kitchen-POS/backend/src/ipc/expenses.ts
+   5:99   error  Async arrow function has no 'await' expression                                                             @typescript-eslint/require-await
+  13:21   error  Unexpected any. Specify a different type                                                                   @typescript-eslint/no-explicit-any
+  28:46   error  Unsafe spread of an `any[]` array type                                                                     @typescript-eslint/no-unsafe-argument
+  30:21   error  Unexpected any. Specify a different type                                                                   @typescript-eslint/no-explicit-any
+  31:32   error  Unsafe assignment of an `any` value                                                                        @typescript-eslint/no-unsafe-assignment
+  31:45   error  Unsafe member access .message on an `any` value                                                            @typescript-eslint/no-unsafe-member-access
+  35:153  error  Async arrow function has no 'await' expression                                                             @typescript-eslint/require-await
+  46:29   error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  @typescript-eslint/prefer-nullish-coalescing
+  47:26   error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  @typescript-eslint/prefer-nullish-coalescing
+  51:21   error  Unexpected any. Specify a different type                                                                   @typescript-eslint/no-explicit-any
+  52:32   error  Unsafe assignment of an `any` value                                                                        @typescript-eslint/no-unsafe-assignment
+  52:45   error  Unsafe member access .message on an `any` value                                                            @typescript-eslint/no-unsafe-member-access
+  56:76   error  Async arrow function has no 'await' expression                                                             @typescript-eslint/require-await
+  66:21   error  Unexpected any. Specify a different type                                                                   @typescript-eslint/no-explicit-any
+  67:32   error  Unsafe assignment of an `any` value                                                                        @typescript-eslint/no-unsafe-assignment
+  67:45   error  Unsafe member access .message on an `any` value                                                            @typescript-eslint/no-unsafe-member-access
+
+/Volumes/Data/RND/Kitchen-POS/backend/src/ipc/inventory.ts
+  29:47  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+  40:89  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+  50:14  error  Unnecessary 'else' after 'return'               no-else-return
+  63:81  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+
+/Volumes/Data/RND/Kitchen-POS/backend/src/ipc/kds.ts
+   26:51   error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+   84:135  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+  117:137  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+
+/Volumes/Data/RND/Kitchen-POS/backend/src/ipc/menu.ts
+   67:42  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+   87:83  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+   94:14  error  Unnecessary 'else' after 'return'               no-else-return
+  105:83  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+  116:75  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+  131:14  error  Unnecessary 'else' after 'return'               no-else-return
+  148:75  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+  159:85  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+  170:81  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+  186:79  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+
+/Volumes/Data/RND/Kitchen-POS/backend/src/ipc/orders.ts
+   33:125  error  Async arrow function has no 'await' expression                                                      @typescript-eslint/require-await
+   45:45   error  Async arrow function has no 'await' expression                                                      @typescript-eslint/require-await
+   56:79   error  Async arrow function has no 'await' expression                                                      @typescript-eslint/require-await
+   78:71   error  Async arrow function has no 'await' expression                                                      @typescript-eslint/require-await
+   84:13   error  'order' is never reassigned. Use 'const' instead                                                    prefer-const
+  152:17   error  Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined  @typescript-eslint/no-unnecessary-condition
+  153:17   error  Unnecessary conditional, expected left-hand side of `??` operator to be possibly null or undefined  @typescript-eslint/no-unnecessary-condition
+  207:97   error  Async arrow function has no 'await' expression                                                      @typescript-eslint/require-await
+  257:45   error  Async arrow function has no 'await' expression                                                      @typescript-eslint/require-await
+  258:48   error  Async arrow function has no 'await' expression                                                      @typescript-eslint/require-await
+  259:48   error  Async arrow function has no 'await' expression                                                      @typescript-eslint/require-await
+
+/Volumes/Data/RND/Kitchen-POS/backend/src/ipc/reports.ts
+  24:19  error  Expected { after 'if' condition                 curly
+  25:20  error  Expected { after 'if' condition                 curly
+  26:18  error  Expected { after 'if' condition                 curly
+  31:74  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+  81:42  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+
+/Volumes/Data/RND/Kitchen-POS/backend/src/ipc/settings.ts
+   7:43  error  Async arrow function has no 'await' expression   @typescript-eslint/require-await
+   9:69  error  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   9:75  error  Async arrow function has no 'await' expression   @typescript-eslint/require-await
+  15:17  error  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  16:32  error  Unsafe assignment of an `any` value              @typescript-eslint/no-unsafe-assignment
+  16:41  error  Unsafe member access .message on an `any` value  @typescript-eslint/no-unsafe-member-access
+
+/Volumes/Data/RND/Kitchen-POS/backend/src/ipc/shifts.ts
+  35:47  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+  52:70  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+  67:72  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+  83:75  error  Async arrow function has no 'await' expression  @typescript-eslint/require-await
+
+/Volumes/Data/RND/Kitchen-POS/backend/src/ipc/staff.ts
+   5:56   error  Async arrow function has no 'await' expression   @typescript-eslint/require-await
+   8:98   error  Unsafe member access .pin on an `any` value      @typescript-eslint/no-unsafe-member-access
+  11:14   error  Unnecessary 'else' after 'return'                no-else-return
+  14:17   error  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  15:32   error  Unsafe assignment of an `any` value              @typescript-eslint/no-unsafe-assignment
+  15:41   error  Unsafe member access .message on an `any` value  @typescript-eslint/no-unsafe-member-access
+  19:43   error  Async arrow function has no 'await' expression   @typescript-eslint/require-await
+  24:17   error  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  25:32   error  Unsafe assignment of an `any` value              @typescript-eslint/no-unsafe-assignment
+  25:41   error  Unsafe member access .message on an `any` value  @typescript-eslint/no-unsafe-member-access
+  29:115  error  Async arrow function has no 'await' expression   @typescript-eslint/require-await
+  36:14   error  Unnecessary 'else' after 'return'                no-else-return
+  41:17   error  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  42:32   error  Unsafe assignment of an `any` value              @typescript-eslint/no-unsafe-assignment
+  42:41   error  Unsafe member access .message on an `any` value  @typescript-eslint/no-unsafe-member-access
+  46:73   error  Async arrow function has no 'await' expression   @typescript-eslint/require-await
+  55:17   error  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  56:32   error  Unsafe assignment of an `any` value              @typescript-eslint/no-unsafe-assignment
+  56:41   error  Unsafe member access .message on an `any` value  @typescript-eslint/no-unsafe-member-access
+
+/Volumes/Data/RND/Kitchen-POS/backend/src/ipc/tables.ts
+   5:44  error  Async arrow function has no 'await' expression    @typescript-eslint/require-await
+  10:17  error  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  11:32  error  Unsafe assignment of an `any` value               @typescript-eslint/no-unsafe-assignment
+  11:41  error  Unsafe member access .message on an `any` value   @typescript-eslint/no-unsafe-member-access
+  15:52  error  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  15:57  error  Async arrow function has no 'await' expression    @typescript-eslint/require-await
+  18:17  error  Unsafe member access .id on an `any` value        @typescript-eslint/no-unsafe-member-access
+  20:22  error  Unsafe member access .name on an `any` value      @typescript-eslint/no-unsafe-member-access
+  20:34  error  Unsafe member access .capacity on an `any` value  @typescript-eslint/no-unsafe-member-access
+  20:50  error  Unsafe member access .id on an `any` value        @typescript-eslint/no-unsafe-member-access
+  22:14  error  Unnecessary 'else' after 'return'                 no-else-return
+  24:22  error  Unsafe member access .name on an `any` value      @typescript-eslint/no-unsafe-member-access
+  24:34  error  Unsafe member access .capacity on an `any` value  @typescript-eslint/no-unsafe-member-access
+  25:33  error  Unsafe assignment of an `any` value               @typescript-eslint/no-unsafe-assignment
+  27:17  error  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  28:32  error  Unsafe assignment of an `any` value               @typescript-eslint/no-unsafe-assignment
+  28:41  error  Unsafe member access .message on an `any` value   @typescript-eslint/no-unsafe-member-access
+  32:57  error  Async arrow function has no 'await' expression    @typescript-eslint/require-await
+  37:17  error  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  38:32  error  Unsafe assignment of an `any` value               @typescript-eslint/no-unsafe-assignment
+  38:41  error  Unsafe member access .message on an `any` value   @typescript-eslint/no-unsafe-member-access
+
+/Volumes/Data/RND/Kitchen-POS/backend/src/main.ts
+    1:30  error  'ipcMain' is defined but never used. Allowed unused vars must match /^_/u                                                                                           @typescript-eslint/no-unused-vars
+   22:1   error  Async function 'createWindow' has no 'await' expression                                                                                                             @typescript-eslint/require-await
+   36:5   error  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+   38:5   error  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+   50:3   error  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+   54:15  error  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                        @typescript-eslint/no-unused-vars
+   54:18  error  Empty block statement                                                                                                                                               no-empty
+   60:44  error  Expected { after 'if' condition                                                                                                                                     curly
+   63:14  error  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+   91:1   error  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+   91:31  error  Async arrow function has no 'await' expression                                                                                                                      @typescript-eslint/require-await
+   98:3   error  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  103:7   error  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+
+/Volumes/Data/RND/Kitchen-POS/backend/src/preload.ts
+   5:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   6:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   7:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   8:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  17:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  21:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  22:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  23:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  25:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  29:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  30:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  33:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  34:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  43:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  48:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  49:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  53:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  54:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  55:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  58:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  59:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  62:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  63:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  67:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  70:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  71:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  72:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Volumes/Data/RND/Kitchen-POS/backend/src/services/billing.ts
+  14:55  error  Unexpected any. Specify a different type                                                                   @typescript-eslint/no-explicit-any
+  44:36  error  Unsafe member access .method on an `any` value                                                             @typescript-eslint/no-unsafe-member-access
+  44:46  error  Unsafe member access .amount on an `any` value                                                             @typescript-eslint/no-unsafe-member-access
+  44:56  error  Unsafe member access .reference on an `any` value                                                          @typescript-eslint/no-unsafe-member-access
+  44:66  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  @typescript-eslint/prefer-nullish-coalescing
+  56:3   error  Unnecessary try/catch wrapper                                                                              no-useless-catch
+
+/Volumes/Data/RND/Kitchen-POS/backend/src/services/gst.ts
+  37:106  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  @typescript-eslint/prefer-nullish-coalescing
+  41:39   error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  @typescript-eslint/prefer-nullish-coalescing
+
+/Volumes/Data/RND/Kitchen-POS/backend/src/services/printer.ts
+   35:11  error  Unsafe assignment of an `any` value                                           @typescript-eslint/no-unsafe-assignment
+   35:20  error  Unsafe construction of an `any` typed value                                   @typescript-eslint/no-unsafe-call
+   35:31  error  Unsafe member access .USB on an `any` value                                   @typescript-eslint/no-unsafe-member-access
+   36:11  error  Unsafe assignment of an `any` value                                           @typescript-eslint/no-unsafe-assignment
+   36:21  error  Unsafe construction of an `any` typed value                                   @typescript-eslint/no-unsafe-call
+   36:32  error  Unsafe member access .Printer on an `any` value                               @typescript-eslint/no-unsafe-member-access
+   38:12  error  Returning an awaited promise is required in this context                      @typescript-eslint/return-await
+   39:7   error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+   39:14  error  Unsafe member access .open on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+   41:11  error  Expected the Promise rejection reason to be an Error                          @typescript-eslint/prefer-promise-reject-errors
+   45:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+   45:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+   45:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+   45:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+   45:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+   45:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+   45:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+   45:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+   46:14  error  Unsafe member access .align on an `any` value                                 @typescript-eslint/no-unsafe-member-access
+   47:14  error  Unsafe member access .size on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+   48:14  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+   49:14  error  Unsafe member access .size on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+   50:14  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+   51:14  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+   52:14  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+   53:14  error  Unsafe member access .align on an `any` value                                 @typescript-eslint/no-unsafe-member-access
+   56:13  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+   56:21  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+   60:13  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+   60:13  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+   61:16  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+   62:16  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+   65:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+   65:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+   65:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+   65:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+   66:14  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+   67:14  error  Unsafe member access .feed on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+   68:14  error  Unsafe member access .cut on an `any` value                                   @typescript-eslint/no-unsafe-member-access
+   69:14  error  Unsafe member access .close on an `any` value                                 @typescript-eslint/no-unsafe-member-access
+   73:11  error  Expected the Promise rejection reason to be an Error                          @typescript-eslint/prefer-promise-reject-errors
+   77:12  error  'e' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+   99:11  error  Unsafe assignment of an `any` value                                           @typescript-eslint/no-unsafe-assignment
+   99:20  error  Unsafe construction of an `any` typed value                                   @typescript-eslint/no-unsafe-call
+   99:31  error  Unsafe member access .USB on an `any` value                                   @typescript-eslint/no-unsafe-member-access
+  100:11  error  Unsafe assignment of an `any` value                                           @typescript-eslint/no-unsafe-assignment
+  100:21  error  Unsafe construction of an `any` typed value                                   @typescript-eslint/no-unsafe-call
+  100:32  error  Unsafe member access .Printer on an `any` value                               @typescript-eslint/no-unsafe-member-access
+  102:12  error  Returning an awaited promise is required in this context                      @typescript-eslint/return-await
+  103:7   error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  103:14  error  Unsafe member access .open on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  105:11  error  Expected the Promise rejection reason to be an Error                          @typescript-eslint/prefer-promise-reject-errors
+  109:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  109:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  109:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  109:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  109:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  109:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  109:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  109:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  109:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  109:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  109:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  110:14  error  Unsafe member access .align on an `any` value                                 @typescript-eslint/no-unsafe-member-access
+  111:14  error  Unsafe member access .size on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  112:14  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  113:14  error  Unsafe member access .size on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  114:14  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  115:14  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  116:14  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  117:14  error  Unsafe member access .align on an `any` value                                 @typescript-eslint/no-unsafe-member-access
+  118:14  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  119:14  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  120:14  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  124:13  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  124:21  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  127:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  127:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  127:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  127:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  128:14  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  129:14  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  130:14  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  131:14  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  134:13  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  134:21  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  137:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  137:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  137:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  137:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  137:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  137:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  137:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  137:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  137:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  137:11  error  Unsafe call of an `any` typed value                                           @typescript-eslint/no-unsafe-call
+  138:14  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  139:14  error  Unsafe member access .size on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  140:14  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  141:14  error  Unsafe member access .size on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  142:14  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  143:14  error  Unsafe member access .align on an `any` value                                 @typescript-eslint/no-unsafe-member-access
+  144:14  error  Unsafe member access .text on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  145:14  error  Unsafe member access .feed on an `any` value                                  @typescript-eslint/no-unsafe-member-access
+  146:14  error  Unsafe member access .cut on an `any` value                                   @typescript-eslint/no-unsafe-member-access
+  147:14  error  Unsafe member access .close on an `any` value                                 @typescript-eslint/no-unsafe-member-access
+  151:11  error  Expected the Promise rejection reason to be an Error                          @typescript-eslint/prefer-promise-reject-errors
+  155:12  error  'e' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+  160:27  error  Expected { after 'if' condition                                               curly
+
+✖ 277 problems (277 errors, 0 warnings)
+  12 errors and 0 warnings potentially fixable with the `--fix` option.
+

@@ -8,9 +8,9 @@ export function registerStaffIPC() {
       const user = db.prepare('SELECT * FROM staff WHERE pin = ? AND is_active = 1').get(payload.pin);
       if (user) {
         return { success: true, data: user };
-      } else {
+      } 
         return { success: false, error: 'Invalid PIN' };
-      }
+      
     } catch (e: any) {
       return { success: false, error: e.message };
     }
@@ -33,11 +33,11 @@ export function registerStaffIPC() {
         const stmt = db.prepare('UPDATE staff SET name = ?, pin = ?, role = ? WHERE id = ?');
         stmt.run(payload.name, payload.pin, payload.role, payload.id);
         return { success: true, data: { id: payload.id } };
-      } else {
+      } 
         const stmt = db.prepare('INSERT INTO staff (name, pin, role) VALUES (?, ?, ?)');
         const info = stmt.run(payload.name, payload.pin, payload.role);
         return { success: true, data: { id: info.lastInsertRowid } };
-      }
+      
     } catch (e: any) {
       return { success: false, error: e.message };
     }

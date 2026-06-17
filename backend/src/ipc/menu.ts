@@ -91,11 +91,11 @@ export function registerMenuIPC() {
         db.prepare('UPDATE categories SET name = ?, sort_order = ? WHERE id = ?')
           .run(payload.name, payload.sort_order ?? 0, payload.id);
         return { success: true, data: { id: payload.id } };
-      } else {
+      } 
         const result = db.prepare('INSERT INTO categories (name, sort_order) VALUES (?, ?)')
           .run(payload.name, payload.sort_order ?? 0);
         return { success: true, data: { id: result.lastInsertRowid } };
-      }
+      
     } catch (e: unknown) {
       if (e instanceof Error) { return { success: false, error: e.message }; }
       return { success: false, error: 'Unknown error occurred' };
@@ -128,7 +128,7 @@ export function registerMenuIPC() {
           payload.id
         );
         return { success: true, data: { id: payload.id } };
-      } else {
+      } 
         const stmt = db.prepare(`
           INSERT INTO menu_items (category_id, name, price, cgst_rate, sgst_rate, hsn_code, is_veg, sort_order, is_available)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -138,7 +138,7 @@ export function registerMenuIPC() {
           payload.hsn_code ?? null, payload.is_veg ?? 1, payload.sort_order ?? 0, payload.is_available ?? 1
         );
         return { success: true, data: { id: result.lastInsertRowid } };
-      }
+      
     } catch (e: unknown) {
       if (e instanceof Error) { return { success: false, error: e.message }; }
       return { success: false, error: 'Unknown error occurred' };

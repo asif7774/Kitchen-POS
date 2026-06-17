@@ -41,7 +41,7 @@ export function createBill(orderId: number, payments: any[], discount: number) {
     `);
     
     for (const p of payments) {
-      insertPayment.run(orderId, p.method, p.amount, p.reference || null);
+      insertPayment.run(orderId, p.method, p.amount, p.reference ?? null);
     }
 
     db.prepare('UPDATE orders SET status = ? WHERE id = ?').run('billed', orderId);
@@ -53,9 +53,5 @@ export function createBill(orderId: number, payments: any[], discount: number) {
     return { billId: info.lastInsertRowid, billNumber };
   });
 
-  try {
-    return transaction();
-  } catch (err) {
-    throw err;
-  }
+  return transaction();
 }
