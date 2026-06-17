@@ -5,6 +5,7 @@ import CategoryList from './components/CategoryList';
 import MenuItemList from './components/MenuItemList';
 import CategoryModal from './components/CategoryModal';
 import MenuItemModal from './components/MenuItemModal';
+import RecipeModal from './components/RecipeModal';
 
 type MenuData = Category & { items: MenuItem[] };
 
@@ -14,6 +15,7 @@ const MenuPage: React.FC = () => {
   // Modal states
   const [isCategoryModalOpen, setCategoryModalOpen] = useState(false);
   const [isItemModalOpen, setItemModalOpen] = useState(false);
+  const [isRecipeModalOpen, setRecipeModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
 
@@ -62,6 +64,7 @@ const MenuPage: React.FC = () => {
             <MenuItemList 
               category={selectedCategory}
               onEdit={(item) => { setEditingItem(item); setItemModalOpen(true); }}
+              onRecipeEdit={(item) => { setEditingItem(item); setRecipeModalOpen(true); }}
               onAdd={() => { setEditingItem(null); setItemModalOpen(true); }}
               onRefresh={() => { void fetchMenu(); }}
             />
@@ -94,6 +97,13 @@ const MenuPage: React.FC = () => {
             setItemModalOpen(false);
             void fetchMenu();
           }}
+        />
+      )}
+
+      {isRecipeModalOpen && editingItem && (
+        <RecipeModal
+          item={editingItem}
+          onClose={() => { setRecipeModalOpen(false); }}
         />
       )}
     </div>

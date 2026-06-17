@@ -117,5 +117,9 @@ export interface Shift {
   note: string | null;
 }
 
-
-
+export interface RecipeItem {
+  inventory_item_id: number;
+  qty_used: number;
+  name?: string;
+  unit?: string;
+}

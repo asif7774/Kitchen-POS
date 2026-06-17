@@ -1,5 +1,5 @@
 -- DEFAULT PIN IS 1234 — CHANGE IMMEDIATELY
-INSERT OR IGNORE INTO staff (id, name, pin, role) VALUES (1, 'Admin', '$2b$10$PLACEHOLDER', 'admin');
+INSERT OR IGNORE INTO staff (id, name, pin, role) VALUES (1, 'Admin', '1234', 'admin');
 
 INSERT OR IGNORE INTO categories (id, name, sort_order) VALUES
 (1, 'Starters', 1),

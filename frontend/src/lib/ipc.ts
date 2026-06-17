@@ -1,4 +1,4 @@
-import { Category, MenuItem, InventoryItem, Order, OrderItem, CartItem, KDSTicket, Shift } from '../types/models';
+import { Category, MenuItem, InventoryItem, Order, OrderItem, CartItem, KDSTicket, Shift, RecipeItem } from '../types/models';
 
 export interface IPCResponse<T> {
   success: boolean;
@@ -55,6 +55,8 @@ const mockApi = {
     toggleAvailable: () => Promise.resolve({ success: true }),
     upsertCategory: () => Promise.resolve({ success: true, data: { id: 99 } }),
     deleteCategory: () => Promise.resolve({ success: true }),
+    getRecipe: () => Promise.resolve({ success: true, data: [] }),
+    updateRecipe: () => Promise.resolve({ success: true }),
   },
   tables: {
     getAll: () => Promise.resolve({
@@ -91,12 +93,21 @@ const mockApi = {
     getAll: () => Promise.resolve({ success: true, data: [] }),
     upsert: () => Promise.resolve({ success: true }),
   },
-  shifts: {
-    getActive: () => Promise.resolve({ success: true, data: null }),
-    open: (_payload: { staffId: number; openingCash: number }) => Promise.resolve({ success: true, data: { id: 1 } }),
-    close: (_payload: { shiftId: number; closingCash: number; note?: string }) => Promise.resolve({ success: true }),
-    getTotals: (_payload: { openedAt: string }) => Promise.resolve({ success: true, data: { cash: 0, card: 0, upi: 0, complimentary: 0 } }),
-  },
+  shifts: (() => {
+    let activeShift: any = null;
+    return {
+      getActive: () => Promise.resolve({ success: true, data: activeShift }),
+      open: (_payload: { staffId: number; openingCash: number }) => {
+        activeShift = { id: 1, staff_id: _payload.staffId, opened_at: new Date().toISOString(), opening_cash: _payload.openingCash, closed_at: null, closing_cash: null, note: null };
+        return Promise.resolve({ success: true, data: { id: 1 } });
+      },
+      close: (_payload: { shiftId: number; closingCash: number; note?: string }) => {
+        activeShift = null;
+        return Promise.resolve({ success: true });
+      },
+      getTotals: (_payload: { openedAt: string }) => Promise.resolve({ success: true, data: { cash: 0, card: 0, upi: 0, complimentary: 0 } }),
+    };
+  })(),
   reports: {
     daily: () => Promise.resolve({ success: true, data: {} }),
     gst: () => Promise.resolve({ success: true, data: {} }),
@@ -133,6 +144,8 @@ export const api = (ipcApi ?? mockApi) as {
     toggleAvailable: (payload: { id: number; is_available: number }) => Promise<IPCResponse<unknown>>;
     upsertCategory: (payload: Partial<Category>) => Promise<IPCResponse<Category>>;
     deleteCategory: (payload: { id: number }) => Promise<IPCResponse<unknown>>;
+    getRecipe: (payload: { menu_item_id: number }) => Promise<IPCResponse<RecipeItem[]>>;
+    updateRecipe: (payload: { menu_item_id: number; ingredients: { inventory_item_id: number; qty_used: number }[] }) => Promise<IPCResponse<unknown>>;
   };
   tables: {
     getAll: () => Promise<IPCResponse<unknown>>;

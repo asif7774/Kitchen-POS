@@ -110,8 +110,10 @@ export function registerOrdersIPC() {
         // 3. Process each item in the KOT cart
         for (const item of payload.items) {
           const existing = existingItemMap.get(item.id);
+          let qtyDelta = item.qty;
           
           if (existing) {
+            qtyDelta = item.qty - existing.qty;
             // Update quantity. If new qty is greater, set status of the new additions to 'pending'
             const newStatus = existing.preparation_status === 'served' || existing.preparation_status === 'ready' 
               ? 'pending' // reset if they are ordering more of a finished item
@@ -151,10 +153,37 @@ export function registerOrdersIPC() {
               );
             }
           }
+
+          // Auto-deduct inventory
+          if (qtyDelta !== 0) {
+            const recipe = db.prepare('SELECT inventory_item_id, qty_used FROM menu_inventory_map WHERE menu_item_id = ?').all(item.id) as { inventory_item_id: number; qty_used: number }[];
+            for (const r of recipe) {
+              const invDelta = -(qtyDelta * r.qty_used); // Add if negative qtyDelta (reducing KOT), deduct if positive (adding to KOT)
+              db.prepare('UPDATE inventory_items SET qty_in_stock = qty_in_stock + ? WHERE id = ?').run(invDelta, r.inventory_item_id);
+              db.prepare('INSERT INTO inventory_log (item_id, type, qty_change, note) VALUES (?, ?, ?, ?)').run(
+                r.inventory_item_id,
+                qtyDelta > 0 ? 'sale' : 'adjustment',
+                invDelta,
+                `Order #${orderId} KOT Update`
+              );
+            }
+          }
         }
 
         // 4. Remove any items that are no longer in the cart
         for (const [_, item] of existingItemMap) {
+          // Restore inventory
+          const recipe = db.prepare('SELECT inventory_item_id, qty_used FROM menu_inventory_map WHERE menu_item_id = ?').all(item.menu_item_id) as { inventory_item_id: number; qty_used: number }[];
+          for (const r of recipe) {
+            const invDelta = item.qty * r.qty_used; // adding back full qty
+            db.prepare('UPDATE inventory_items SET qty_in_stock = qty_in_stock + ? WHERE id = ?').run(invDelta, r.inventory_item_id);
+            db.prepare('INSERT INTO inventory_log (item_id, type, qty_change, note) VALUES (?, ?, ?, ?)').run(
+              r.inventory_item_id,
+              'adjustment',
+              invDelta,
+              `Order #${orderId} Item Removed`
+            );
+          }
           db.prepare('DELETE FROM order_items WHERE id = ?').run(item.id);
         }
 

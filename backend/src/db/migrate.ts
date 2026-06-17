@@ -2,6 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { getDB } from './index';
 
+import { app } from 'electron';
+
 export function runMigrations() {
   const db = getDB();
 
@@ -13,8 +15,14 @@ export function runMigrations() {
     )
   `);
 
-  const migrationsDir = path.join(__dirname, 'migrations');
-  if (!fs.existsSync(migrationsDir)) return;
+  const migrationsDir = app.isPackaged 
+    ? path.join(__dirname, 'migrations')
+    : path.join(__dirname, '../../src/db/migrations');
+    
+  if (!fs.existsSync(migrationsDir)) {
+    console.error('Migrations directory not found:', migrationsDir);
+    return;
+  }
 
   const files = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.sql')).sort();
 

@@ -9,11 +9,12 @@ type MenuData = Category & { items: MenuItem[] };
 interface Props {
   category: MenuData;
   onEdit: (item: MenuItem) => void;
+  onRecipeEdit: (item: MenuItem) => void;
   onAdd: () => void;
   onRefresh: () => void;
 }
 
-const MenuItemList: React.FC<Props> = ({ category, onEdit, onAdd, onRefresh }) => {
+const MenuItemList: React.FC<Props> = ({ category, onEdit, onRecipeEdit, onAdd, onRefresh }) => {
   const { showModal, hideModal } = useModal();
   
   const handleDelete = (id: number) => {
@@ -95,6 +96,7 @@ const MenuItemList: React.FC<Props> = ({ category, onEdit, onAdd, onRefresh }) =
                   </label>
                   
                   <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => { onRecipeEdit(item); }}>Recipe</Button>
                     <Button variant="outline" size="sm" onClick={() => { onEdit(item); }}>Edit</Button>
                     <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50" onClick={() => { handleDelete(item.id); }}>Delete</Button>
                   </div>

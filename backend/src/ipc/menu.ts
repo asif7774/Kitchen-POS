@@ -53,6 +53,16 @@ interface ToggleAvailablePayload {
   is_available: number;
 }
 
+interface RecipeItemPayload {
+  inventory_item_id: number;
+  qty_used: number;
+}
+
+interface UpdateRecipePayload {
+  menu_item_id: number;
+  ingredients: RecipeItemPayload[];
+}
+
 export function registerMenuIPC() {
   ipcMain.handle('menu:getAll', async () => {
     try {
@@ -150,6 +160,42 @@ export function registerMenuIPC() {
     try {
       const db = getDB();
       db.prepare('UPDATE menu_items SET is_available = ? WHERE id = ?').run(payload.is_available, payload.id);
+      return { success: true };
+    } catch (e: unknown) {
+      if (e instanceof Error) { return { success: false, error: e.message }; }
+      return { success: false, error: 'Unknown error occurred' };
+    }
+  });
+
+  ipcMain.handle('menu:getRecipe', async (_, payload: { menu_item_id: number }) => {
+    try {
+      const db = getDB();
+      const recipe = db.prepare(`
+        SELECT m.inventory_item_id, m.qty_used, i.name, i.unit 
+        FROM menu_inventory_map m
+        JOIN inventory_items i ON m.inventory_item_id = i.id
+        WHERE m.menu_item_id = ?
+      `).all(payload.menu_item_id);
+      return { success: true, data: recipe };
+    } catch (e: unknown) {
+      if (e instanceof Error) { return { success: false, error: e.message }; }
+      return { success: false, error: 'Unknown error occurred' };
+    }
+  });
+
+  ipcMain.handle('menu:updateRecipe', async (_, payload: UpdateRecipePayload) => {
+    try {
+      const db = getDB();
+      const transaction = db.transaction((menu_item_id: number, ingredients: RecipeItemPayload[]) => {
+        db.prepare('DELETE FROM menu_inventory_map WHERE menu_item_id = ?').run(menu_item_id);
+        
+        const insertStmt = db.prepare('INSERT INTO menu_inventory_map (menu_item_id, inventory_item_id, qty_used) VALUES (?, ?, ?)');
+        for (const ing of ingredients) {
+          insertStmt.run(menu_item_id, ing.inventory_item_id, ing.qty_used);
+        }
+      });
+      
+      transaction(payload.menu_item_id, payload.ingredients);
       return { success: true };
     } catch (e: unknown) {
       if (e instanceof Error) { return { success: false, error: e.message }; }

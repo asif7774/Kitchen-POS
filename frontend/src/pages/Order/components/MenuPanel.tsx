@@ -15,7 +15,8 @@ const MenuPanel: React.FC<Props> = ({ onAddItem }) => {
     const fetchMenu = async () => {
       const res = await api.menu.getAll();
       if (res.success && res.data) {
-        setItems(res.data as MenuItem[]);
+        const allItems = res.data.flatMap((cat: any) => cat.items || []);
+        setItems(allItems);
       }
     };
     void fetchMenu();
