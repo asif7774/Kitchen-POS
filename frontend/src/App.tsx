@@ -9,8 +9,11 @@ import MenuPage from './pages/Menu';
 import InventoryPage from './pages/Inventory';
 import ReportsPage from './pages/Reports';
 import SettingsPage from './pages/Settings';
+import ExpensesPage from './pages/Expenses';
+import StaffPage from './pages/Staff';
 import KDSPage from './pages/KDS';
 import OpenShiftModal from './components/organisms/modal/OpenShiftModal';
+import AppLayout from './layouts/AppLayout';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -24,7 +27,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <OpenShiftModal />;
   }
 
-  return <>{children}</>;
+  return <AppLayout>{children}</AppLayout>;
 };
 
 const App: React.FC = () => {
@@ -68,6 +71,22 @@ const App: React.FC = () => {
         element={
           <ProtectedRoute>
             <KDSPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/expenses" 
+        element={
+          <ProtectedRoute>
+            <ExpensesPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/staff" 
+        element={
+          <ProtectedRoute>
+            <StaffPage />
           </ProtectedRoute>
         } 
       />

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { api } from '../../lib/ipc';
 import Button from '../../components/atoms/button/button';
+import Input from '../../components/atoms/input/input';
 import { useAuthStore } from '../../store/auth';
 import CloseShiftModal from './components/CloseShiftModal';
+import { useModal } from '../../hooks/useModal';
 
 const SettingsPage: React.FC = () => {
   const activeShift = useAuthStore(state => state.activeShift);
-  const [showCloseModal, setShowCloseModal] = useState(false);
+  const { showModal, hideModal } = useModal();
   const [settings, setSettings] = useState<Record<string, unknown>>({});
 
   React.useEffect(() => {
@@ -29,14 +31,8 @@ const SettingsPage: React.FC = () => {
         <section className="card p-6 shadow-sm border rounded">
           <h2 className="text-lg font-medium border-b pb-2 mb-4">Outlet Details</h2>
           <div className="space-y-4">
-             <div>
-                <label className="block text-sm font-medium text-gray-700">Outlet Name</label>
-                <input type="text" className="mt-1 block w-full rounded border-gray-300 shadow-sm p-2 border" placeholder="My Restaurant" />
-             </div>
-             <div>
-                <label className="block text-sm font-medium text-gray-700">GSTIN</label>
-                <input type="text" className="mt-1 block w-full rounded border-gray-300 shadow-sm p-2 border" placeholder="22AAAAA0000A1Z5" />
-             </div>
+             <Input label="Outlet Name" placeholder="My Restaurant" />
+             <Input label="GSTIN" placeholder="22AAAAA0000A1Z5" />
           </div>
         </section>
 
@@ -67,7 +63,12 @@ const SettingsPage: React.FC = () => {
                 Register is currently <strong>Open</strong> since{' '}
                 <strong>{new Date(activeShift.opened_at).toLocaleString()}</strong>.
               </p>
-              <Button variant="danger" onClick={() => { setShowCloseModal(true); }}>
+              <Button variant="danger" onClick={() => { 
+                showModal({
+                  title: '',
+                  content: <CloseShiftModal onClose={hideModal} />
+                });
+              }}>
                 Close Shift Register
               </Button>
             </div>
@@ -102,9 +103,6 @@ const SettingsPage: React.FC = () => {
         </section>
       </div>
 
-      {showCloseModal && (
-        <CloseShiftModal isOpen={showCloseModal} onClose={() => { setShowCloseModal(false); }} />
-      )}
     </div>
   );
 };

@@ -12,7 +12,30 @@ export function registerTablesIPC() {
     }
   });
 
-  // Stubs
-  ipcMain.handle('tables:upsert', async () => ({ success: true }));
-  ipcMain.handle('tables:delete', async () => ({ success: true }));
+  ipcMain.handle('tables:upsert', async (_, table: any) => {
+    try {
+      const db = getDB();
+      if (table.id) {
+        db.prepare('UPDATE tables SET name = ?, capacity = ? WHERE id = ?')
+          .run(table.name, table.capacity, table.id);
+        return { success: true };
+      } else {
+        const result = db.prepare('INSERT INTO tables (name, capacity) VALUES (?, ?)')
+          .run(table.name, table.capacity);
+        return { success: true, data: { id: result.lastInsertRowid, ...table } };
+      }
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
+  });
+
+  ipcMain.handle('tables:delete', async (_, id: number) => {
+    try {
+      const db = getDB();
+      db.prepare('DELETE FROM tables WHERE id = ?').run(id);
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
+  });
 }

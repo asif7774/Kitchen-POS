@@ -4,17 +4,13 @@ import { InventoryItem } from '../../types/models';
 import { InventoryItemModal } from './components/InventoryItemModal';
 import { StockAdjustmentModal } from './components/StockAdjustmentModal';
 import Button from '../../components/atoms/button/button';
+import { useModal } from '../../hooks/useModal';
 
 export default function InventoryPage() {
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [isItemModalOpen, setIsItemModalOpen] = useState(false);
-  const [selectedItemForEdit, setSelectedItemForEdit] = useState<InventoryItem | null>(null);
-
-  const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
-  const [selectedItemForAdjust, setSelectedItemForAdjust] = useState<InventoryItem | null>(null);
+  const { showModal, hideModal } = useModal();
 
   const fetchInventory = useCallback(() => {
     setLoading(true);
@@ -63,18 +59,24 @@ export default function InventoryPage() {
   }, []);
 
   const handleCreate = () => {
-    setSelectedItemForEdit(null);
-    setIsItemModalOpen(true);
+    showModal({
+      title: "Add Inventory Item",
+      content: <InventoryItemModal initialData={null} onClose={hideModal} onRefresh={() => { fetchInventory(); }} />
+    });
   };
 
   const handleEdit = (item: InventoryItem) => {
-    setSelectedItemForEdit(item);
-    setIsItemModalOpen(true);
+    showModal({
+      title: "Edit Inventory Item",
+      content: <InventoryItemModal initialData={item} onClose={hideModal} onRefresh={() => { fetchInventory(); }} />
+    });
   };
 
   const handleAdjust = (item: InventoryItem) => {
-    setSelectedItemForAdjust(item);
-    setIsAdjustModalOpen(true);
+    showModal({
+      title: `Adjust Stock: ${item.name}`,
+      content: <StockAdjustmentModal item={item} onClose={hideModal} onRefresh={() => { fetchInventory(); }} />
+    });
   };
 
   if (loading) {
@@ -170,23 +172,7 @@ export default function InventoryPage() {
         </table>
       </div>
 
-      {isItemModalOpen && (
-        <InventoryItemModal
-          isOpen={isItemModalOpen}
-          onClose={() => { setIsItemModalOpen(false); }}
-          onRefresh={() => { fetchInventory(); }}
-          initialData={selectedItemForEdit}
-        />
-      )}
 
-      {isAdjustModalOpen && (
-        <StockAdjustmentModal
-          isOpen={isAdjustModalOpen}
-          onClose={() => { setIsAdjustModalOpen(false); }}
-          onRefresh={() => { fetchInventory(); }}
-          item={selectedItemForAdjust}
-        />
-      )}
     </div>
   );
 }

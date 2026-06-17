@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/ipc';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import Button from '../../components/atoms/button/button';
+import Input from '../../components/atoms/input/input';
 
 interface DailyReport {
   date: string;
@@ -58,22 +59,20 @@ const ReportsPage: React.FC = () => {
       </div>
 
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex gap-6 items-center">
-        <div>
-          <label className="block text-sm font-semibold text-gray-600 mb-1.5">Start Date</label>
-          <input 
+        <div className="w-40">
+          <Input 
             type="date" 
+            label="Start Date"
             value={startDate} 
             onChange={e => { setStartDate(e.target.value); }}
-            className="border border-gray-300 p-2 rounded-lg text-sm w-40 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>
-        <div>
-          <label className="block text-sm font-semibold text-gray-600 mb-1.5">End Date</label>
-          <input 
+        <div className="w-40">
+          <Input 
             type="date" 
+            label="End Date"
             value={endDate} 
             onChange={e => { setEndDate(e.target.value); }}
-            className="border border-gray-300 p-2 rounded-lg text-sm w-40 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>
       </div>

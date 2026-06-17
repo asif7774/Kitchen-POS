@@ -1,30 +1,62 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/ipc';
 import TableStatusCard from './components/TableStatusCard';
 import { useOrderStore } from '../../store/order';
+import Button from '../../components/atoms/button/button';
+import TableModal from './components/TableModal';
+import { useModal } from '../../hooks/useModal';
 
 import { Table } from '../../types/models';
 
 const TablesPage: React.FC = () => {
   const [tables, setTables] = useState<Table[]>([]);
+  const { showModal, hideModal } = useModal();
   const navigate = useNavigate();
   const { activeOrders, fetchOpenOrders, selectTable } = useOrderStore();
 
+  const loadData = useCallback(async () => {
+    const res = await api.tables.getAll();
+    if (res.success && res.data) {
+      setTables(res.data);
+    }
+    await fetchOpenOrders();
+  }, [fetchOpenOrders]);
+
   useEffect(() => {
-    const loadData = async () => {
-      const res = await api.tables.getAll();
-      if (res.success && res.data) {
-        setTables(res.data as Table[]);
-      }
-      await fetchOpenOrders();
-    };
-    void loadData();
+    let mounted = true;
+    api.tables.getAll()
+      .then(res => {
+        if (mounted && res.success && res.data) {
+          setTables(res.data);
+        }
+      })
+      .catch(console.error);
+
+    void fetchOpenOrders();
+
+    return () => { mounted = false; };
   }, [fetchOpenOrders]);
 
   const handleTableClick = (id: number) => {
     selectTable(id);
     navigate(`/order/${id}`);
+  };
+
+  const handleEdit = (table: Table) => {
+    showModal({
+      title: 'Edit Table',
+      content: <TableModal table={table} onClose={hideModal} onSaved={() => { hideModal(); void loadData(); }} />
+    });
+  };
+
+  const handleDelete = async (id: number) => {
+    const res = await api.tables.delete({ id });
+    if (res.success) {
+      void loadData();
+    } else {
+      console.error('Failed to delete table');
+    }
   };
 
   const getTableStatus = (tableId: number) => {
@@ -36,18 +68,37 @@ const TablesPage: React.FC = () => {
 
   return (
     <div className="container-responsive p-6">
-      <h1 className="text-2xl font-bold mb-6">Floor Plan</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Floor Plan</h1>
+        <Button 
+          variant="primary" 
+          icon="plus" 
+          onClick={() => { 
+            showModal({
+              title: 'Add New Table',
+              content: <TableModal onClose={hideModal} onSaved={() => { hideModal(); void loadData(); }} />
+            });
+          }}
+        >
+          Add Table
+        </Button>
+      </div>
+
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {tables.map(table => (
           <div key={table.id} onClick={() => { handleTableClick(table.id); }}>
-            <TableStatusCard
-              name={table.name}
-              capacity={table.capacity}
-              status={getTableStatus(table.id)}
-            />
+              <TableStatusCard
+                name={table.name}
+                capacity={table.capacity}
+                status={getTableStatus(table.id)}
+                onEdit={() => { handleEdit(table); }}
+                onDelete={() => { void handleDelete(table.id); }}
+              />
           </div>
         ))}
       </div>
+
+
     </div>
   );
 };

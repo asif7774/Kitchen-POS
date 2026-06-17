@@ -46,6 +46,7 @@ contextBridge.exposeInMainWorld('api', {
     login: (payload: any) => ipcRenderer.invoke('staff:login', payload),
     getAll: () => ipcRenderer.invoke('staff:getAll'),
     upsert: (payload: any) => ipcRenderer.invoke('staff:upsert', payload),
+    delete: (payload: any) => ipcRenderer.invoke('staff:delete', payload),
   },
   shifts: {
     getActive: () => ipcRenderer.invoke('shifts:getActive'),
@@ -64,5 +65,10 @@ contextBridge.exposeInMainWorld('api', {
   settings: {
     get: () => ipcRenderer.invoke('settings:get'),
     save: (payload: any) => ipcRenderer.invoke('settings:save', payload),
+  },
+  expenses: {
+    getAll: (payload?: any) => ipcRenderer.invoke('expenses:getAll', payload),
+    create: (payload: any) => ipcRenderer.invoke('expenses:create', payload),
+    delete: (payload: any) => ipcRenderer.invoke('expenses:delete', payload),
   }
 });

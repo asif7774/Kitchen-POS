@@ -37,6 +37,7 @@ export interface Staff {
   id: number;
   name: string;
   role: string;
+  is_active: number;
 }
 
 export interface InventoryItem {
@@ -122,4 +123,15 @@ export interface RecipeItem {
   qty_used: number;
   name?: string;
   unit?: string;
+}
+
+export interface Expense {
+  id: number;
+  date: string;
+  category: string;
+  amount: number;
+  description: string | null;
+  staff_id: number | null;
+  staff_name?: string | null;
+  created_at: string;
 }

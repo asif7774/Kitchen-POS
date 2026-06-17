@@ -100,7 +100,7 @@ export default function KDSPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-950 text-gray-100 font-sans overflow-hidden">
+    <div className="flex flex-col h-full bg-gray-950 text-gray-100 font-sans overflow-hidden">
       {/* KDS Premium Header */}
       <header className="flex justify-between items-center bg-gray-900 border-b border-gray-800 px-6 py-4 shadow-md z-10">
         <div className="flex items-center gap-3">

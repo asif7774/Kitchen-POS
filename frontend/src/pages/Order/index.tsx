@@ -7,13 +7,13 @@ import Button from '../../components/atoms/button/button';
 import BillModal from './components/BillModal';
 import CancelOrderModal from './components/CancelOrderModal';
 import { api } from '../../lib/ipc';
+import { useModal } from '../../hooks/useModal';
 
 const OrderPage: React.FC = () => {
   const { tableId } = useParams();
   const navigate = useNavigate();
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [showBillModal, setShowBillModal] = useState(false);
-  const [showCancelModal, setShowCancelModal] = useState(false);
+  const { showModal, hideModal } = useModal();
 
   useEffect(() => {
     let active = true;
@@ -92,7 +92,7 @@ const OrderPage: React.FC = () => {
     const res = await api.orders.cancelByTable({ tableId: Number(tableId), note });
     if (res.success) {
       setCart([]);
-      setShowCancelModal(false);
+      hideModal();
       navigate('/tables');
     } else {
       console.error('Failed to cancel order:', res.error);
@@ -100,7 +100,7 @@ const OrderPage: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="flex h-full bg-white relative">
       {/* Header/Back Button */}
       <div className="absolute top-0 left-0 p-4 z-10">
         <Button variant="link" onClick={() => { navigate('/tables'); }}>
@@ -123,26 +123,21 @@ const OrderPage: React.FC = () => {
           onUpdateQty={handleUpdateQty}
           onUpdateNote={handleUpdateNote}
           onSendKOT={() => { void handleSendKOT(); }}
-          onGenerateBill={() => { setShowBillModal(true); }}
-          onVoidOrder={() => { setShowCancelModal(true); }}
+          onGenerateBill={() => { 
+            showModal({
+              title: "Generate Final Bill",
+              content: <BillModal orderId={parseInt(tableId ?? '0')} cart={cart} onClose={hideModal} />,
+              size: "xl"
+            });
+          }}
+          onVoidOrder={() => { 
+            showModal({
+              title: "Void Order",
+              content: <CancelOrderModal onClose={hideModal} onConfirm={(note) => { void handleCancelOrder(note); }} />
+            });
+          }}
         />
       </div>
-
-      {showBillModal && (
-        <BillModal 
-          orderId={parseInt(tableId ?? '0')} 
-          cart={cart}
-          onClose={() => { setShowBillModal(false); }} 
-        />
-      )}
-
-      {showCancelModal && (
-        <CancelOrderModal
-          isOpen={showCancelModal}
-          onClose={() => { setShowCancelModal(false); }}
-          onConfirm={(note) => { void handleCancelOrder(note); }}
-        />
-      )}
     </div>
   );
 };

@@ -6,18 +6,14 @@ import MenuItemList from './components/MenuItemList';
 import CategoryModal from './components/CategoryModal';
 import MenuItemModal from './components/MenuItemModal';
 import RecipeModal from './components/RecipeModal';
+import { useModal } from '../../hooks/useModal';
 
 type MenuData = Category & { items: MenuItem[] };
 
 const MenuPage: React.FC = () => {
   const [categories, setCategories] = useState<MenuData[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
-  // Modal states
-  const [isCategoryModalOpen, setCategoryModalOpen] = useState(false);
-  const [isItemModalOpen, setItemModalOpen] = useState(false);
-  const [isRecipeModalOpen, setRecipeModalOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+  const { showModal, hideModal } = useModal();
 
   const fetchMenu = React.useCallback(async () => {
     try {
@@ -44,7 +40,7 @@ const MenuPage: React.FC = () => {
   const selectedCategory = categories.find(c => c.id === activeCategoryId);
 
   return (
-    <div className="flex h-screen bg-gray-50 p-6 overflow-hidden">
+    <div className="flex h-full bg-gray-50 p-6 overflow-hidden">
       <div className="flex w-full gap-6 max-w-7xl mx-auto h-full">
         {/* Left Column: Categories */}
         <div className="w-1/3 flex flex-col bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -52,8 +48,18 @@ const MenuPage: React.FC = () => {
             categories={categories}
             selectedCategoryId={activeCategoryId}
             onSelect={setSelectedCategoryId}
-            onEdit={(cat) => { setEditingCategory(cat); setCategoryModalOpen(true); }}
-            onAdd={() => { setEditingCategory(null); setCategoryModalOpen(true); }}
+            onEdit={(cat) => { 
+              showModal({
+                title: "Edit Category",
+                content: <CategoryModal category={cat} onClose={hideModal} onSuccess={() => { hideModal(); void fetchMenu(); }} />
+              });
+            }}
+            onAdd={() => { 
+              showModal({
+                title: "Add Category",
+                content: <CategoryModal category={null} onClose={hideModal} onSuccess={() => { hideModal(); void fetchMenu(); }} />
+              });
+            }}
             onRefresh={() => { void fetchMenu(); }}
           />
         </div>
@@ -63,9 +69,25 @@ const MenuPage: React.FC = () => {
           {selectedCategory ? (
             <MenuItemList 
               category={selectedCategory}
-              onEdit={(item) => { setEditingItem(item); setItemModalOpen(true); }}
-              onRecipeEdit={(item) => { setEditingItem(item); setRecipeModalOpen(true); }}
-              onAdd={() => { setEditingItem(null); setItemModalOpen(true); }}
+              onEdit={(item) => { 
+                showModal({
+                  title: "Edit Dish",
+                  content: <MenuItemModal item={item} categoryId={activeCategoryId} onClose={hideModal} onSuccess={() => { hideModal(); void fetchMenu(); }} />
+                });
+              }}
+              onRecipeEdit={(item) => { 
+                showModal({
+                  title: `Recipe for ${item.name}`,
+                  content: <RecipeModal item={item} onClose={hideModal} />,
+                  size: "lg"
+                });
+              }}
+              onAdd={() => { 
+                showModal({
+                  title: "Add Dish",
+                  content: <MenuItemModal item={null} categoryId={activeCategoryId} onClose={hideModal} onSuccess={() => { hideModal(); void fetchMenu(); }} />
+                });
+              }}
               onRefresh={() => { void fetchMenu(); }}
             />
           ) : (
@@ -73,39 +95,8 @@ const MenuPage: React.FC = () => {
               Select a category to view items
             </div>
           )}
-        </div>
+    </div>
       </div>
-
-      {/* Modals */}
-      {isCategoryModalOpen && (
-        <CategoryModal
-          category={editingCategory}
-          onClose={() => { setCategoryModalOpen(false); }}
-          onSuccess={() => {
-            setCategoryModalOpen(false);
-            void fetchMenu();
-          }}
-        />
-      )}
-
-      {isItemModalOpen && activeCategoryId && (
-        <MenuItemModal
-          item={editingItem}
-          categoryId={activeCategoryId}
-          onClose={() => { setItemModalOpen(false); }}
-          onSuccess={() => {
-            setItemModalOpen(false);
-            void fetchMenu();
-          }}
-        />
-      )}
-
-      {isRecipeModalOpen && editingItem && (
-        <RecipeModal
-          item={editingItem}
-          onClose={() => { setRecipeModalOpen(false); }}
-        />
-      )}
     </div>
   );
 };

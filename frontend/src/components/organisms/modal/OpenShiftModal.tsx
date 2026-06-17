@@ -39,14 +39,14 @@ export default function OpenShiftModal() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
-        <div className="bg-blue-600 px-6 py-4 text-white">
-          <h2 className="text-xl font-bold">Open Shift Register</h2>
-          <p className="text-blue-100 text-xs mt-1">Initialize the cash drawer float to start billing</p>
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-fade-in border border-gray-200">
+        <div className="bg-blue-600 px-6 py-5 text-white text-center">
+          <h2 className="text-2xl font-bold">Open Shift Register</h2>
+          <p className="text-blue-100 text-sm mt-1">Initialize the cash drawer float to start billing</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-8 space-y-6">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-655 p-3 rounded-md text-sm">
               {error}
@@ -54,7 +54,7 @@ export default function OpenShiftModal() {
           )}
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               Opening Float / Cash Drawer Cash (₹)
             </label>
             <input
@@ -65,26 +65,27 @@ export default function OpenShiftModal() {
               autoFocus
               value={openingCash}
               onChange={e => { setOpeningCash(e.target.value === '' ? '' : Number(e.target.value)); }}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xl font-bold text-center"
               placeholder="e.g. 1000"
             />
           </div>
 
-          <div className="pt-4 flex justify-between gap-3">
+          <div className="pt-2 flex flex-col gap-3">
+            <Button
+              type="submit"
+              variant="primary"
+              className="w-full py-3 text-lg"
+              isLoading={isSubmitting}
+            >
+              Start Shift
+            </Button>
             <Button
               type="button"
               variant="ghost"
               onClick={logout}
-              className="text-gray-500 hover:text-gray-700"
+              className="w-full text-gray-500 hover:text-gray-700"
             >
               Cancel / Logout
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              isLoading={isSubmitting}
-            >
-              Start Shift
             </Button>
           </div>
         </form>

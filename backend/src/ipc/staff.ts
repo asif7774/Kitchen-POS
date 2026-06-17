@@ -26,6 +26,34 @@ export function registerStaffIPC() {
     }
   });
 
-  // Stubs
-  ipcMain.handle('staff:upsert', async () => ({ success: true }));
+  ipcMain.handle('staff:upsert', async (event, payload: { id?: number, name: string, pin: string, role: string }) => {
+    try {
+      const db = getDB();
+      if (payload.id) {
+        const stmt = db.prepare('UPDATE staff SET name = ?, pin = ?, role = ? WHERE id = ?');
+        stmt.run(payload.name, payload.pin, payload.role, payload.id);
+        return { success: true, data: { id: payload.id } };
+      } else {
+        const stmt = db.prepare('INSERT INTO staff (name, pin, role) VALUES (?, ?, ?)');
+        const info = stmt.run(payload.name, payload.pin, payload.role);
+        return { success: true, data: { id: info.lastInsertRowid } };
+      }
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
+  });
+
+  ipcMain.handle('staff:delete', async (event, payload: { id: number }) => {
+    try {
+      const db = getDB();
+      const stmt = db.prepare('UPDATE staff SET is_active = 0 WHERE id = ?');
+      const info = stmt.run(payload.id);
+      if (info.changes > 0) {
+        return { success: true };
+      }
+      return { success: false, error: 'Staff not found' };
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
+  });
 }

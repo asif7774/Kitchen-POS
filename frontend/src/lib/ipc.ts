@@ -1,4 +1,4 @@
-import { Category, MenuItem, InventoryItem, Order, OrderItem, CartItem, KDSTicket, Shift, RecipeItem } from '../types/models';
+import { Category, MenuItem, InventoryItem, Order, OrderItem, CartItem, KDSTicket, Shift, RecipeItem, Table, Expense, Staff } from '../types/models';
 
 export interface IPCResponse<T> {
   success: boolean;
@@ -92,7 +92,8 @@ const mockApi = {
       return Promise.resolve({ success: false, error: 'Invalid PIN' });
     },
     getAll: () => Promise.resolve({ success: true, data: [] }),
-    upsert: () => Promise.resolve({ success: true }),
+    upsert: () => Promise.resolve({ success: true, data: { id: 2 } }),
+    delete: () => Promise.resolve({ success: true }),
   },
   shifts: (() => {
     let activeShift: Shift | null = null;
@@ -110,7 +111,17 @@ const mockApi = {
     };
   })(),
   reports: {
-    daily: () => Promise.resolve({ success: true, data: {} }),
+    daily: () => Promise.resolve({ 
+      success: true, 
+      data: {
+        date: new Date().toISOString().split('T')[0],
+        totalOrders: 0,
+        totalRevenue: 0,
+        totalCGST: 0,
+        totalSGST: 0,
+        hourlyData: []
+      } 
+    }),
     gst: () => Promise.resolve({ success: true, data: {} }),
   },
   backup: {
@@ -127,6 +138,11 @@ const mockApi = {
       },
     };
   })(),
+  expenses: {
+    getAll: () => Promise.resolve({ success: true, data: [] }),
+    create: () => Promise.resolve({ success: true, data: { id: 1 } }),
+    delete: () => Promise.resolve({ success: true }),
+  },
 };
 
 export const api = (ipcApi ?? mockApi) as {
@@ -156,9 +172,9 @@ export const api = (ipcApi ?? mockApi) as {
     updateRecipe: (payload: { menu_item_id: number; ingredients: { inventory_item_id: number; qty_used: number }[] }) => Promise<IPCResponse<unknown>>;
   };
   tables: {
-    getAll: () => Promise<IPCResponse<unknown>>;
-    upsert: (payload: unknown) => Promise<IPCResponse<unknown>>;
-    delete: (payload: unknown) => Promise<IPCResponse<unknown>>;
+    getAll: () => Promise<IPCResponse<Table[]>>;
+    upsert: (payload: Partial<Table>) => Promise<IPCResponse<Table>>;
+    delete: (payload: { id: number }) => Promise<IPCResponse<unknown>>;
   };
   billing: {
     createBill: (payload: unknown) => Promise<IPCResponse<unknown>>;
@@ -175,8 +191,9 @@ export const api = (ipcApi ?? mockApi) as {
   };
   staff: {
     login: (payload: { pin: string }) => Promise<IPCResponse<{ id: number; name: string; role: string }>>;
-    getAll: () => Promise<IPCResponse<unknown>>;
-    upsert: (payload: unknown) => Promise<IPCResponse<unknown>>;
+    getAll: () => Promise<IPCResponse<Staff[]>>;
+    upsert: (payload: Partial<Staff>) => Promise<IPCResponse<{ id: number }>>;
+    delete: (payload: { id: number }) => Promise<IPCResponse<unknown>>;
   };
   shifts: {
     getActive: () => Promise<IPCResponse<Shift | null>>;
@@ -195,5 +212,10 @@ export const api = (ipcApi ?? mockApi) as {
   settings: {
     get: () => Promise<IPCResponse<unknown>>;
     save: (payload: unknown) => Promise<IPCResponse<unknown>>;
+  };
+  expenses: {
+    getAll: (payload?: { start?: string, end?: string }) => Promise<IPCResponse<Expense[]>>;
+    create: (payload: { date: string, category: string, amount: number, description?: string, staff_id?: number }) => Promise<IPCResponse<{id: number}>>;
+    delete: (payload: { id: number }) => Promise<IPCResponse<unknown>>;
   };
 };
