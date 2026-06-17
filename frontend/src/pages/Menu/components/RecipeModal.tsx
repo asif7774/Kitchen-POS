@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { MenuItem, InventoryItem, RecipeItem } from '../../../types/models';
 import Button from '../../../components/atoms/button/button';
+import Input from '../../../components/atoms/input/input';
+import Select from '../../../components/atoms/select/select';
 import { api } from '../../../lib/ipc';
+import { useToast } from '../../../hooks/useToast';
 
 interface Props {
   item: MenuItem;
@@ -13,6 +16,7 @@ const RecipeModal: React.FC<Props> = ({ item, onClose }) => {
   const [recipeItems, setRecipeItems] = useState<RecipeItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { showToast } = useToast();
   
   // New item form
   const [selectedInvId, setSelectedInvId] = useState<number | ''>('');
@@ -56,7 +60,7 @@ const RecipeModal: React.FC<Props> = ({ item, onClose }) => {
     
     // Check if already in recipe
     if (recipeItems.some(ri => ri.inventory_item_id === invId)) {
-      console.warn('This ingredient is already in the recipe. Update the quantity instead.');
+      showToast({ message: 'This ingredient is already in the recipe. Update the quantity instead.', variant: 'error' });
       return;
     }
     
@@ -96,10 +100,14 @@ const RecipeModal: React.FC<Props> = ({ item, onClose }) => {
       });
       
       if (res.success) {
+        showToast({ message: 'Recipe saved successfully', variant: 'success' });
         onClose();
+      } else {
+        showToast({ message: res.error ?? 'Failed to save recipe', variant: 'error' });
       }
     } catch (err) {
       console.error(err);
+      showToast({ message: 'An unexpected error occurred', variant: 'error' });
     } finally {
       setSaving(false);
     }
@@ -147,27 +155,25 @@ const RecipeModal: React.FC<Props> = ({ item, onClose }) => {
             <h3 className="text-sm font-bold text-gray-800 mb-3">Add Ingredient</h3>
             <div className="flex items-end gap-3">
               <div className="flex-1">
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Inventory Item</label>
-                <select 
+                <Select 
+                  label="Inventory Item"
                   value={selectedInvId}
                   onChange={(e) => { setSelectedInvId(e.target.value ? Number(e.target.value) : ''); }}
-                  className="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 >
                   <option value="">Select item...</option>
                   {inventory.map(inv => (
                     <option key={inv.id} value={inv.id}>{inv.name} ({inv.unit})</option>
                   ))}
-                </select>
+                </Select>
               </div>
               <div className="w-24">
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Qty</label>
-                <input 
+                <Input 
+                  label="Qty"
                   type="number"
                   min="0"
                   step="0.001"
                   value={qtyUsed}
                   onChange={(e) => { setQtyUsed(e.target.value); }}
-                  className="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   placeholder="e.g. 0.5"
                 />
               </div>

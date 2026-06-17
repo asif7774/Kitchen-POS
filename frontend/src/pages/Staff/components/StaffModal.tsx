@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Input from '../../../components/atoms/input/input';
+import Select from '../../../components/atoms/select/select';
 import { Staff } from '../../../types/models';
 
 interface StaffModalProps {
@@ -46,21 +47,16 @@ const StaffModal: React.FC<Omit<StaffModalProps, 'onClose'>> = ({ onSave, initia
         required
       />
       
-      <div className="space-y-1.5">
-        <label className="block text-sm font-medium text-gray-700">
-          Role
-        </label>
-        <select 
-          value={role}
-          onChange={e => { setRole(e.target.value); }}
-          className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
-          required
-        >
-          {ROLES.map(r => (
-            <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
-          ))}
-        </select>
-      </div>
+      <Select 
+        label="Role"
+        value={role}
+        onChange={e => { setRole(e.target.value); }}
+        required
+      >
+        {ROLES.map(r => (
+          <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
+        ))}
+      </Select>
       
       <Input 
         label={initialData ? "New PIN (Leave blank to keep current)" : "PIN (4 digits)"}

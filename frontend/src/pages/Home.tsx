@@ -1,6 +1,7 @@
 import { useState, lazy, Suspense } from "react";
 import Logos from "components/atoms/logos";
 import { SvgIcon } from "components/atoms/svg-sprite-loader";
+import { useToast } from "hooks/useToast";
 
 // Lazy load heavy components
 const Card = lazy(() => import("components/organisms/card"));
@@ -87,11 +88,13 @@ const ComponentLoader = () => (
 
 function Home() {
   const [copied, setCopied] = useState(false);
+  const { showToast } = useToast();
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(COMMAND);
       setCopied(true);
+      showToast({ message: 'Copied to clipboard!', variant: 'success' });
       setTimeout(() => {
         setCopied(false);
       }, 2000);
@@ -99,6 +102,7 @@ function Home() {
       if (import.meta.env.DEV) {
         console.error("Failed to copy:", err);
       }
+      showToast({ message: 'Failed to copy', variant: 'error' });
     }
   };
 
@@ -199,22 +203,6 @@ function Home() {
             </div>
           </div>
 
-          {/* Toast Notification */}
-          {copied && (
-            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-lg shadow-xl flex items-center gap-2 z-50 animate-slide-up">
-              <SvgIcon
-                name="check-circle"
-                width="20"
-                height="20"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="text-white"
-                aria-hidden={true}
-              />
-              <span className="font-semibold">Copied to clipboard!</span>
-            </div>
-          )}
         </div>
       </header>
 

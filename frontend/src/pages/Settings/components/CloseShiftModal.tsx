@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../../../store/auth';
 import { api } from '../../../lib/ipc';
 import Button from '../../../components/atoms/button/button';
+import Input from '../../../components/atoms/input/input';
+import Textarea from '../../../components/atoms/textarea/textarea';
+import { useToast } from '../../../hooks/useToast';
 
 interface Props {
   onClose: () => void;
@@ -24,7 +27,7 @@ export default function CloseShiftModal({ onClose }: Props) {
   const [closingCash, setClosingCash] = useState<number | ''>('');
   const [note, setNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     let active = true;
@@ -33,17 +36,16 @@ export default function CloseShiftModal({ onClose }: Props) {
         .then(res => {
           if (active && res.success && res.data) {
             setTotals(res.data);
-            setError(null);
           } else if (active) {
-            setError(res.error ?? 'Failed to calculate shift sales');
+            showToast({ message: res.error ?? 'Failed to calculate shift sales', variant: 'error' });
           }
         })
         .catch((err: unknown) => {
           if (active) {
             if (err instanceof Error) {
-              setError(err.message);
+              showToast({ message: err.message, variant: 'error' });
             } else {
-              setError(String(err));
+              showToast({ message: String(err), variant: 'error' });
             }
           }
         })
@@ -52,7 +54,7 @@ export default function CloseShiftModal({ onClose }: Props) {
         });
     }
     return () => { active = false; };
-  }, [activeShift]);
+  }, [activeShift, showToast]);
 
   if (!activeShift) {
     return null;
@@ -65,12 +67,11 @@ export default function CloseShiftModal({ onClose }: Props) {
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (closingCash === '' || closingCash < 0) {
-      setError('Please enter counted closing cash');
+      showToast({ message: 'Please enter counted closing cash', variant: 'error' });
       return;
     }
 
     setIsSubmitting(true);
-    setError(null);
 
     // If discrepancy is present, append automated remarks
     const discrepancy = cashVal - expectedCash;
@@ -83,17 +84,16 @@ export default function CloseShiftModal({ onClose }: Props) {
     closeShift(cashVal, finalNote)
       .then(success => {
         if (success) {
+          showToast({ message: 'Shift closed successfully', variant: 'success' });
           logout(); // Shift close logs staff out automatically
         } else {
-          setError('Failed to close shift register');
+          showToast({ message: 'Failed to close shift register', variant: 'error' });
           setIsSubmitting(false);
         }
       })
       .catch((err: unknown) => {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError(String(err));
+        if (!(err instanceof Error)) {
+          showToast({ message: String(err), variant: 'error' });
         }
         setIsSubmitting(false);
       });
@@ -113,11 +113,6 @@ export default function CloseShiftModal({ onClose }: Props) {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-650 p-3 rounded-md text-sm">
-              {error}
-            </div>
-          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-gray-50 p-3.5 border rounded-lg">
@@ -166,10 +161,8 @@ export default function CloseShiftModal({ onClose }: Props) {
           )}
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Counted Cash in Drawer (₹)
-            </label>
-            <input
+            <Input
+              label="Counted Cash in Drawer (₹)"
               type="number"
               min="0"
               step="0.01"
@@ -177,7 +170,7 @@ export default function CloseShiftModal({ onClose }: Props) {
               autoFocus
               value={closingCash}
               onChange={e => { setClosingCash(e.target.value === '' ? '' : Number(e.target.value)); }}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-lg font-bold text-gray-900"
+              className="text-lg font-bold text-gray-900 focus:ring-red-500"
               placeholder="e.g. 1500"
             />
             {closingCash !== '' && (
@@ -190,16 +183,14 @@ export default function CloseShiftModal({ onClose }: Props) {
             )}
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Shift Notes (Optional)</label>
-            <textarea
-              value={note}
-              onChange={e => { setNote(e.target.value); }}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm"
-              placeholder="Discrepancy explanations, drawer count details, etc."
-              rows={2}
-            />
-          </div>
+          <Textarea
+            label="Shift Notes (Optional)"
+            value={note}
+            onChange={e => { setNote(e.target.value); }}
+            className="focus:ring-red-500 text-sm"
+            placeholder="Discrepancy explanations, drawer count details, etc."
+            rows={2}
+          />
 
           <div className="-mx-6 -mb-4 px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 mt-8">
             <Button

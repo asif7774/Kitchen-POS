@@ -2,6 +2,7 @@ import React from 'react';
 
 import { CartItem } from '../../../types/models';
 import Button from '../../../components/atoms/button/button';
+import Input from '../../../components/atoms/input/input';
 import { Tooltip } from '../../../components/atoms/tooltip/tooltip';
 
 interface Props {
@@ -41,10 +42,9 @@ const CartPanel: React.FC<Props> = ({ cart, onUpdateQty, onUpdateNote, onSendKOT
                   </Tooltip>
                 </div>
                 <div className="flex-1 ml-3">
-                  <input 
+                  <Input 
                     type="text" 
                     placeholder="Add note..." 
-                    className="w-full text-sm p-1.5 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
                     value={item.note}
                     onChange={(e) => { onUpdateNote(item.id, e.target.value); }}
                   />

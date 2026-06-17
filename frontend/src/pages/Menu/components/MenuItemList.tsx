@@ -3,6 +3,7 @@ import { Category, MenuItem } from '../../../types/models';
 import Button from '../../../components/atoms/button/button';
 import { api } from '../../../lib/ipc';
 import { useModal } from '../../../hooks/useModal';
+import { useToast } from '../../../hooks/useToast';
 
 type MenuData = Category & { items: MenuItem[] };
 
@@ -16,6 +17,7 @@ interface Props {
 
 const MenuItemList: React.FC<Props> = ({ category, onEdit, onRecipeEdit, onAdd, onRefresh }) => {
   const { showModal, hideModal } = useModal();
+  const { showToast } = useToast();
   
   const handleDelete = (id: number) => {
     showModal({
@@ -30,10 +32,16 @@ const MenuItemList: React.FC<Props> = ({ category, onEdit, onRecipeEdit, onAdd, 
             className="text-red-600 hover:bg-red-50 bg-red-50" 
             onClick={() => {
               api.menu.deleteItem({ id }).then(res => {
-                if (res.success) {onRefresh();}
+                if (res.success) {
+                  showToast({ message: 'Dish deleted successfully', variant: 'success' });
+                  onRefresh();
+                } else {
+                  showToast({ message: res.error ?? 'Failed to delete dish', variant: 'error' });
+                }
                 hideModal();
               }).catch((err: unknown) => {
                 console.error(err);
+                showToast({ message: 'An error occurred while deleting', variant: 'error' });
               });
             }}
           >
@@ -46,8 +54,18 @@ const MenuItemList: React.FC<Props> = ({ category, onEdit, onRecipeEdit, onAdd, 
 
   const handleToggle = async (item: MenuItem) => {
     const newStatus = item.is_available === 1 ? 0 : 1;
-    const res = await api.menu.toggleAvailable({ id: item.id, is_available: newStatus });
-    if (res.success) {onRefresh();}
+    try {
+      const res = await api.menu.toggleAvailable({ id: item.id, is_available: newStatus });
+      if (res.success) {
+        showToast({ message: `Dish marked as ${newStatus === 1 ? 'In Stock' : 'Out of Stock'}`, variant: 'success' });
+        onRefresh();
+      } else {
+        showToast({ message: res.error ?? 'Failed to toggle availability', variant: 'error' });
+      }
+    } catch (err) {
+      console.error(err);
+      showToast({ message: 'An unexpected error occurred', variant: 'error' });
+    }
   };
 
   return (

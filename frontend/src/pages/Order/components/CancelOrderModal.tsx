@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Button from '../../../components/atoms/button/button';
+import Textarea from '../../../components/atoms/textarea/textarea';
 
 interface Props {
   onClose: () => void;
@@ -25,15 +26,13 @@ const CancelOrderModal: React.FC<Props> = ({ onClose, onConfirm }) => {
         <p className="text-xs mt-1">This action cannot be undone. Inventory items deducted via KOT will be automatically restored.</p>
       </div>
 
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-1">Cancellation Reason / Note (Optional)</label>
-        <textarea 
-          value={note}
-          onChange={(e) => { setNote(e.target.value); }}
-          placeholder="e.g. Customer walked out, ordered by mistake..."
-          className="w-full p-2 border rounded focus:ring-2 focus:ring-red-500 focus:outline-none min-h-[80px]"
-        />
-      </div>
+      <Textarea 
+        label="Cancellation Reason / Note (Optional)"
+        value={note}
+        onChange={(e) => { setNote(e.target.value); }}
+        placeholder="e.g. Customer walked out, ordered by mistake..."
+        className="focus:ring-red-500 min-h-[80px]"
+      />
 
       <div className="-mx-6 -mb-4 px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 mt-8">
         <Button variant="outline" onClick={onClose} type="button">Go Back</Button>

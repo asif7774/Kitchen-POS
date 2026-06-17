@@ -5,10 +5,12 @@ import Input from '../../components/atoms/input/input';
 import { useAuthStore } from '../../store/auth';
 import CloseShiftModal from './components/CloseShiftModal';
 import { useModal } from '../../hooks/useModal';
+import { useToast } from '../../hooks/useToast';
 
 const SettingsPage: React.FC = () => {
   const activeShift = useAuthStore(state => state.activeShift);
   const { showModal, hideModal } = useModal();
+  const { showToast } = useToast();
   const [settings, setSettings] = useState<Record<string, unknown>>({});
 
   React.useEffect(() => {
@@ -20,7 +22,13 @@ const SettingsPage: React.FC = () => {
   }, []);
 
   const handleExport = async () => {
-    await api.backup.export({});
+    try {
+      await api.backup.export({});
+      showToast({ message: 'Backup exported successfully', variant: 'success' });
+    } catch (err) {
+      console.error(err);
+      showToast({ message: 'Failed to export backup', variant: 'error' });
+    }
   };
 
   return (
@@ -91,9 +99,16 @@ const SettingsPage: React.FC = () => {
                 checked={settings.inventory_auto_debit !== false}
                 onChange={(e) => {
                   void (async () => {
-                    const val = e.target.checked;
-                    setSettings({ ...settings, inventory_auto_debit: val });
-                    await api.settings.save({ inventory_auto_debit: val });
+                    try {
+                      const val = e.target.checked;
+                      setSettings({ ...settings, inventory_auto_debit: val });
+                      await api.settings.save({ inventory_auto_debit: val });
+                      showToast({ message: 'Settings saved', variant: 'success' });
+                    } catch (err) {
+                      console.error(err);
+                      showToast({ message: 'Failed to save settings', variant: 'error' });
+                      // Revert optimism if needed, simplified here
+                    }
                   })();
                 }}
               />

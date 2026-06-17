@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Input from '../../../components/atoms/input/input';
+import Select from '../../../components/atoms/select/select';
 
 interface ExpenseModalProps {
   onClose: () => void;
@@ -55,41 +56,31 @@ const ExpenseModal: React.FC<Omit<ExpenseModalProps, 'onClose'>> = ({ onSave }) 
         required
       />
       
-      <div className="space-y-1.5">
-        <label className="block text-sm font-medium text-gray-700">
-          Category
-        </label>
-        <select 
-          value={category}
-          onChange={e => { 
-            setCategory(e.target.value); 
-            if (e.target.value !== 'Salary') {setStaffId('');}
-          }}
-          className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
-          required
-        >
-          {CATEGORIES.map(c => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-      </div>
+      <Select 
+        label="Category"
+        value={category}
+        onChange={e => { 
+          setCategory(e.target.value); 
+          if (e.target.value !== 'Salary') {setStaffId('');}
+        }}
+        required
+      >
+        {CATEGORIES.map(c => (
+          <option key={c} value={c}>{c}</option>
+        ))}
+      </Select>
 
       {category === 'Salary' && (
-        <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-gray-700">
-            Link to Staff (Optional)
-          </label>
-          <select 
-            value={staffId}
-            onChange={e => { setStaffId(e.target.value ? Number(e.target.value) : ''); }}
-            className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
-          >
-            <option value="">-- No Staff Linked --</option>
-            {staffList.map(s => (
-              <option key={s.id} value={s.id}>{s.name} ({s.role})</option>
-            ))}
-          </select>
-        </div>
+        <Select 
+          label="Link to Staff (Optional)"
+          value={staffId}
+          onChange={e => { setStaffId(e.target.value ? Number(e.target.value) : ''); }}
+        >
+          <option value="">-- No Staff Linked --</option>
+          {staffList.map(s => (
+            <option key={s.id} value={s.id}>{s.name} ({s.role})</option>
+          ))}
+        </Select>
       )}
       
       <Input 

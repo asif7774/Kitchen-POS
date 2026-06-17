@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../lib/ipc';
+import Input from '../../../components/atoms/input/input';
 
 import { MenuItem } from '../../../types/models';
 
@@ -29,10 +30,9 @@ const MenuPanel: React.FC<Props> = ({ onAddItem }) => {
   return (
     <div className="flex flex-col h-full">
       <div className="mb-4">
-        <input 
+        <Input 
           type="text" 
           placeholder="Search menu..." 
-          className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={search}
           onChange={(e) => { setSearch(e.target.value); }}
         />

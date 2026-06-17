@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { api } from '../../../lib/ipc';
 import { CartItem } from '../../../types/models';
 import Button from '../../../components/atoms/button/button';
+import Input from '../../../components/atoms/input/input';
+import Select from '../../../components/atoms/select/select';
+import { useToast } from '../../../hooks/useToast';
 
 interface Props {
   orderId: number;
@@ -12,6 +15,7 @@ interface Props {
 const BillModal: React.FC<Props> = ({ orderId, cart, onClose }) => {
   const initialTaxable = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
   const initialTotal = initialTaxable + (initialTaxable * 0.05);
+  const { showToast } = useToast();
 
   const [discount, setDiscount] = useState(0);
   const [payments, setPayments] = useState<{method: string, amount: number}[]>([{ method: 'cash', amount: initialTotal }]);
@@ -53,11 +57,14 @@ const BillModal: React.FC<Props> = ({ orderId, cart, onClose }) => {
       });
       if (res.success) {
          await api.print.bill({ bill: res.data, orderItems: cart, settings: {} });
-         // Alert removed for lint compliance
+         showToast({ message: 'Bill generated and printed', variant: 'success' });
          onClose();
+      } else {
+         showToast({ message: res.error ?? 'Failed to generate bill', variant: 'error' });
       }
     } catch (e) {
       console.error(e);
+      showToast({ message: 'An unexpected error occurred', variant: 'error' });
     }
   };
 
@@ -90,16 +97,18 @@ const BillModal: React.FC<Props> = ({ orderId, cart, onClose }) => {
               <span>₹{taxableTotal.toFixed(2)}</span>
             </div>
             <div className="flex flex-col gap-1 my-1">
-              <div className="flex justify-between items-center">
-                <span>Discount</span>
-                <input 
-                  type="number" 
-                  className="border rounded p-1 w-24 text-right focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  value={discount}
-                  onChange={e => { setDiscount(Number(e.target.value) || 0); }}
-                  min="0"
-                  step="0.01"
-                />
+              <div className="flex justify-between items-center mt-2">
+                <span className="w-1/3">Discount</span>
+                <div className="w-24">
+                  <Input 
+                    type="number" 
+                    className="text-right"
+                    value={discount}
+                    onChange={e => { setDiscount(Number(e.target.value) || 0); }}
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
               </div>
               <div className="flex flex-wrap justify-end gap-1.5 mt-1">
                 {[5, 10, 15, 20, 25, 30].map(pct => (
@@ -140,25 +149,29 @@ const BillModal: React.FC<Props> = ({ orderId, cart, onClose }) => {
                 {payments.length > 1 && (
                   <Button size="icon" variant="ghost" onClick={() => { handleRemovePayment(i); }} className="absolute top-1 right-1 text-red-500 h-6 w-6">✕</Button>
                 )}
-                <select 
-                  className="border rounded p-1.5 text-sm"
-                  value={p.method}
-                  onChange={(e) => { handlePaymentChange(i, 'method', e.target.value); }}
-                >
-                  <option value="cash">Cash</option>
-                  <option value="card">Card</option>
-                  <option value="upi">UPI</option>
-                  <option value="complimentary">Complimentary</option>
-                </select>
-                <input 
-                  type="number" 
-                  className="border rounded p-1.5 text-sm"
-                  placeholder="Amount"
-                  value={p.amount === 0 && payments.length === 1 ? '' : p.amount}
-                  onChange={(e) => { handlePaymentChange(i, 'amount', Number(e.target.value)); }}
-                  min="0"
-                  step="0.01"
-                />
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <Select 
+                      value={p.method}
+                      onChange={(e) => { handlePaymentChange(i, 'method', e.target.value); }}
+                    >
+                      <option value="cash">Cash</option>
+                      <option value="card">Card</option>
+                      <option value="upi">UPI</option>
+                      <option value="complimentary">Complimentary</option>
+                    </Select>
+                  </div>
+                  <div className="flex-1">
+                    <Input 
+                      type="number" 
+                      placeholder="Amount"
+                      value={p.amount === 0 && payments.length === 1 ? '' : p.amount}
+                      onChange={(e) => { handlePaymentChange(i, 'amount', Number(e.target.value)); }}
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                </div>
               </div>
             ))}
             <Button 

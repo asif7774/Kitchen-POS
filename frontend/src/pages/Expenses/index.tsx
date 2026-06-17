@@ -6,12 +6,14 @@ import Input from '../../components/atoms/input/input';
 import { useAuthStore } from '../../store/auth';
 import ExpenseModal from './components/ExpenseModal';
 import { useModal } from '../../hooks/useModal';
+import { useToast } from '../../hooks/useToast';
 
 const ExpensesPage: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
   const { showModal, hideModal } = useModal();
+  const { showToast } = useToast();
   const staff = useAuthStore(state => state.staff);
 
   const fetchExpenses = () => {
@@ -32,9 +34,11 @@ const ExpensesPage: React.FC = () => {
       staff_id: staff?.id,
     });
     if (res.success) {
+      showToast({ message: 'Expense added successfully', variant: 'success' });
       hideModal();
       fetchExpenses();
     } else {
+      showToast({ message: res.error ?? 'Failed to create expense', variant: 'error' });
       console.error('Failed to create expense:', res.error);
     }
   };
@@ -58,8 +62,10 @@ const ExpensesPage: React.FC = () => {
               void (async () => {
                 const res = await api.expenses.delete({ id });
                 if (res.success) {
+                  showToast({ message: 'Expense deleted successfully', variant: 'success' });
                   fetchExpenses();
                 } else {
+                  showToast({ message: res.error ?? 'Failed to delete expense', variant: 'error' });
                   console.error('Failed to delete expense:', res.error);
                 }
                 hideModal();
