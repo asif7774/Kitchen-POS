@@ -76,6 +76,13 @@ const features = [
     docs: "https://github.com/vitejs/vite/issues/88#issuecomment-762415200",
     borderColor: "border-t-green-500",
   },
+  {
+    name: "Atomic Components",
+    description: "Pre-built, accessible UI components (Input, Select, Toast, Modal).",
+    icon: "menu",
+    docs: "/components",
+    borderColor: "border-t-pink-500",
+  },
 ];
 
 // Memoize command to avoid recreation

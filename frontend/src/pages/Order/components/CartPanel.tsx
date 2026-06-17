@@ -3,7 +3,7 @@ import React from 'react';
 import { CartItem } from '../../../types/models';
 import Button from '../../../components/atoms/button/button';
 import Input from '../../../components/atoms/input/input';
-import { Tooltip } from '../../../components/atoms/tooltip/tooltip';
+import Stepper from '../../../components/atoms/stepper/stepper';
 
 interface Props {
   cart: CartItem[];
@@ -32,14 +32,12 @@ const CartPanel: React.FC<Props> = ({ cart, onUpdateQty, onUpdateNote, onSendKOT
                 <p className="font-bold text-gray-700">₹{(item.price * item.qty).toFixed(2)}</p>
               </div>
               <div className="flex items-center justify-between mt-2">
-                <div className="flex items-center border rounded bg-white">
-                  <Tooltip content="Decrease Quantity">
-                    <Button size="icon" variant="ghost" onClick={() => { onUpdateQty(item.id, -1); }}>−</Button>
-                  </Tooltip>
-                  <span className="px-3 py-1 font-medium min-w-[2rem] text-center border-x">{item.qty}</span>
-                  <Tooltip content="Increase Quantity">
-                    <Button size="icon" variant="ghost" onClick={() => { onUpdateQty(item.id, 1); }}>+</Button>
-                  </Tooltip>
+                <div className="flex items-center">
+                  <Stepper 
+                    value={item.qty} 
+                    onChange={(newQty) => { onUpdateQty(item.id, newQty - item.qty); }} 
+                    min={1} 
+                  />
                 </div>
                 <div className="flex-1 ml-3">
                   <Input 

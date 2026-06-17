@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MenuItem, InventoryItem, RecipeItem } from '../../../types/models';
 import Button from '../../../components/atoms/button/button';
 import Input from '../../../components/atoms/input/input';
-import Select from '../../../components/atoms/select/select';
+import Autosearch from '../../../components/atoms/autosearch/autosearch';
 import { api } from '../../../lib/ipc';
 import { useToast } from '../../../hooks/useToast';
 
@@ -20,6 +20,7 @@ const RecipeModal: React.FC<Props> = ({ item, onClose }) => {
   
   // New item form
   const [selectedInvId, setSelectedInvId] = useState<number | ''>('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [qtyUsed, setQtyUsed] = useState<string>('');
 
   useEffect(() => {
@@ -81,6 +82,7 @@ const RecipeModal: React.FC<Props> = ({ item, onClose }) => {
     
     setSelectedInvId('');
     setQtyUsed('');
+    setSearchQuery('');
   };
 
   const handleRemoveIngredient = (invId: number) => {
@@ -155,16 +157,17 @@ const RecipeModal: React.FC<Props> = ({ item, onClose }) => {
             <h3 className="text-sm font-bold text-gray-800 mb-3">Add Ingredient</h3>
             <div className="flex items-end gap-3">
               <div className="flex-1">
-                <Select 
+                <Autosearch 
                   label="Inventory Item"
-                  value={selectedInvId}
-                  onChange={(e) => { setSelectedInvId(e.target.value ? Number(e.target.value) : ''); }}
-                >
-                  <option value="">Select item...</option>
-                  {inventory.map(inv => (
-                    <option key={inv.id} value={inv.id}>{inv.name} ({inv.unit})</option>
-                  ))}
-                </Select>
+                  options={inventory.map(inv => ({ value: String(inv.id), label: `${inv.name} (${inv.unit})` }))}
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  onSelectOption={(opt) => {
+                    setSelectedInvId(Number(opt.value));
+                    setSearchQuery(opt.label);
+                  }}
+                  placeholder="Search inventory..."
+                />
               </div>
               <div className="w-24">
                 <Input 

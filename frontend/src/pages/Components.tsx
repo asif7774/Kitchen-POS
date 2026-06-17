@@ -3,6 +3,11 @@ import Button from "components/atoms/button";
 import LazyImage from "components/atoms/lazy-image";
 import Card from "components/organisms/card";
 import { useToast } from "hooks/useToast";
+import Input from "components/atoms/input/input";
+import Select from "components/atoms/select/select";
+import Textarea from "components/atoms/textarea/textarea";
+import Autosearch from "components/atoms/autosearch/autosearch";
+import Stepper from "components/atoms/stepper/stepper";
 
 import { useModal } from "hooks/useModal";
 
@@ -412,6 +417,108 @@ const Components: React.FC = () => {
             href="#"
             borderColor="border-t-yellow-400"
           />
+        </div>
+      </section>
+      <section>
+        <h2 className="text-2xl font-semibold mb-6 border-b pb-2">
+          Inputs & Forms
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">
+              Text Inputs
+            </h3>
+            <Input label="Standard Input" placeholder="Enter some text..." />
+            <Input label="With Default Value" defaultValue="Pre-filled text" />
+            <Input label="Error State" error="This field is required" placeholder="Error input" />
+            <Input label="Disabled Input" disabled placeholder="Cannot type here" />
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">
+              Autosearch Dropdown
+            </h3>
+            <Autosearch
+              label="Search Countries"
+              placeholder="Start typing..."
+              options={[
+                { value: "us", label: "United States" },
+                { value: "uk", label: "United Kingdom" },
+                { value: "ca", label: "Canada" },
+                { value: "au", label: "Australia" },
+                { value: "de", label: "Germany" },
+                { value: "fr", label: "France" },
+                { value: "jp", label: "Japan" },
+                { value: "in", label: "India" },
+                { value: "cn", label: "China" },
+              ]}
+              onChange={() => {}}
+              onSelectOption={() => {}}
+            />
+            
+            <Autosearch
+              label="Autosearch Error State"
+              placeholder="Search..."
+              error="Invalid selection"
+              options={[]}
+            />
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">
+              Select Dropdown
+            </h3>
+            <Select label="Basic Select">
+              <option value="">Select an option...</option>
+              <option value="1">Option One</option>
+              <option value="2">Option Two</option>
+              <option value="3">Option Three</option>
+            </Select>
+            <Select label="With Many Options (Searchable)">
+              <option value="">Select a country...</option>
+              <option value="us">United States</option>
+              <option value="uk">United Kingdom</option>
+              <option value="ca">Canada</option>
+              <option value="au">Australia</option>
+              <option value="de">Germany</option>
+              <option value="fr">France</option>
+              <option value="jp">Japan</option>
+              <option value="in">India</option>
+            </Select>
+            <Select label="Error State" error="Please select an option">
+              <option value="">Choose...</option>
+            </Select>
+            <Select label="Disabled Select" disabled>
+              <option value="">Cannot choose</option>
+            </Select>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">
+              Textareas
+            </h3>
+            <Textarea label="Standard Textarea" placeholder="Write a message..." rows={3} />
+            <Textarea label="Error State" error="Message cannot be empty" rows={3} />
+            <Textarea label="Disabled Textarea" disabled placeholder="Not allowed" rows={3} />
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">
+              Stepper (Number Input)
+            </h3>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Standard Stepper</label>
+              <Stepper defaultValue={1} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Triple Digit Width (100)</label>
+              <Stepper defaultValue={100} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Disabled Stepper</label>
+              <Stepper value={5} disabled onChange={() => {}} />
+            </div>
+          </div>
         </div>
       </section>
     </div>

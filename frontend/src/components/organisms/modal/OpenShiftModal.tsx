@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../../../store/auth';
 import Button from '../../atoms/button/button';
+import Input from '../../atoms/input/input';
 
 export default function OpenShiftModal() {
   const [openingCash, setOpeningCash] = useState<number | ''>('');
@@ -54,10 +55,8 @@ export default function OpenShiftModal() {
           )}
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Opening Float / Cash Drawer Cash (₹)
-            </label>
-            <input
+            <Input
+              label="Opening Float / Cash Drawer Cash (₹)"
               type="number"
               min="0"
               step="0.01"
@@ -65,8 +64,8 @@ export default function OpenShiftModal() {
               autoFocus
               value={openingCash}
               onChange={e => { setOpeningCash(e.target.value === '' ? '' : Number(e.target.value)); }}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xl font-bold text-center"
               placeholder="e.g. 1000"
+              className="text-xl font-bold text-center"
             />
           </div>
 

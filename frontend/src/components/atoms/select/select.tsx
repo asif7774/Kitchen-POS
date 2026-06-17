@@ -41,9 +41,14 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     const [highlightedIndex, setHighlightedIndex] = useState(0);
     const [openUpward, setOpenUpward] = useState(false);
 
+    const isControlled = value !== undefined;
+    const [internalValue, setInternalValue] = useState(rest.defaultValue ? String(rest.defaultValue) : "");
+    const currentValue = isControlled ? value : internalValue;
+
     const containerRef = useRef<HTMLDivElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
+    const listboxRef = useRef<HTMLUListElement>(null);
 
     const filteredOptions = options.filter((opt) => {
       if (!searchQuery) { return true; }
@@ -96,12 +101,25 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
       }
     }, [isOpen]);
 
+    // Scroll active item into view
+    useEffect(() => {
+      if (isOpen && listboxRef.current) {
+        const activeItem = listboxRef.current.children[highlightedIndex] as HTMLElement | undefined;
+        if (activeItem) {
+          activeItem.scrollIntoView({ block: "nearest" });
+        }
+      }
+    }, [highlightedIndex, isOpen]);
+
     const handleSelect = (val: string) => {
+      if (!isControlled) {
+        setInternalValue(val);
+      }
       if (onChange) {
         // Create synthetic event
         const event = {
-          target: { value: val },
-          currentTarget: { value: val },
+          target: { name: rest.name, value: val },
+          currentTarget: { name: rest.name, value: val },
         } as unknown as React.ChangeEvent<HTMLSelectElement>;
         onChange(event);
       }
@@ -145,8 +163,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
       id ??
       (label ? `select-${label.replace(/\s+/g, "-").toLowerCase()}` : undefined);
 
-    // Determine current selected value (controlled or uncontrolled)
-    const currentValue = value ?? rest.defaultValue;
+    // Determine current selected option
     const selectedOption = options.find(
       (opt) => opt.value === String(currentValue)
     );
@@ -170,8 +187,15 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           <select
             id={selectId}
             ref={ref}
-            value={value}
-            onChange={onChange}
+            value={currentValue}
+            onChange={(e) => {
+              if (!isControlled) {
+                setInternalValue(e.target.value);
+              }
+              if (onChange) {
+                onChange(e);
+              }
+            }}
             disabled={disabled}
             className="hidden"
             {...rest}
@@ -244,16 +268,11 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
-                  onKeyDown={(e) => {
-                    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-                      e.preventDefault();
-                      handleKeyDown(e);
-                    }
-                  }}
                   aria-label="Search options"
                 />
               </div>
               <ul
+                ref={listboxRef}
                 className="max-h-60 overflow-auto py-1 text-sm focus:outline-none"
                 role="listbox"
               >

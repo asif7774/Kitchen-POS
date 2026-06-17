@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Input from '../../../components/atoms/input/input';
+import Stepper from '../../../components/atoms/stepper/stepper';
 import Button from '../../../components/atoms/button/button';
 import { api } from '../../../lib/ipc';
 import { Table } from '../../../types/models';
@@ -12,7 +13,7 @@ interface Props {
 
 export default function TableModal({ onClose, onSaved, table }: Props) {
   const [name, setName] = useState(table?.name ?? '');
-  const [capacity, setCapacity] = useState(table?.capacity.toString() ?? '4');
+  const [capacity, setCapacity] = useState<number>(table?.capacity ?? 4);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -24,7 +25,7 @@ export default function TableModal({ onClose, onSaved, table }: Props) {
       setError('Name is required');
       return;
     }
-    const cap = parseInt(capacity, 10);
+    const cap = capacity;
     if (isNaN(cap) || cap < 1) {
       setError('Capacity must be a positive number');
       return;
@@ -76,13 +77,14 @@ export default function TableModal({ onClose, onSaved, table }: Props) {
         autoFocus
       />
 
-      <Input
-        label="Capacity (Covers)"
-        type="number"
-        min="1"
-        value={capacity}
-        onChange={(e) => { setCapacity(e.target.value); }}
-      />
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Capacity (Covers)</label>
+        <Stepper
+          value={capacity}
+          onChange={setCapacity}
+          min={1}
+        />
+      </div>
 
       <div className="-mx-6 -mb-4 px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 mt-8">
         <Button variant="ghost" onClick={onClose} disabled={isSaving} type="button">

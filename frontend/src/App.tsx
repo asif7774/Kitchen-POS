@@ -9,9 +9,11 @@ import MenuPage from './pages/Menu';
 import InventoryPage from './pages/Inventory';
 import ReportsPage from './pages/Reports';
 import SettingsPage from './pages/Settings';
-import ExpensesPage from './pages/Expenses';
+import ExpensesPage from './pages/Expenses/index';
 import StaffPage from './pages/Staff';
 import KDSPage from './pages/KDS';
+import HomePage from './pages/Home';
+import ComponentsPage from './pages/Components';
 import OpenShiftModal from './components/organisms/modal/OpenShiftModal';
 import AppLayout from './layouts/AppLayout';
 
@@ -33,6 +35,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const App: React.FC = () => {
   return (
     <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/components" element={<ComponentsPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route 
         path="/tables" 
