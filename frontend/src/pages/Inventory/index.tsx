@@ -1,4 +1,4 @@
-import { Button } from '../../components/atoms';
+import { Button, Autosearch } from '../../components/atoms';
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../../lib/ipc';
 import { InventoryItem } from '../../types/models';
@@ -11,6 +11,7 @@ export default function InventoryPage() {
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const { showModal, hideModal } = useModal();
 
   const fetchInventory = useCallback(() => {
@@ -106,15 +107,31 @@ export default function InventoryPage() {
     return <div className="p-8 text-center text-red-500">{error}</div>;
   }
 
+  const filteredItems = items.filter(item => 
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const searchOptions = items.map(item => ({
+    value: String(item.id),
+    label: item.name
+  }));
+
   return (
     <div className="container-responsive p-6 mx-auto h-full flex flex-col">
       <div className="flex justify-between items-center mb-6">
-        <div>
-          <p className="text-sm text-gray-500 mt-1">Track stock levels, unit costs, and adjustments</p>
+        <div className="flex-1 max-w-sm">
+          <Autosearch
+            placeholder="Search inventory items..."
+            options={searchOptions}
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onSelectOption={(opt) => { setSearchQuery(opt.label); }}
+          />
         </div>
         <Button
           onClick={() => { handleCreate(); }}
           variant="primary"
+          className="ml-4"
         >
           + Add Item
         </Button>
@@ -132,14 +149,14 @@ export default function InventoryPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {items.length === 0 ? (
+            {filteredItems.length === 0 ? (
               <tr>
                 <td colSpan={5} className="py-8 text-center text-gray-500">
-                  No inventory items found. Add one to get started.
+                  No inventory items found matching your search.
                 </td>
               </tr>
             ) : (
-              items.map(item => {
+              filteredItems.map(item => {
                 const isLowStock = item.qty_in_stock <= item.low_stock_alert_at;
                 return (
                   <tr key={item.id} className="hover:bg-gray-50 transition-colors group">

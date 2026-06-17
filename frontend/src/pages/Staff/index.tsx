@@ -1,4 +1,4 @@
-import { Button } from '../../components/atoms';
+import { Button, Autosearch } from '../../components/atoms';
 import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/ipc';
 import { Staff } from '../../types/models';
@@ -17,6 +17,7 @@ const roleColors: Record<string, string> = {
 
 const StaffPage: React.FC = () => {
   const [staffList, setStaffList] = useState<Staff[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const { showModal, hideModal } = useModal();
 
   const fetchStaff = () => {
@@ -101,10 +102,29 @@ const StaffPage: React.FC = () => {
     });
   };
 
+  const filteredStaff = staffList.filter(staff =>
+    staff.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    staff.role.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const searchOptions = staffList.map(staff => ({
+    value: String(staff.id),
+    label: staff.name
+  }));
+
   return (
     <div className="container-responsive p-6 mx-auto h-full flex flex-col">
       <div className="flex justify-between items-center mb-6">
-        <Button variant="primary" onClick={openAddModal}>
+        <div className="flex-1 max-w-sm">
+          <Autosearch
+            placeholder="Search staff by name or role..."
+            options={searchOptions}
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onSelectOption={(opt) => { setSearchQuery(opt.label); }}
+          />
+        </div>
+        <Button variant="primary" onClick={openAddModal} className="ml-4">
           + Add Staff
         </Button>
       </div>
@@ -120,14 +140,14 @@ const StaffPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 overflow-y-auto">
-              {staffList.length === 0 ? (
+              {filteredStaff.length === 0 ? (
                 <tr>
                   <td colSpan={3} className="px-6 py-8 text-center text-gray-500">
-                    No active staff found.
+                    No staff found matching your search.
                   </td>
                 </tr>
               ) : (
-                staffList.map((staff) => (
+                filteredStaff.map((staff) => (
                   <tr key={staff.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 text-gray-800 font-medium">{staff.name}</td>
                     <td className="px-6 py-4 text-gray-800">

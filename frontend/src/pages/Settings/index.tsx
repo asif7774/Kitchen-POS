@@ -12,6 +12,8 @@ const SettingsPage: React.FC = () => {
   const { showModal, hideModal } = useModal();
   const { showToast } = useToast();
   const [settings, setSettings] = useState<Record<string, unknown>>({});
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [darkModeEnabled, setDarkModeEnabled] = useState(false);
 
   React.useEffect(() => {
     void api.settings.get().then(res => {
@@ -109,6 +111,20 @@ const SettingsPage: React.FC = () => {
             <div>
               <p className="font-medium text-gray-700">Auto-Debit Inventory on KOT</p>
               <p className="text-sm text-gray-500">Automatically deduct ingredients from stock when an order is sent to the kitchen.</p>
+          <div className="space-y-4 pt-4 border-t border-gray-100 mt-4">
+            <Toggle
+              checked={notificationsEnabled}
+              onChange={(e) => { setNotificationsEnabled(e.target.checked); }}
+              label="Enable Notifications"
+              description="Receive alerts for low inventory"
+            />
+            <Toggle
+              checked={darkModeEnabled}
+              onChange={(e) => { setDarkModeEnabled(e.target.checked); }}
+              label="Dark Mode"
+              description="Switch between light and dark themes"
+            />
+          </div>
             </div>
             <Toggle
               checked={settings.inventory_auto_debit !== false}

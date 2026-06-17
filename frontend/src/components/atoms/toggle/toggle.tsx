@@ -18,27 +18,9 @@ const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
     ref
   ) => {
     return (
-      <label
-        className={`relative inline-flex ${
-          description ? "items-start" : "items-center"
-        } gap-3 ${
-          disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-        } ${containerClassName}`}
-      >
-        <div className={`relative shrink-0 flex items-center justify-center ${description ? "mt-0.5" : ""}`}>
-          <input
-            type="checkbox"
-            className="peer sr-only"
-            disabled={disabled}
-            ref={ref}
-            {...rest}
-          />
-          {/* Track */}
-          <div className="h-6 w-11 rounded-full bg-gray-200 shadow-inner transition-colors duration-200 ease-in-out peer-checked:bg-blue-600 peer-focus-visible:ring-2 peer-focus-visible:ring-blue-500 peer-focus-visible:ring-offset-2" />
-          
-          {/* Thumb */}
-          <div className="absolute left-[2px] top-[2px] h-5 w-5 rounded-full bg-white shadow border border-gray-100 transition-transform duration-200 ease-in-out peer-checked:translate-x-5 peer-checked:border-blue-100" />
-        </div>
+      <label className={`relative inline-flex ${description ? "items-start" : "items-center"} gap-3 ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"} ${containerClassName}`}>
+        <input type="checkbox" className="sr-only peer" disabled={disabled} ref={ref} {...rest} />
+        <div className={`relative w-11 h-6 bg-gray-200 peer-focus-visible:outline-none rounded-full peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 shadow-inner shrink-0 ${description ? "mt-1" : ""}`}></div>
 
         {(label ?? description) && (
           <div className="flex flex-col">
