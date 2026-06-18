@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Customer } from '../../types/models';
 import { api } from '../../lib/ipc';
-import { Button } from '../../components/atoms';
+import { Button, Autosearch } from '../../components/atoms';
 import { useModal } from '../../hooks/useModal';
 import { useToast } from '../../hooks/useToast';
-import CustomerModal from './components/CustomerModal';
+import { useNavigate } from 'react-router-dom';
 import SettleBalanceModal from './components/SettleBalanceModal';
 import CustomerHistoryModal from './components/CustomerHistoryModal';
+import { useHeader } from '../../contexts/HeaderContext';
 
 const CustomersPage: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const { showModal, hideModal } = useModal();
   const { showToast } = useToast();
+  const navigate = useNavigate();
 
   const loadCustomers = async () => {
     const res = await api.customers.getAll();
@@ -25,35 +28,37 @@ const CustomersPage: React.FC = () => {
     return () => { clearTimeout(timer); };
   }, []);
 
-  const handleCreate = () => {
-    showModal({
-      title: 'Add Customer',
-      content: <CustomerModal 
-        onSuccess={() => { hideModal(); void loadCustomers(); }} 
-      />,
-      actions: (
-        <>
-          <Button variant="outline" onClick={hideModal}>Cancel</Button>
-          <Button type="submit" form="customer-form" variant="primary">Save Customer</Button>
-        </>
-      )
-    });
-  };
+  const handleCreate = React.useCallback(() => {
+    navigate('/customers/new');
+  }, [navigate]);
+
+  const searchOptions = React.useMemo(() => customers.map(c => ({
+    value: String(c.id),
+    label: c.name
+  })), [customers]);
+
+  const { setHeader } = useHeader();
+  useEffect(() => {
+    setHeader(
+      'Customers', 
+      <div className="flex items-center space-x-4">
+        <div className="w-64">
+          <Autosearch
+            placeholder="Search customers by name..."
+            options={searchOptions}
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onSelectOption={(opt) => { setSearchQuery(opt.label); }}
+          />
+        </div>
+        <Button onClick={handleCreate} variant="primary">Add Customer</Button>
+      </div>
+    );
+    return () => { setHeader(null, null); };
+  }, [setHeader, handleCreate, searchQuery, searchOptions]);
 
   const handleEdit = (customer: Customer) => {
-    showModal({
-      title: 'Edit Customer',
-      content: <CustomerModal 
-        customer={customer} 
-        onSuccess={() => { hideModal(); void loadCustomers(); }} 
-      />,
-      actions: (
-        <>
-          <Button variant="outline" onClick={hideModal}>Cancel</Button>
-          <Button type="submit" form="customer-form" variant="primary">Save Customer</Button>
-        </>
-      )
-    });
+    navigate(`/customers/${customer.id}`);
   };
 
   const handleDelete = (id: number) => {
@@ -104,14 +109,16 @@ const CustomersPage: React.FC = () => {
     });
   };
 
-  return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Customers</h1>
-        <Button onClick={handleCreate} variant="primary">Add Customer</Button>
-      </div>
+  const filteredCustomers = customers.filter(c => 
+    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (c.email?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
+    (c.phone?.includes(searchQuery) ?? false)
+  );
 
-      <div className="bg-white rounded-lg shadow overflow-x-auto">
+  return (
+    <>
+      <div className="p-6">
+        <div className="bg-white rounded-lg shadow overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b">
@@ -123,7 +130,7 @@ const CustomersPage: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {customers.map(c => (
+            {filteredCustomers.map(c => (
               <tr key={c.id} className="border-b hover:bg-gray-50 transition-colors">
                 <td className="p-4">
                   <div className="font-medium text-gray-800">{c.name}</div>
@@ -146,7 +153,7 @@ const CustomersPage: React.FC = () => {
                 </td>
               </tr>
             ))}
-            {customers.length === 0 && (
+            {filteredCustomers.length === 0 && (
               <tr>
                 <td colSpan={5} className="p-8 text-center text-gray-500">
                   No customers found. Click "Add Customer" to create one.
@@ -157,6 +164,7 @@ const CustomersPage: React.FC = () => {
         </table>
       </div>
     </div>
+    </>
   );
 };
 

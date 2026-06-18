@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../../lib/ipc';
+import { Button } from '../../components/atoms';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/atoms/card';
+import { useHeader } from '../../contexts/HeaderContext';
 import {
   LineChart,
   Line,
@@ -14,6 +16,14 @@ import {
 } from 'recharts';
 
 type FilterType = 'today' | 'yesterday' | 'weekly' | 'monthly' | 'yearly';
+
+const filters: { label: string; value: FilterType }[] = [
+  { label: 'Today', value: 'today' },
+  { label: 'Yesterday', value: 'yesterday' },
+  { label: 'Weekly', value: 'weekly' },
+  { label: 'Monthly', value: 'monthly' },
+  { label: 'Yearly', value: 'yearly' }
+];
 
 const DashboardPage: React.FC = () => {
   const [filter, setFilter] = useState<FilterType>('today');
@@ -48,39 +58,38 @@ const DashboardPage: React.FC = () => {
   }, [filter]);
 
   // Handle filter changes to trigger loading state correctly
-  const handleFilterChange = (f: FilterType) => {
+  const handleFilterChange = useCallback((f: FilterType) => {
     setLoading(true);
     setFilter(f);
-  };
+  }, []);
 
-  const filters: { label: string; value: FilterType }[] = [
-    { label: 'Today', value: 'today' },
-    { label: 'Yesterday', value: 'yesterday' },
-    { label: 'Weekly', value: 'weekly' },
-    { label: 'Monthly', value: 'monthly' },
-    { label: 'Yearly', value: 'yearly' }
-  ];
+  const { setHeader } = useHeader();
+  
+  useEffect(() => {
+    setHeader(
+      'Dashboard',
+      <div className="flex bg-white rounded-lg p-1 shadow-sm border border-gray-200">
+        {filters.map(f => (
+          <Button
+            key={f.value}
+            variant="ghost"
+            onClick={() => { handleFilterChange(f.value); }}
+            className={
+              filter === f.value 
+                ? 'bg-blue-50 text-blue-700 shadow-sm hover:bg-blue-100 hover:text-blue-800' 
+                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+            }
+          >
+            {f.label}
+          </Button>
+        ))}
+      </div>
+    );
+    return () => { setHeader(null, null); };
+  }, [setHeader, filter, handleFilterChange]);
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <div className="flex bg-white rounded-lg p-1 shadow-sm border border-gray-200">
-          {filters.map(f => (
-            <button
-              key={f.value}
-              onClick={() => { handleFilterChange(f.value); }}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                filter === f.value 
-                  ? 'bg-blue-50 text-blue-700 shadow-sm' 
-                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-      </div>
 
       {loading ? (
         <div className="flex items-center justify-center h-64">

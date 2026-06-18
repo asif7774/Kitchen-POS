@@ -20,7 +20,7 @@ const TableStatusCard: React.FC<Props> = ({ name, capacity, status, customerName
       return;
     }
     const updateTime = () => {
-      const dateStr = createdAt.endsWith('Z') ? createdAt : createdAt.replace(' ', 'T') + 'Z';
+      const dateStr = createdAt.endsWith('Z') ? createdAt : `${createdAt.replace(' ', 'T')  }Z`;
       const ms = Date.now() - new Date(dateStr).getTime();
       const mins = Math.max(0, Math.floor(ms / 60000));
       const hrs = Math.floor(mins / 60);
@@ -94,7 +94,8 @@ const TableStatusCard: React.FC<Props> = ({ name, capacity, status, customerName
             </div>
           </div>
           {occupiedTime && (
-            <div className="bg-gray-100 rounded px-1.5 py-0.5 text-[10px] font-mono font-bold text-gray-600 shadow-inner">
+            <div className="flex items-center gap-1 bg-gray-100 rounded px-1.5 py-0.5 text-[10px] font-mono font-bold text-gray-600 shadow-inner">
+              <SvgIcon name="clock" className="h-3 w-3 text-gray-400" aria-hidden={true} />
               {occupiedTime}
             </div>
           )}

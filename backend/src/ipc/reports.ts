@@ -1,5 +1,7 @@
 import { ipcMain } from 'electron';
+import Store from 'electron-store';
 import { getDB } from '../db';
+import { printBill } from '../services/printer';
 
 interface DailyReportPayload {
   start: string;
@@ -82,7 +84,7 @@ export function registerReportsIPC() {
     return { success: true };
   });
 
-  ipcMain.handle('reports:getPastOrders', async (_, payload: { filter: 'daily' | 'weekly' | 'monthly' | 'yearly' }) => {
+  ipcMain.handle('reports:getPastOrders', async (_, payload: { filter: 'daily' | 'weekly' | 'monthly' | 'yearly'; page: number; limit: number }) => {
     try {
       const db = getDB();
       let modifiers = "";
@@ -94,26 +96,42 @@ export function registerReportsIPC() {
         case 'yearly': modifiers = "'localtime', 'start of year'"; break;
       }
       
+      const { page, limit } = payload;
+      const offset = (page - 1) * limit;
+
+      const totalCountRow = db.prepare(`
+        SELECT COUNT(DISTINCT o.id) as count
+        FROM orders o
+        JOIN bills b ON o.id = b.order_id
+        WHERE o.status = 'billed' AND datetime(o.created_at, 'localtime') >= datetime('now', ${modifiers})
+      `).get() as { count: number };
+      const totalOrdersCount = totalCountRow.count;
+      const totalPages = Math.ceil(totalOrdersCount / limit);
+
       const orders = db.prepare(`
         SELECT 
           o.id as order_id, 
           o.created_at as order_time, 
           b.created_at as bill_time, 
           b.total_amount, 
-          c.name as customer_name
+          c.name as customer_name,
+          o.type
         FROM orders o
         JOIN bills b ON o.id = b.order_id
         LEFT JOIN customers c ON o.customer_id = c.id
-        WHERE o.status = 'billed' AND o.created_at >= datetime('now', ${modifiers})
+        WHERE o.status = 'billed' AND datetime(o.created_at, 'localtime') >= datetime('now', ${modifiers})
+        GROUP BY o.id
         ORDER BY o.created_at DESC
-      `).all() as any[];
+        LIMIT ? OFFSET ?
+      `).all(limit, offset) as any[];
 
       const aggregates = db.prepare(`
         SELECT 
-          COUNT(id) AS total_orders,
-          COALESCE(SUM(total_amount), 0) AS total_revenue
-        FROM bills
-        WHERE created_at >= datetime('now', ${modifiers})
+          COUNT(DISTINCT b.id) AS total_orders,
+          COALESCE(SUM(b.total_amount), 0) AS total_revenue
+        FROM bills b
+        JOIN orders o ON o.id = b.order_id
+        WHERE datetime(o.created_at, 'localtime') >= datetime('now', ${modifiers})
       `).get() as { total_orders: number, total_revenue: number };
 
       const average_order_value = aggregates.total_orders > 0 
@@ -129,6 +147,7 @@ export function registerReportsIPC() {
           customerName: o.customer_name ?? 'Walk-in',
           date: o.order_time,
           occupiedTimeMs: occupiedMs > 0 ? occupiedMs : 0,
+          type: o.type,
           items
         };
       });
@@ -141,12 +160,41 @@ export function registerReportsIPC() {
             totalRevenue: aggregates.total_revenue,
             averageOrderValue: average_order_value
           },
-          orders: data
+          orders: data,
+          totalPages,
+          currentPage: page
         }
       };
     } catch (e: unknown) {
       if (e instanceof Error) { return { success: false, error: e.message }; }
       return { success: false, error: 'Unknown error occurred' };
+    }
+  });
+
+  ipcMain.handle('reports:printPastBill', async (_, payload: { orderId: number }) => {
+    try {
+      const db = getDB();
+      const bill = db.prepare('SELECT * FROM bills WHERE order_id = ?').get(payload.orderId) as any;
+      if (!bill) throw new Error('Bill not found for this order.');
+
+      const items = db.prepare(`
+        SELECT name, qty, unit_price 
+        FROM order_items 
+        WHERE order_id = ?
+      `).all(payload.orderId) as any[];
+
+      const store = new Store();
+      const settings = {
+        outlet_name: store.get('outlet_name') as string,
+        address: store.get('address') as string,
+        gstin: store.get('gstin') as string,
+      };
+
+      await printBill(bill, items, settings);
+      return { success: true };
+    } catch (e: unknown) {
+      if (e instanceof Error) { return { success: false, error: e.message }; }
+      return { success: false, error: 'Unknown printing error' };
     }
   });
 }

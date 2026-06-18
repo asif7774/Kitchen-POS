@@ -40,7 +40,7 @@ const AppLayout: React.FC<Props> = ({ children }) => {
   const handleClose = useCallback(() => { setIsMobileOpen(false); }, []);
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className="h-screen flex bg-gray-50 overflow-hidden">
 
       {/* Backdrop — mobile/touch drawer only */}
       <div
@@ -66,7 +66,7 @@ const AppLayout: React.FC<Props> = ({ children }) => {
 
       {/* Main content — margin only when sidebar is permanently visible */}
       <main
-        className="flex-1 flex flex-col min-h-screen transition-[margin-left] duration-300 overflow-hidden"
+        className="flex-1 flex flex-col h-screen transition-[margin-left] duration-300 overflow-hidden"
         style={{ marginLeft: isSidebarPermanent ? `${sidebarWidth}px` : 0 }}
       >
         <Header

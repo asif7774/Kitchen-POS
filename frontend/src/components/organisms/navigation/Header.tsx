@@ -2,6 +2,7 @@ import { Button } from '../../../components/atoms';
 import React from 'react';
 import { SvgIcon } from '../../../components/atoms/svg-sprite-loader';
 import { useLocation } from 'react-router-dom';
+import { useHeader } from '../../../contexts/HeaderContext';
 
 interface HeaderProps {
   isSidebarPermanent: boolean;
@@ -24,7 +25,8 @@ const getPageName = (pathname: string) => {
 
 const Header: React.FC<HeaderProps> = ({ isSidebarPermanent, onOpenMobileDrawer }) => {
   const location = useLocation();
-  const pageName = getPageName(location.pathname);
+  const { title, action } = useHeader();
+  const pageName = title ?? getPageName(location.pathname);
 
   return (
     <header className="h-[72px] flex items-center px-4 bg-white border-b border-gray-200 shrink-0 shadow-sm z-10 sticky top-0">
@@ -36,7 +38,7 @@ const Header: React.FC<HeaderProps> = ({ isSidebarPermanent, onOpenMobileDrawer 
           size="icon"
           onClick={onOpenMobileDrawer}
           aria-label="Open navigation"
-          className="mr-3 text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="mr-3 text-gray-600 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         >
           <SvgIcon name="menu" width="24" height="24" />
         </Button>
@@ -51,9 +53,8 @@ const Header: React.FC<HeaderProps> = ({ isSidebarPermanent, onOpenMobileDrawer 
           <h1 className="text-xl font-bold text-gray-900">{pageName}</h1>
         </div>
 
-        {/* Placeholders for user profile, shift status, etc. */}
         <div className="flex items-center space-x-4">
-          {/* Placeholder for future header items */}
+          {action}
         </div>
       </div>
     </header>

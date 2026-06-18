@@ -73,7 +73,8 @@ export default function OpenShiftModal() {
             <Button
               type="submit"
               variant="primary"
-              className="w-full py-3 text-lg"
+              block
+              size="lg"
               isLoading={isSubmitting}
             >
               Start Shift
@@ -81,8 +82,9 @@ export default function OpenShiftModal() {
             <Button
               type="button"
               variant="ghost"
+              block
               onClick={logout}
-              className="w-full text-gray-500 hover:text-gray-700"
+              className="text-gray-500 hover:text-gray-700"
             >
               Cancel / Logout
             </Button>

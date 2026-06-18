@@ -1,8 +1,9 @@
 import { Button, Input } from '../../components/atoms';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../../lib/ipc';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/atoms/card';
+import { useHeader } from '../../contexts/HeaderContext';
 
 interface DailyReport {
   date: string;
@@ -32,7 +33,7 @@ const ReportsPage: React.FC = () => {
     return () => { active = false; };
   }, [startDate, endDate]);
 
-  const handleExportCSV = async () => {
+  const handleExportCSV = useCallback(async () => {
     // Generate CSV from report
     if (!report) { return; }
     const csvContent = "data:text/csv;charset=utf-8," 
@@ -47,34 +48,41 @@ const ReportsPage: React.FC = () => {
     link.click();
     document.body.removeChild(link);
     return Promise.resolve();
-  };
+  }, [report, startDate, endDate]);
+
+  const { setHeader } = useHeader();
+  
+  useEffect(() => {
+    setHeader(
+      'Daily Sales Report',
+      <Button variant="outline" onClick={() => { void handleExportCSV(); }}>
+        Export CSV
+      </Button>
+    );
+    return () => { setHeader(null, null); };
+  }, [setHeader, handleExportCSV]);
 
   return (
-    <div className="p-6 bg-gray-50 h-full overflow-auto">
-      <div className="flex justify-between items-center mb-6">
-        <Button variant="outline" onClick={() => { void handleExportCSV(); }}>
-          Export CSV
-        </Button>
-      </div>
+    <div className="p-6 pt-0 bg-gray-50 h-full overflow-auto relative">
 
-      <Card className="mb-6 flex-row items-center gap-6 p-4 border-gray-100 shadow-sm">
-        <div className="w-40">
-          <Input 
-            type="date" 
-            label="Start Date"
-            value={startDate} 
-            onChange={e => { setStartDate(e.target.value); }}
-          />
-        </div>
-        <div className="w-40">
-          <Input 
-            type="date" 
-            label="End Date"
-            value={endDate} 
-            onChange={e => { setEndDate(e.target.value); }}
-          />
-        </div>
-      </Card>
+        <Card className="flex-row items-center gap-6 p-4 border-gray-100 shadow-sm">
+          <div className="w-40">
+            <Input 
+              type="date" 
+              label="Start Date"
+              value={startDate} 
+              onChange={e => { setStartDate(e.target.value); }}
+            />
+          </div>
+          <div className="w-40">
+            <Input 
+              type="date" 
+              label="End Date"
+              value={endDate} 
+              onChange={e => { setEndDate(e.target.value); }}
+            />
+          </div>
+        </Card>
 
       {report && (
         <>

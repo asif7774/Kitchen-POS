@@ -14,6 +14,7 @@ import ExpensesPage from './pages/Expenses/index';
 import StaffPage from './pages/Staff';
 import KDSPage from './pages/KDS';
 import CustomersPage from './pages/Customers';
+import CustomerDetailPage from './pages/CustomerDetail';
 import ComponentsPage from './pages/Components';
 import PastOrdersPage from './pages/PastOrders';
 import OpenShiftModal from './components/organisms/modal/OpenShiftModal';
@@ -101,6 +102,14 @@ const App: React.FC = () => {
         element={
           <ProtectedRoute>
             <CustomersPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/customers/:id" 
+        element={
+          <ProtectedRoute>
+            <CustomerDetailPage />
           </ProtectedRoute>
         } 
       />

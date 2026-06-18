@@ -28,10 +28,12 @@ interface OutletSettings {
 
 const hiddenWindows = new Set<BrowserWindow>();
 
-async function printHtmlSilent(htmlContent: string): Promise<void> {
+async function printHtml(htmlContent: string): Promise<void> {
   return new Promise((resolve, _reject) => {
     const win = new BrowserWindow({
-      show: false,
+      show: true,
+      width: 400,
+      height: 600,
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
@@ -84,7 +86,15 @@ export async function printKOT(items: KOTPrintItem[], tableName: string, orderNo
       <meta charset="utf-8">
       <style>
         @page { margin: 0; }
-        body { font-family: 'Courier New', monospace; font-size: 14px; font-weight: bold; width: 100%; max-width: 300px; padding: 0; margin: 0; color: black; line-height: 1.3; }
+        body { 
+          font-family: 'Courier New', monospace; font-size: 14px; font-weight: bold; color: black; line-height: 1.3; 
+          margin: 0; padding: 20px; background: #e5e7eb; display: flex; justify-content: center; min-height: 100vh; box-sizing: border-box; 
+        }
+        .receipt { width: 300px; background: #fff; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        @media print {
+          body { padding: 0; background: #fff; display: block; min-height: auto; }
+          .receipt { width: 100%; padding: 0; box-shadow: none; margin: 0; max-width: none; }
+        }
         .text-center { text-align: center; }
         .fw-bold { font-weight: bold; }
         .fs-large { font-size: 18px; }
@@ -94,19 +104,21 @@ export async function printKOT(items: KOTPrintItem[], tableName: string, orderNo
       </style>
     </head>
     <body>
-      <div class="text-center fw-bold fs-large">*** KOT ***</div>
-      <div class="text-center fs-large mt-2">Table: ${tableName}</div>
-      <div class="text-center mt-2">Date: ${new Date().toLocaleString()}</div>
-      <div class="divider"></div>
-      ${items.map(i => `<div class="item"><span>${i.qty} x ${i.name}</span></div>`).join('')}
-      ${orderNote ? `<div class="divider"></div><div class="note">Note: ${orderNote}</div>` : ''}
-      <div class="divider"></div>
-      <div class="text-center">End of KOT</div>
+      <div class="receipt">
+        <div class="text-center fw-bold fs-large">*** KOT ***</div>
+        <div class="text-center fs-large mt-2">Table: ${tableName}</div>
+        <div class="text-center mt-2">Date: ${new Date().toLocaleString()}</div>
+        <div class="divider"></div>
+        ${items.map(i => `<div class="item"><span>${i.qty} x ${i.name}</span></div>`).join('')}
+        ${orderNote ? `<div class="divider"></div><div class="note">Note: ${orderNote}</div>` : ''}
+        <div class="divider"></div>
+        <div class="text-center">End of KOT</div>
+      </div>
     </body>
     </html>
   `;
   
-  await printHtmlSilent(html);
+  await printHtml(html);
 }
 
 export async function printBill(bill: BillPrintPayload, orderItems: BillItemPrintPayload[], settings: OutletSettings): Promise<void> {
@@ -117,48 +129,58 @@ export async function printBill(bill: BillPrintPayload, orderItems: BillItemPrin
         <meta charset="utf-8">
         <style>
           @page { margin: 0; }
-          body { font-family: 'Courier New', monospace; font-size: 13px; font-weight: bold; width: 100%; max-width: 300px; padding: 0; margin: 0; color: black; line-height: 1.3; }
+          body { 
+            font-family: 'Courier New', monospace; font-size: 13px; font-weight: bold; color: black; line-height: 1.3; 
+            margin: 0; padding: 20px; background: #e5e7eb; display: flex; justify-content: center; min-height: 100vh; box-sizing: border-box; 
+          }
+          .receipt { width: 300px; background: #fff; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+          @media print {
+            body { padding: 0; background: #fff; display: block; min-height: auto; }
+            .receipt { width: 100%; padding: 0; box-shadow: none; margin: 0; max-width: none; }
+          }
           .text-center { text-align: center; }
           .text-right { text-align: right; }
           .fw-bold { font-weight: bold; }
           .fs-large { font-size: 18px; }
           .divider { border-bottom: 2px dashed #000; margin: 10px 0; }
           .item { display: flex; justify-content: space-between; margin-bottom: 4px; }
-          .item-name { width: 60%; }
-          .item-qty { width: 10%; text-align: right; }
-          .item-total { width: 30%; text-align: right; }
+          .item-name { flex: 1; padding-right: 10px; }
+          .item-qty { width: 40px; text-align: left; }
+          .item-total { width: 80px; text-align: right; }
           .summary-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
         </style>
       </head>
     <body>
-      <div class="text-center fw-bold fs-large">${settings.outlet_name ?? 'Restaurant POS'}</div>
-      ${settings.address ? `<div class="text-center">${settings.address}</div>` : ''}
-      <div class="text-center">GSTIN: ${settings.gstin ?? 'N/A'}</div>
-      <div class="divider"></div>
-      <div>Bill: ${bill.bill_number}</div>
-      <div>Date: ${new Date().toLocaleString()}</div>
-      <div class="divider"></div>
-      
-      ${orderItems.map(i => `
-        <div class="item">
-          <span class="item-name">${i.name}</span>
-          <span class="item-qty">${i.qty}x</span>
-          <span class="item-total">₹${(i.qty * i.unit_price).toFixed(2)}</span>
-        </div>
-      `).join('')}
-      
-      <div class="divider"></div>
-      <div class="summary-row"><span>Subtotal:</span><span>₹${bill.taxable_amount.toFixed(2)}</span></div>
-      <div class="summary-row"><span>CGST:</span><span>₹${bill.cgst_amount.toFixed(2)}</span></div>
-      <div class="summary-row"><span>SGST:</span><span>₹${bill.sgst_amount.toFixed(2)}</span></div>
-      ${bill.discount_amount > 0 ? `<div class="summary-row"><span>Discount:</span><span>-₹${bill.discount_amount.toFixed(2)}</span></div>` : ''}
-      <div class="divider"></div>
-      <div class="summary-row fw-bold fs-large"><span>GRAND TOTAL:</span><span>₹${bill.total_amount.toFixed(2)}</span></div>
-      <div class="divider"></div>
-      <div class="text-center fw-bold">Thank You! Visit Again.</div>
+      <div class="receipt">
+        <div class="text-center fw-bold fs-large">${settings.outlet_name ?? 'Restaurant POS'}</div>
+        ${settings.address ? `<div class="text-center">${settings.address}</div>` : ''}
+        <div class="text-center">GSTIN: ${settings.gstin ?? 'N/A'}</div>
+        <div class="divider"></div>
+        <div>Bill: ${bill.bill_number}</div>
+        <div>Date: ${new Date().toLocaleString()}</div>
+        <div class="divider"></div>
+        
+        ${orderItems.map(i => `
+          <div class="item">
+            <span class="item-name">${i.name}</span>
+            <span class="item-qty">${i.qty}x</span>
+            <span class="item-total">₹${(i.qty * i.unit_price).toFixed(2)}</span>
+          </div>
+        `).join('')}
+        
+        <div class="divider"></div>
+        <div class="summary-row"><span>Subtotal:</span><span>₹${bill.taxable_amount.toFixed(2)}</span></div>
+        <div class="summary-row"><span>CGST:</span><span>₹${bill.cgst_amount.toFixed(2)}</span></div>
+        <div class="summary-row"><span>SGST:</span><span>₹${bill.sgst_amount.toFixed(2)}</span></div>
+        ${bill.discount_amount > 0 ? `<div class="summary-row"><span>Discount:</span><span>-₹${bill.discount_amount.toFixed(2)}</span></div>` : ''}
+        <div class="divider"></div>
+        <div class="summary-row fw-bold fs-large"><span>GRAND TOTAL:</span><span>₹${bill.total_amount.toFixed(2)}</span></div>
+        <div class="divider"></div>
+        <div class="text-center fw-bold">Thank You! Visit Again.</div>
+      </div>
     </body>
     </html>
   `;
 
-  await printHtmlSilent(html);
+  await printHtml(html);
 }

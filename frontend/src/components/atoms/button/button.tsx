@@ -16,13 +16,14 @@ export interface ButtonProps extends ComponentProps<"button"> {
   icon?: string;
   iconPosition?: "left" | "right";
   isLoading?: boolean;
+  block?: boolean;
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
     "bg-blue-600 text-white hover:bg-blue-700 border border-transparent shadow-sm",
   secondary:
-    "bg-gray-200 text-gray-900 hover:bg-gray-300 border border-transparent",
+    "bg-indigo-100 text-indigo-800 hover:bg-indigo-200 border border-transparent",
   outline:
     "bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50",
   ghost:
@@ -33,7 +34,7 @@ const variantStyles: Record<ButtonVariant, string> = {
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: "px-3 py-1.5 text-sm",
+  sm: "px-3 py-1 text-sm",
   md: "px-4 py-2 text-base",
   lg: "px-6 py-3 text-lg",
   icon: "p-2",
@@ -48,6 +49,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       icon,
       iconPosition = "left",
       isLoading = false,
+      block = false,
       className = "",
       disabled,
       ...rest
@@ -55,7 +57,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed";
+      "inline-flex items-center justify-center font-medium rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed";
     // Default loader icon
     const LoadingIcon = () => (
       <SvgIcon
@@ -77,9 +79,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     const iconSpacing = children && size !== "icon" ? "gap-2" : "";
+    const blockClass = block ? "w-full" : "";
 
     const combinedClassName =
-      `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${iconSpacing} ${className}`.trim();
+      `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${blockClass} ${iconSpacing} ${className}`.replace(/\s+/g, " ").trim();
 
     return (
       <button

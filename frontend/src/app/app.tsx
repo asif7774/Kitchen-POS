@@ -9,6 +9,7 @@ import { ToastProvider } from 'contexts/ToastContext';
 import { ToastContainer } from 'components/organisms/toast/toast-container';
 
 import { ModalProvider } from 'contexts/ModalContext';
+import { HeaderProvider } from 'contexts/HeaderContext';
 import { ModalContainer } from 'components/organisms/modal/modal-container';
 import { useToast } from 'hooks/useToast';
 import { api } from '../lib/ipc';
@@ -42,6 +43,7 @@ function App() {
     <ErrorBoundary fallbackRender={AppErrorFallback}>
       <AuthProvider>
         <ToastProvider>
+          <HeaderProvider>
           <ModalProvider>
             {/* SvgSpriteLoader wraps Router to provide context, but loading is deferred internally */}
             <SvgSpriteLoader
@@ -61,6 +63,7 @@ function App() {
           </Router>
         </SvgSpriteLoader>
           </ModalProvider>
+          </HeaderProvider>
         </ToastProvider>
       </AuthProvider>
     </ErrorBoundary>

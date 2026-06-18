@@ -167,7 +167,7 @@ function Home() {
                 type="text"
                 readOnly
                 value={COMMAND}
-                className="w-full px-4 py-3 pr-24 bg-white/30 backdrop-blur-sm border border-white/30 rounded-lg text-white font-mono text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/60"
+                className="w-full px-4 py-3 pr-24 bg-white/30 backdrop-blur-sm border border-white/30 rounded-lg text-white font-mono text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:border-white/60"
                 aria-label="Command to install Vital"
               />
               <button

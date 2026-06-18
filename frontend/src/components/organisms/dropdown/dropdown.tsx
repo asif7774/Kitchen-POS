@@ -186,10 +186,10 @@ export const Dropdown: React.FC<DropdownProps> = ({
                 role="menuitem"
                 tabIndex={0}
                 className={`
-                w-full text-left px-4 py-3 text-sm font-medium transition-colors outline-none focus:bg-blue-50 focus:text-blue-700
+                w-full text-left px-4 py-3 text-sm font-medium transition-colors outline-none focus-visible:bg-blue-50 focus-visible:text-blue-700
                 ${
                   item.danger
-                    ? "text-red-600 hover:bg-red-50 focus:bg-red-50 focus:text-red-700"
+                    ? "text-red-600 hover:bg-red-50 focus-visible:bg-red-50 focus-visible:text-red-700"
                     : "text-gray-700 hover:bg-gray-50"
                 }
                 ${index !== items.length - 1 ? "border-b border-gray-100" : ""}

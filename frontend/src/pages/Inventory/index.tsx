@@ -1,11 +1,12 @@
 import { Button, Autosearch } from '../../components/atoms';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { api } from '../../lib/ipc';
 import { InventoryItem } from '../../types/models';
 import { InventoryItemModal } from './components/InventoryItemModal';
 import { StockAdjustmentModal } from './components/StockAdjustmentModal';
 import { Card } from '../../components/atoms/card';
 import { useModal } from '../../hooks/useModal';
+import { useHeader } from '../../contexts/HeaderContext';
 
 export default function InventoryPage() {
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -60,7 +61,7 @@ export default function InventoryPage() {
     return () => { active = false; };
   }, []);
 
-  const handleCreate = () => {
+  const handleCreate = useCallback(() => {
     showModal({
       title: "Add Inventory Item",
       content: <InventoryItemModal initialData={null} onClose={hideModal} onRefresh={() => { fetchInventory(); }} />,
@@ -71,7 +72,7 @@ export default function InventoryPage() {
         </>
       )
     });
-  };
+  }, [showModal, hideModal, fetchInventory]);
 
   const handleEdit = (item: InventoryItem) => {
     showModal({
@@ -98,6 +99,36 @@ export default function InventoryPage() {
       )
     });
   };
+  const searchOptions = useMemo(() => items.map(item => ({
+    value: String(item.id),
+    label: item.name
+  })), [items]);
+
+  const { setHeader } = useHeader();
+  
+  useEffect(() => {
+    setHeader(
+      'Inventory Management',
+      <div className="flex items-center space-x-4">
+        <div className="w-64">
+          <Autosearch
+            placeholder="Search inventory items..."
+            options={searchOptions}
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onSelectOption={(opt) => { setSearchQuery(opt.label); }}
+          />
+        </div>
+        <Button
+          onClick={() => { handleCreate(); }}
+          variant="primary"
+        >
+          + Add Item
+        </Button>
+      </div>
+    );
+    return () => { setHeader(null, null); };
+  }, [setHeader, searchQuery, searchOptions, handleCreate]);
 
   if (loading) {
     return <div className="p-8 text-center text-gray-500">Loading inventory...</div>;
@@ -111,32 +142,8 @@ export default function InventoryPage() {
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const searchOptions = items.map(item => ({
-    value: String(item.id),
-    label: item.name
-  }));
-
   return (
     <div className="container-responsive p-6 mx-auto h-full flex flex-col">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex-1 max-w-sm">
-          <Autosearch
-            placeholder="Search inventory items..."
-            options={searchOptions}
-            value={searchQuery}
-            onChange={setSearchQuery}
-            onSelectOption={(opt) => { setSearchQuery(opt.label); }}
-          />
-        </div>
-        <Button
-          onClick={() => { handleCreate(); }}
-          variant="primary"
-          className="ml-4"
-        >
-          + Add Item
-        </Button>
-      </div>
-
       <Card>
         <table className="w-full text-left border-collapse">
           <thead>

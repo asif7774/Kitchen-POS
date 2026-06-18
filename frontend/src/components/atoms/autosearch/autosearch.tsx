@@ -158,9 +158,9 @@ const Autosearch = forwardRef<HTMLInputElement, AutosearchProps>(
     };
 
     const baseStyles =
-      "block rounded-md border shadow-sm transition-colors focus:ring-2 focus:outline-none sm:text-sm bg-white text-gray-900";
-    const normalStyles = "border-gray-300 focus:border-blue-500 focus:ring-blue-500";
-    const errorStyles = "border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500";
+      "block rounded-md border shadow-sm transition-colors focus-visible:ring-2 focus-visible:outline-none sm:text-sm bg-white text-gray-900";
+    const normalStyles = "border-gray-300 focus-visible:border-blue-500 focus-visible:ring-blue-500";
+    const errorStyles = "border-red-300 text-red-900 focus-visible:border-red-500 focus-visible:ring-red-500";
     const disabledStyles =
       "disabled:bg-gray-50 disabled:text-gray-500 disabled:border-gray-200 disabled:shadow-none cursor-not-allowed";
 
@@ -224,7 +224,7 @@ const Autosearch = forwardRef<HTMLInputElement, AutosearchProps>(
                 openUpward ? "bottom-full mb-1" : "top-full mt-1"
               }`}
             >
-              <ul ref={listboxRef} className="max-h-60 overflow-auto py-1 text-sm focus:outline-none" role="listbox">
+              <ul ref={listboxRef} className="max-h-60 overflow-auto py-1 text-sm focus-visible:outline-none" role="listbox">
                 {filteredOptions.map((opt, idx) => {
                   const isHighlighted = idx === highlightedIndex;
                   return (

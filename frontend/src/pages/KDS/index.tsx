@@ -168,7 +168,23 @@ export default function KDSPage() {
                   <div className="flex justify-between items-center p-4 border-b border-gray-805">
                     <div>
                       <h3 className="text-lg font-bold text-white">{ticket.table_name}</h3>
-                      <span className="text-xs text-gray-500">ID: #{ticket.order_id}</span>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs text-gray-500">ID: #{ticket.order_id}</span>
+                        {(() => {
+                          const type = ticket.type;
+                          const typeStyles: Record<'dine-in' | 'takeaway' | 'delivery', string> = {
+                            takeaway: 'bg-orange-950 text-orange-400 border-orange-900',
+                            delivery: 'bg-purple-950 text-purple-400 border-purple-900',
+                            'dine-in': 'bg-emerald-950 text-emerald-400 border-emerald-900',
+                          };
+                          const style = typeStyles[type];
+                          return (
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase border ${style}`}>
+                              {type}
+                            </span>
+                          );
+                        })()}
+                      </div>
                     </div>
                     <span className={`px-2 py-0.5 rounded text-xs ${badgeColor}`}>
                       {wait.text}
@@ -224,16 +240,18 @@ export default function KDSPage() {
                     <Button 
                       variant="outline" 
                       size="sm"
+                      block
                       onClick={() => { handleUpdateOrderStatus(ticket.order_id, 'ready'); }}
-                      className="flex-1 text-xs border-gray-850 text-emerald-400 hover:bg-emerald-950/30"
+                      className="text-xs border-gray-850 text-emerald-400 hover:bg-emerald-950/30"
                     >
                       All Ready
                     </Button>
                     <Button 
                       variant="outline" 
                       size="sm"
+                      block
                       onClick={() => { handleUpdateOrderStatus(ticket.order_id, 'served'); }}
-                      className="flex-1 text-xs border-gray-850 text-gray-400 hover:bg-gray-800"
+                      className="text-xs border-gray-850 text-gray-400 hover:bg-gray-800"
                     >
                       All Served
                     </Button>

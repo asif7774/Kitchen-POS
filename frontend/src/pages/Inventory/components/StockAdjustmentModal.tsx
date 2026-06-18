@@ -56,6 +56,9 @@ export function StockAdjustmentModal({ onClose, onRefresh, item }: Props) {
 
       });
   };
+  let quantityLabel = 'Quantity Change (use negative to remove)';
+  if (type === 'wastage') { quantityLabel = 'Quantity to Remove'; }
+  else if (type === 'purchase') { quantityLabel = 'Quantity to Add'; }
 
   return (
     <form id="stock-adjust-form" onSubmit={handleSubmit} className="space-y-4">
@@ -75,7 +78,7 @@ export function StockAdjustmentModal({ onClose, onRefresh, item }: Props) {
       </Select>
 
       <Input
-        label={type === 'wastage' ? 'Quantity to Remove' : type === 'purchase' ? 'Quantity to Add' : 'Quantity Change (use negative to remove)'}
+        label={quantityLabel}
         type="number"
         step="0.01"
         required

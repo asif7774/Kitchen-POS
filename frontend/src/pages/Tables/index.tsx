@@ -5,6 +5,7 @@ import { api } from '../../lib/ipc';
 import TableStatusCard from './components/TableStatusCard';
 import { useOrderStore } from '../../store/order';
 import TableModal from './components/TableModal';
+import { useHeader } from '../../contexts/HeaderContext';
 import { useModal } from '../../hooks/useModal';
 
 import { Table } from '../../types/models';
@@ -46,6 +47,25 @@ const TablesPage: React.FC = () => {
     };
   }, [fetchOpenOrders]);
 
+  const { setHeader } = useHeader();
+  const handleAddTable = React.useCallback(() => {
+    showModal({
+      title: "Add New Table",
+      content: <TableModal onSaved={() => { hideModal(); void loadData(); }} />,
+      actions: (
+        <>
+          <Button variant="outline" onClick={hideModal}>Cancel</Button>
+          <Button type="submit" form="table-form" variant="primary">Create</Button>
+        </>
+      )
+    });
+  }, [showModal, hideModal, loadData]);
+
+  useEffect(() => {
+    setHeader('Table Management', <Button variant="primary" icon="plus" onClick={handleAddTable}>Add Table</Button>);
+    return () => { setHeader(null, null); };
+  }, [setHeader, handleAddTable]);
+
   const handleTableClick = (id: number) => {
     selectTable(id);
     navigate(`/order/${id}`);
@@ -81,27 +101,8 @@ const TablesPage: React.FC = () => {
   };
 
   return (
-    <div className="container-responsive p-6">
-      <div className="flex justify-between items-center mb-6">
-        <Button 
-          variant="primary" 
-          icon="plus" 
-          onClick={() => { 
-            showModal({
-              title: "Add New Table",
-              content: <TableModal onSaved={() => { hideModal(); void loadData(); }} />,
-              actions: (
-                <>
-                  <Button variant="outline" onClick={hideModal}>Cancel</Button>
-                  <Button type="submit" form="table-form" variant="primary">Create</Button>
-                </>
-              )
-            });
-          }}
-        >
-          Add Table
-        </Button>
-      </div>
+    <>
+      <div className="container-responsive p-6">
 
       <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {tables.map(table => {
@@ -123,7 +124,8 @@ const TablesPage: React.FC = () => {
       </div>
 
 
-    </div>
+      </div>
+    </>
   );
 };
 

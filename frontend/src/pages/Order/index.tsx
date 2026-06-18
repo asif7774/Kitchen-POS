@@ -1,4 +1,4 @@
-import { Button, Select } from '../../components/atoms';
+import { Button, Select, BackButton } from '../../components/atoms';
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MenuPanel from './components/MenuPanel';
@@ -11,6 +11,7 @@ import { useModal } from '../../hooks/useModal';
 import { useToast } from '../../hooks/useToast';
 import { CustomerSelect } from '../../components/organisms/CustomerSelect';
 import { useAuthStore } from '../../store/auth';
+import { SvgIcon } from '../../components/atoms/svg-sprite-loader';
 
 const OrderPage: React.FC = () => {
   const { tableId } = useParams();
@@ -20,6 +21,7 @@ const OrderPage: React.FC = () => {
   const [orderId, setOrderId] = useState<number | null>(null);
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [createdAt, setCreatedAt] = useState<string | null>(null);
+  const [orderType, setOrderType] = useState<'dine-in' | 'takeaway' | 'delivery'>(Number(tableId) === 0 ? 'takeaway' : 'dine-in');
   const [occupiedTime, setOccupiedTime] = useState<string>('');
   const { showModal, hideModal } = useModal();
   const { showToast } = useToast();
@@ -49,28 +51,32 @@ const OrderPage: React.FC = () => {
       api.orders.getByTable({ tableId: Number(tableId) })
         .then(res => {
           if (active && res.success && res.data) {
-            setOrderId(res.data.id);
-            setCreatedAt(res.data.created_at);
-            if (res.data.customer_id) {
-              api.customers.getById(res.data.customer_id).then(custRes => {
+            const orderData = res.data;
+            setOrderId(orderData.id);
+            setCreatedAt(orderData.created_at);
+            setOrderType(orderData.type);
+            if (orderData.customer_id) {
+              api.customers.getById(orderData.customer_id).then(custRes => {
                 if (active && custRes.success && custRes.data) {
                   setCustomer(custRes.data);
                 } else if (active) {
                   setCustomer({
-                    id: res.data.customer_id,
-                    name: res.data.customer_name ?? 'Unknown',
+                    id: orderData.customer_id as number,
+                    name: orderData.customer_name ?? 'Unknown',
                     phone: null, email: null, loyalty_points: 0, total_visits: 0,
                     credit_limit: 0, outstanding_balance: 0, created_at: '',
                   });
                 }
               }).catch(console.error);
             }
-            const items: CartItem[] = res.data.items.map(i => ({
+            const items: CartItem[] = orderData.items.map(i => ({
               id: i.menu_item_id,
               name: i.name,
               price: i.unit_price,
               qty: i.qty,
               note: i.note ?? '',
+              status: i.preparation_status ?? 'sent',
+              originalQty: i.qty,
             }));
             setCart(items);
           }
@@ -82,11 +88,11 @@ const OrderPage: React.FC = () => {
 
   useEffect(() => {
     if (!createdAt) {
-      setOccupiedTime('');
-      return;
+      const timer = setTimeout(() => { setOccupiedTime(''); }, 0);
+      return () => { clearTimeout(timer); };
     }
     const updateTime = () => {
-      const dateStr = createdAt.endsWith('Z') ? createdAt : createdAt.replace(' ', 'T') + 'Z';
+      const dateStr = createdAt.endsWith('Z') ? createdAt : `${createdAt.replace(' ', 'T')  }Z`;
       const ms = Math.max(0, Date.now() - new Date(dateStr).getTime());
       const mins = Math.floor(ms / 60000);
       const hrs = Math.floor(mins / 60);
@@ -99,7 +105,9 @@ const OrderPage: React.FC = () => {
 
   const handleCustomerSelect = async (selected: Customer | null) => {
     setCustomer(selected);
-    if (!selected) return;
+    if (!selected) {
+      return;
+    }
 
     if (orderId) {
       await api.orders.updateCustomer({ orderId, customerId: selected.id });
@@ -108,6 +116,7 @@ const OrderPage: React.FC = () => {
         tableId: Number(tableId),
         staffId: staff?.id,
         customerId: selected.id,
+        type: orderType,
       });
       if (res.success && res.data) {
         setOrderId(res.data);
@@ -136,13 +145,16 @@ const OrderPage: React.FC = () => {
   };
 
   const handleSendKOT = async (shouldPrint: boolean) => {
-    if ((cart.length === 0 && !orderId) || !tableId) return;
+    if ((cart.length === 0 && !orderId) || !tableId) {
+      return;
+    }
 
     const res = await api.orders.sendKOT({
       tableId: Number(tableId),
       items: cart,
       staffId: staff?.id,
       customerId: customer?.id,
+      type: orderType,
     });
     if (res.success && res.data) {
       if (shouldPrint) {
@@ -159,32 +171,36 @@ const OrderPage: React.FC = () => {
   };
 
   const handleCancelOrder = async (note: string) => {
-    if (!tableId) return;
+    if (!tableId) {
+      return;
+    }
     if (!orderId) {
       setCart([]);
       hideModal();
       navigate('/tables');
       return;
     }
-    const res = await api.orders.cancelByTable({ tableId: Number(tableId), note });
-    if (res.success) {
-      setCart([]);
-      hideModal();
-      navigate('/tables');
-    } else {
-      showToast({ message: `Failed to cancel order: ${res.error}`, variant: 'error' });
+    try {
+      const res = await api.orders.cancelOrder({ orderId, note });
+      if (res.success) {
+        setCart([]);
+        hideModal();
+        navigate('/tables');
+      } else {
+        showToast({ message: `Failed to cancel order: ${res.error}`, variant: 'error' });
+      }
+    } catch (e: unknown) {
+      showToast({ message: `An unexpected error occurred: ${e instanceof Error ? e.message : String(e)}`, variant: 'error' });
     }
   };
 
   return (
     <div className="flex h-full bg-white relative">
       <div className="absolute top-0 left-0 p-4 z-10">
-        <Button variant="link" onClick={() => { navigate('/tables'); }}>
-          ← Back to Tables
-        </Button>
+        <BackButton to="/tables" label="Back to Tables" />
       </div>
 
-      <div className="flex-1 p-6 pt-20 border-r bg-gray-50 flex flex-col overflow-hidden">
+      <div className="flex-1 p-6 pt-14 border-r bg-gray-50 flex flex-col overflow-hidden">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">Menu</h1>
           {menus.length > 1 && (
@@ -207,9 +223,27 @@ const OrderPage: React.FC = () => {
         <div className="flex justify-between items-center mb-4">
           <div className="flex flex-col">
             <h2 className="text-xl font-bold text-gray-800">Current Order</h2>
-            {occupiedTime && <span className="text-xs font-medium text-gray-500">Occupied: {occupiedTime}</span>}
+            {occupiedTime && (
+              <div className="flex items-center gap-1 text-xs font-medium text-gray-500">
+                <SvgIcon name="clock" className="h-3.5 w-3.5" aria-hidden={true} />
+                <span>Occupied: {occupiedTime}</span>
+              </div>
+            )}
           </div>
-          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-bold">Table {tableId}</span>
+          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-bold">
+            {Number(tableId) === 0 ? (
+              <select 
+                value={orderType} 
+                onChange={e => { setOrderType(e.target.value as 'dine-in' | 'takeaway' | 'delivery'); }}
+                className="bg-transparent text-blue-800 font-bold focus:outline-none"
+              >
+                <option value="takeaway">Takeaway</option>
+                <option value="delivery">Delivery</option>
+              </select>
+            ) : (
+              `Table ${tableId}`
+            )}
+          </span>
         </div>
 
         <div className="mb-4">

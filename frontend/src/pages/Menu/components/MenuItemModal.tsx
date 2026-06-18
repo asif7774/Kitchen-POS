@@ -118,16 +118,18 @@ const MenuItemModal: React.FC<Props> = ({ item, categoryId, onSuccess }) => {
               <Button
                 type="button"
                 variant="ghost"
+                block
                 onClick={() => { setIsVeg(true); }}
-                className={`flex-1 rounded-md ${isVeg ? 'bg-white shadow-sm text-green-700' : 'text-gray-500'}`}
+                className={`rounded-md ${isVeg ? 'bg-white shadow-sm text-green-700' : 'text-gray-500'}`}
               >
                 Veg
               </Button>
               <Button
                 type="button"
                 variant="ghost"
+                block
                 onClick={() => { setIsVeg(false); }}
-                className={`flex-1 rounded-md ${!isVeg ? 'bg-white shadow-sm text-red-700' : 'text-gray-500'}`}
+                className={`rounded-md ${!isVeg ? 'bg-white shadow-sm text-red-700' : 'text-gray-500'}`}
               >
                 Non-Veg
               </Button>

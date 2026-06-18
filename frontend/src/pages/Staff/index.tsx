@@ -1,10 +1,11 @@
 import { Button, Autosearch } from '../../components/atoms';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../../lib/ipc';
 import { Staff } from '../../types/models';
 import { Card } from '../../components/atoms/card';
 import StaffModal from './components/StaffModal';
 import { useModal } from '../../hooks/useModal';
+import { useHeader } from '../../contexts/HeaderContext';
 
 const roleColors: Record<string, string> = {
   admin: 'bg-purple-100 text-purple-800',
@@ -20,19 +21,19 @@ const StaffPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { showModal, hideModal } = useModal();
 
-  const fetchStaff = () => {
+  const fetchStaff = useCallback(() => {
     void api.staff.getAll().then(res => {
       if (res.success && res.data) {
         setStaffList(res.data.filter(s => s.is_active));
       }
     });
-  };
+  }, []);
 
   useEffect(() => {
     fetchStaff();
-  }, []);
+  }, [fetchStaff]);
 
-  const handleSaveStaff = async (data: Partial<Staff>) => {
+  const handleSaveStaff = useCallback(async (data: Partial<Staff>) => {
     const res = await api.staff.upsert(data);
     if (res.success) {
       hideModal();
@@ -40,7 +41,7 @@ const StaffPage: React.FC = () => {
     } else {
       console.error('Failed to save staff:', res.error);
     }
-  };
+  }, [hideModal, fetchStaff]);
 
   const handleDelete = (id: number) => {
     showModal({
@@ -76,7 +77,7 @@ const StaffPage: React.FC = () => {
     });
   };
 
-  const openAddModal = () => {
+  const openAddModal = useCallback(() => {
     showModal({
       title: "Add Staff",
       content: <StaffModal initialData={null} onSave={data => { handleSaveStaff(data).catch(console.error); }} />,
@@ -87,7 +88,7 @@ const StaffPage: React.FC = () => {
         </>
       )
     });
-  };
+  }, [showModal, hideModal, handleSaveStaff]);
 
   const openEditModal = (staff: Staff) => {
     showModal({
@@ -107,15 +108,18 @@ const StaffPage: React.FC = () => {
     staff.role.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const searchOptions = staffList.map(staff => ({
+  const searchOptions = React.useMemo(() => staffList.map(staff => ({
     value: String(staff.id),
     label: staff.name
-  }));
+  })), [staffList]);
 
-  return (
-    <div className="container-responsive p-6 mx-auto h-full flex flex-col">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex-1 max-w-sm">
+  const { setHeader } = useHeader();
+  
+  useEffect(() => {
+    setHeader(
+      'Staff Management',
+      <div className="flex items-center space-x-4">
+        <div className="w-64">
           <Autosearch
             placeholder="Search staff by name or role..."
             options={searchOptions}
@@ -124,11 +128,16 @@ const StaffPage: React.FC = () => {
             onSelectOption={(opt) => { setSearchQuery(opt.label); }}
           />
         </div>
-        <Button variant="primary" onClick={openAddModal} className="ml-4">
+        <Button variant="primary" onClick={openAddModal}>
           + Add Staff
         </Button>
       </div>
+    );
+    return () => { setHeader(null, null); };
+  }, [setHeader, searchQuery, searchOptions, openAddModal]);
 
+  return (
+    <div className="container-responsive p-6 mx-auto h-full flex flex-col">
       <Card className="flex-1 border-gray-100">
         <div className="overflow-x-auto flex-1">
           <table className="w-full text-left text-sm whitespace-nowrap">

@@ -11,3 +11,4 @@ export * from './card/card';
 export { default as Logos } from './logos/index';
 export * from './error-boundary';
 export * from './svg-sprite-loader';
+export { default as BackButton } from './back-button/back-button';

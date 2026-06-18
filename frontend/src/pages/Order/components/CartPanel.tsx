@@ -26,15 +26,26 @@ const CartPanel: React.FC<Props> = ({ cart, onUpdateQty, onUpdateNote, onSendKOT
           cart.map(item => (
             <div key={item.id} className="border rounded p-3 bg-gray-50 relative">
               <div className="flex justify-between items-start mb-2">
-                <h4 className="font-medium pr-8">{item.name}</h4>
-                <p className="font-bold text-gray-700">₹{(item.price * item.qty).toFixed(2)}</p>
+                <h4 className="font-medium pr-8 flex items-center gap-2">
+                  <span>{item.name}</span>
+                  {item.status && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded border uppercase tracking-wider font-bold ${
+                      item.originalQty && item.qty > item.originalQty 
+                        ? 'bg-amber-50 text-amber-700 border-amber-200' 
+                        : 'bg-green-50 text-green-700 border-green-200'
+                    }`}>
+                      {item.originalQty && item.qty > item.originalQty ? 'MODIFIED' : item.status}
+                    </span>
+                  )}
+                </h4>
+                <p className="font-bold text-gray-700 shrink-0">₹{(item.price * item.qty).toFixed(2)}</p>
               </div>
               <div className="flex items-center justify-between mt-2">
                 <div className="flex items-center">
                   <Stepper 
                     value={item.qty} 
                     onChange={(newQty) => { onUpdateQty(item.id, newQty - item.qty); }} 
-                    min={1} 
+                    min={0} 
                   />
                 </div>
                 <div className="flex-1 ml-3">
@@ -60,7 +71,7 @@ const CartPanel: React.FC<Props> = ({ cart, onUpdateQty, onUpdateNote, onSendKOT
           <div className="flex gap-2">
             <Button 
               variant="outline"
-              className="flex-1 py-3"
+              block
               onClick={() => { onSendKOT(false); }}
               disabled={cart.length === 0}
             >
@@ -68,7 +79,7 @@ const CartPanel: React.FC<Props> = ({ cart, onUpdateQty, onUpdateNote, onSendKOT
             </Button>
             <Button 
               variant="secondary"
-              className="flex-1 py-3"
+              block
               onClick={() => { onSendKOT(true); }}
               disabled={cart.length === 0}
             >
@@ -77,7 +88,7 @@ const CartPanel: React.FC<Props> = ({ cart, onUpdateQty, onUpdateNote, onSendKOT
           </div>
           <Button 
             variant="primary"
-            className="w-full py-3"
+            block
             onClick={onGenerateBill}
             disabled={cart.length === 0}
           >
@@ -85,7 +96,8 @@ const CartPanel: React.FC<Props> = ({ cart, onUpdateQty, onUpdateNote, onSendKOT
           </Button>
           <Button 
             variant="outline"
-            className="w-full py-3 text-red-600 border-red-600 hover:bg-red-50"
+            block
+            className="text-red-600 border-red-600 hover:bg-red-50"
             onClick={onVoidOrder}
             disabled={cart.length === 0}
           >

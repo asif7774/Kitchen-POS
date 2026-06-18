@@ -28,6 +28,7 @@ interface SendKOTPayload {
   covers?: number;
   note?: string;
   customerId?: number;
+  type?: 'dine-in' | 'takeaway' | 'delivery';
 }
 
 function errMsg(e: unknown): string {
@@ -35,11 +36,11 @@ function errMsg(e: unknown): string {
 }
 
 export function registerOrdersIPC() {
-  ipcMain.handle('orders:create', async (_, payload: { tableId: number; staffId?: number; covers?: number; note?: string; customerId?: number }) => {
+  ipcMain.handle('orders:create', async (_, payload: { tableId: number; staffId?: number; covers?: number; note?: string; customerId?: number; type?: 'dine-in' | 'takeaway' | 'delivery' }) => {
     try {
       const db = getDB();
-      const info = db.prepare('INSERT INTO orders (table_id, staff_id, covers, note, customer_id, status) VALUES (?, ?, ?, ?, ?, "open")')
-        .run(payload.tableId, payload.staffId ?? null, payload.covers ?? 1, payload.note ?? '', payload.customerId ?? null);
+      const info = db.prepare('INSERT INTO orders (table_id, staff_id, covers, note, customer_id, type, status) VALUES (?, ?, ?, ?, ?, ?, "open")')
+        .run(payload.tableId, payload.staffId ?? null, payload.covers ?? 1, payload.note ?? '', payload.customerId ?? null, payload.type ?? 'dine-in');
       return { success: true, data: info.lastInsertRowid };
     } catch (e: unknown) {
       return { success: false, error: errMsg(e) };
@@ -106,9 +107,9 @@ export function registerOrdersIPC() {
         let orderId: number;
         if (!order) {
           const info = db.prepare(`
-            INSERT INTO orders (table_id, staff_id, covers, note, customer_id, status)
-            VALUES (?, ?, ?, ?, ?, 'kot_sent')
-          `).run(payload.tableId, payload.staffId ?? null, payload.covers ?? 1, payload.note ?? '', payload.customerId ?? null);
+            INSERT INTO orders (table_id, staff_id, covers, note, customer_id, type, status)
+            VALUES (?, ?, ?, ?, ?, ?, 'kot_sent')
+          `).run(payload.tableId, payload.staffId ?? null, payload.covers ?? 1, payload.note ?? '', payload.customerId ?? null, payload.type ?? 'dine-in');
           orderId = Number(info.lastInsertRowid);
         } else {
           orderId = order.id;
@@ -174,7 +175,7 @@ export function registerOrdersIPC() {
     }
   });
 
-  ipcMain.handle('orders:cancelByTable', async (_, payload: { tableId: number; note?: string }) => {
+  ipcMain.handle('orders:cancelOrder', async (_, payload: { orderId: number; note?: string }) => {
     try {
       const db = getDB();
       const isAutoDebitEnabled = store.get('inventory_auto_debit', true) as boolean;
@@ -182,11 +183,10 @@ export function registerOrdersIPC() {
       const result = db.transaction(() => {
         const order = db.prepare(`
           SELECT * FROM orders
-          WHERE table_id = ? AND status != 'billed' AND status != 'cancelled'
-          LIMIT 1
-        `).get(payload.tableId) as { id: number; status: string } | undefined;
+          WHERE id = ? AND status != 'billed' AND status != 'cancelled'
+        `).get(payload.orderId) as { id: number; status: string } | undefined;
 
-        if (!order) throw new Error('No active order found for this table.');
+        if (!order) throw new Error('Order not found or already closed.');
 
         if (isAutoDebitEnabled) {
           const items = db.prepare('SELECT menu_item_id, qty FROM order_items WHERE order_id = ?').all(order.id) as { menu_item_id: number; qty: number }[];
@@ -200,7 +200,7 @@ export function registerOrdersIPC() {
           }
         }
 
-        db.prepare('UPDATE orders SET status = "cancelled", note = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(payload.note ?? '', order.id);
+        db.prepare(`UPDATE orders SET status = 'cancelled', note = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(payload.note ?? '', order.id);
         return order.id;
       })();
 

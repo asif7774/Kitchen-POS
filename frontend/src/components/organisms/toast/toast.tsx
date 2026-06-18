@@ -81,7 +81,7 @@ export const Toast: React.FC<ToastProps> = ({ toast }) => {
       </div>
       <div className="ml-4 flex-shrink-0 flex items-start">
         <button
-          className="inline-flex text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 rounded-md p-1 transition-colors"
+          className="inline-flex text-gray-400 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-500 rounded-md p-1 transition-colors"
           onClick={handleClose}
         >
           <span className="sr-only">Close</span>

@@ -43,6 +43,8 @@ export interface CartItem {
   price: number;
   qty: number;
   note: string;
+  status?: string;
+  originalQty?: number;
 }
 
 export interface Staff {
@@ -79,6 +81,7 @@ export interface Order {
   status: 'open' | 'kot_sent' | 'billed' | 'cancelled';
   covers: number;
   note: string | null;
+  type: 'dine-in' | 'takeaway' | 'delivery';
   created_at: string;
   updated_at: string;
 }
@@ -89,7 +92,11 @@ export interface PastOrderData {
   customerName: string;
   date: string;
   occupiedTimeMs: number;
-  items: { name: string; qty: number }[];
+  type?: 'dine-in' | 'takeaway' | 'delivery';
+  items: {
+    name: string;
+    qty: number;
+  }[];
 }
 
 export interface PastOrderStats {
@@ -132,6 +139,7 @@ export interface KDSTicket {
   table_id: number;
   table_name: string;
   order_note: string | null;
+  type: 'dine-in' | 'takeaway' | 'delivery';
   created_at: string;
   updated_at: string;
   items: KDSTicketItem[];

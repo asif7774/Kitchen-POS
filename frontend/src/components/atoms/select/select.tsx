@@ -28,7 +28,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
         if (isValidElement(child) && child.type === "option") {
           const props = child.props as React.ComponentProps<"option">;
           return {
-            value: props.value as string,
+            value: String(props.value),
             label: props.children,
           };
         }
@@ -206,7 +206,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           {/* Custom Dropdown Trigger */}
           <button
             type="button"
-            className={`flex w-full items-center justify-between rounded-md border bg-white px-3 py-2 text-sm shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            className={`flex w-full items-center justify-between rounded-md border bg-white px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
               error ? "border-red-300 ring-red-500" : "border-gray-300"
             } ${
               disabled
@@ -258,7 +258,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                 <input
                   ref={searchInputRef}
                   type="text"
-                  className="w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-1.5 text-sm focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                   placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => {
@@ -273,7 +273,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
               </div>
               <ul
                 ref={listboxRef}
-                className="max-h-60 overflow-auto py-1 text-sm focus:outline-none"
+                className="max-h-60 overflow-auto py-1 text-sm focus-visible:outline-none"
                 role="listbox"
               >
                 {filteredOptions.length === 0 ? (

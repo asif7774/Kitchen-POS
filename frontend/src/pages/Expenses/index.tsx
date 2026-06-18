@@ -1,5 +1,5 @@
 import { Button, Input } from '../../components/atoms';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../../lib/ipc';
 import { Expense } from '../../types/models';
 import { Card } from '../../components/atoms/card';
@@ -7,6 +7,7 @@ import { useAuthStore } from '../../store/auth';
 import ExpenseModal from './components/ExpenseModal';
 import { useModal } from '../../hooks/useModal';
 import { useToast } from '../../hooks/useToast';
+import { useHeader } from '../../contexts/HeaderContext';
 
 const ExpensesPage: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -16,19 +17,19 @@ const ExpensesPage: React.FC = () => {
   const { showToast } = useToast();
   const staff = useAuthStore(state => state.staff);
 
-  const fetchExpenses = () => {
+  const fetchExpenses = useCallback(() => {
     void api.expenses.getAll({ start: startDate, end: endDate }).then(res => {
       if (res.success && res.data) {
         setExpenses(res.data);
       }
     });
-  };
+  }, [startDate, endDate]);
 
   useEffect(() => {
     fetchExpenses();
   }, [startDate, endDate]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSaveExpense = async (data: { date: string, category: string, amount: number, description: string }) => {
+  const handleSaveExpense = useCallback(async (data: { date: string, category: string, amount: number, description: string }) => {
     const res = await api.expenses.create({
       ...data,
       staff_id: staff?.id,
@@ -41,7 +42,7 @@ const ExpensesPage: React.FC = () => {
       showToast({ message: res.error ?? 'Failed to create expense', variant: 'error' });
       console.error('Failed to create expense:', res.error);
     }
-  };
+  }, [staff?.id, showToast, hideModal, fetchExpenses]);
 
   const handleDelete = (id: number) => {
     showModal({
@@ -81,24 +82,31 @@ const ExpensesPage: React.FC = () => {
 
   const totalAmount = expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
+  const { setHeader } = useHeader();
+  
+  useEffect(() => {
+    setHeader(
+      'Expenses',
+      <Button variant="primary" onClick={() => {
+        showModal({
+          title: "Add Expense",
+          content: <ExpenseModal onSave={data => { handleSaveExpense(data).catch(console.error); }} />,
+          actions: (
+            <>
+              <Button variant="ghost" onClick={hideModal}>Cancel</Button>
+              <Button type="submit" form="expense-form" variant="primary">Save Expense</Button>
+            </>
+          )
+        });
+      }}>
+        + Add Expense
+      </Button>
+    );
+    return () => { setHeader(null, null); };
+  }, [setHeader, showModal, hideModal, handleSaveExpense]);
+
   return (
     <div className="container-responsive p-6 mx-auto h-full flex flex-col">
-      <div className="flex justify-between items-center mb-6">
-        <Button variant="primary" onClick={() => {
-          showModal({
-            title: "Add Expense",
-            content: <ExpenseModal onSave={data => { handleSaveExpense(data).catch(console.error); }} />,
-            actions: (
-              <>
-                <Button variant="ghost" onClick={hideModal}>Cancel</Button>
-                <Button type="submit" form="expense-form" variant="primary">Save Expense</Button>
-              </>
-            )
-          });
-        }}>
-          + Add Expense
-        </Button>
-      </div>
 
       <Card className="p-4 border-gray-100 mb-6 flex-row gap-6 items-center shrink-0">
         <div className="w-40">

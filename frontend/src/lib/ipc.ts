@@ -14,7 +14,7 @@ const mockApi = {
     getOpen: () => Promise.resolve({ success: true, data: [] }),
     getByTable: () => Promise.resolve({ success: true, data: null }),
     sendKOT: () => Promise.resolve({ success: true, data: 1 }),
-    cancelByTable: () => Promise.resolve({ success: true }),
+    cancelOrder: () => Promise.resolve({ success: true }),
   },
   kds: {
     getActiveTickets: () => Promise.resolve({ success: true, data: [] }),
@@ -167,8 +167,8 @@ export const api = (ipcApi ?? mockApi) as {
     create: (payload: { tableId: number; staffId?: number; covers?: number; note?: string; customerId?: number }) => Promise<IPCResponse<number>>;
     getOpen: () => Promise<IPCResponse<unknown>>;
     getByTable: (payload: { tableId: number }) => Promise<IPCResponse<(Order & { items: OrderItem[] }) | null>>;
-    sendKOT: (payload: { tableId: number; items: CartItem[]; staffId?: number; covers?: number; note?: string; customerId?: number }) => Promise<IPCResponse<{ orderId: number; itemsToPrint: CartItem[] }>>;
-    cancelByTable: (payload: { tableId: number; note?: string }) => Promise<IPCResponse<unknown>>;
+    sendKOT: (payload: { tableId: number; items: CartItem[]; staffId?: number; covers?: number; note?: string; customerId?: number; type?: 'dine-in' | 'takeaway' | 'delivery' }) => Promise<IPCResponse<{ orderId: number; itemsToPrint: CartItem[] }>>;
+    cancelOrder: (payload: { orderId: number; note?: string }) => Promise<IPCResponse<unknown>>;
     updateCustomer: (payload: { orderId: number; customerId: number }) => Promise<IPCResponse<unknown>>;
   };
   kds: {
@@ -223,7 +223,8 @@ export const api = (ipcApi ?? mockApi) as {
   reports: {
     daily: (payload: unknown) => Promise<IPCResponse<unknown>>;
     gst: (payload: unknown) => Promise<IPCResponse<unknown>>;
-    getPastOrders: (payload: { filter: 'daily' | 'weekly' | 'monthly' | 'yearly' }) => Promise<IPCResponse<{ stats: import('../types/models').PastOrderStats; orders: import('../types/models').PastOrderData[] }>>;
+    getPastOrders: (payload: { filter: 'daily' | 'weekly' | 'monthly' | 'yearly'; page: number; limit: number }) => Promise<IPCResponse<{ stats: import('../types/models').PastOrderStats; orders: import('../types/models').PastOrderData[]; totalPages: number; currentPage: number }>>;
+    printPastBill: (payload: { orderId: number }) => Promise<IPCResponse<unknown>>;
   };
   backup: {
     export: (payload: unknown) => Promise<IPCResponse<unknown>>;

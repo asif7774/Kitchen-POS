@@ -94,7 +94,7 @@ export const Modal: React.FC<ModalProps> = ({ modal }) => {
               <button
                 type="button"
                 onClick={handleManualClose}
-                className="ml-auto text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-1"
+                className="ml-auto text-gray-400 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-md p-1"
                 aria-label="Close dialog"
               >
                 <SvgIcon

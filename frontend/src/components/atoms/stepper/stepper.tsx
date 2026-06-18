@@ -55,7 +55,7 @@ const Stepper: React.FC<StepperProps> = ({
         type="button"
         onClick={handleDecrement}
         disabled={disabled || currentValue <= min}
-        className="px-3 py-1.5 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer focus:outline-none focus:bg-gray-100 transition-colors flex items-center justify-center"
+        className="px-3 py-1.5 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer focus-visible:outline-none focus-visible:bg-gray-100 transition-colors flex items-center justify-center"
         aria-label="Decrease quantity"
       >
         <svg
@@ -81,7 +81,7 @@ const Stepper: React.FC<StepperProps> = ({
         type="button"
         onClick={handleIncrement}
         disabled={disabled || currentValue >= max}
-        className="px-3 py-1.5 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer focus:outline-none focus:bg-gray-100 transition-colors flex items-center justify-center"
+        className="px-3 py-1.5 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer focus-visible:outline-none focus-visible:bg-gray-100 transition-colors flex items-center justify-center"
         aria-label="Increase quantity"
       >
         <svg

@@ -169,7 +169,7 @@ const CloseShiftModal: React.FC<Props> = ({ onSuccess }) => {
               autoFocus
               value={closingCash}
               onChange={e => { setClosingCash(e.target.value === '' ? '' : Number(e.target.value)); }}
-              className="text-lg font-bold text-gray-900 focus:ring-red-500"
+              className="text-lg font-bold text-gray-900 focus-visible:ring-red-500"
               placeholder="e.g. 1500"
             />
             {closingCash !== '' && (
@@ -186,7 +186,7 @@ const CloseShiftModal: React.FC<Props> = ({ onSuccess }) => {
             label="Shift Notes (Optional)"
             value={note}
             onChange={e => { setNote(e.target.value); }}
-            className="focus:ring-red-500 text-sm"
+            className="focus-visible:ring-red-500 text-sm"
             placeholder="Discrepancy explanations, drawer count details, etc."
             rows={2}
           />

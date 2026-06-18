@@ -17,6 +17,7 @@ interface KDSTicket {
   table_id: number;
   table_name: string;
   order_note: string | null;
+  type: 'dine-in' | 'takeaway' | 'delivery';
   created_at: string;
   updated_at: string;
   items: KDSTicketItem[];
@@ -33,6 +34,7 @@ export function registerKDSIPC() {
           o.table_id,
           t.name AS table_name,
           o.note AS order_note,
+          o.type,
           o.created_at,
           o.updated_at
         FROM orders o
@@ -44,6 +46,7 @@ export function registerKDSIPC() {
         table_id: number;
         table_name: string;
         order_note: string | null;
+        type: 'dine-in' | 'takeaway' | 'delivery';
         created_at: string;
         updated_at: string;
       }>;

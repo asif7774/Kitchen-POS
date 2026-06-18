@@ -31,7 +31,7 @@ const CancelOrderModal: React.FC<Props> = ({ onConfirm }) => {
         value={note}
         onChange={(e) => { setNote(e.target.value); }}
         placeholder="e.g. Customer walked out, ordered by mistake..."
-        className="focus:ring-red-500 min-h-[80px]"
+        className="focus-visible:ring-red-500 min-h-[80px]"
       />
 
     </form>

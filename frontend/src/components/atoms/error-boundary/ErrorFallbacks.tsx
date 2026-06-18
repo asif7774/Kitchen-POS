@@ -32,13 +32,13 @@ export const AppErrorFallback = ({ error, resetErrorBoundary }: ErrorFallbackPro
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <button
           onClick={resetErrorBoundary}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium"
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 font-medium"
         >
           Try Again
         </button>
         <button
           onClick={() => { window.location.href = '/'; }}
-          className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 font-medium"
+          className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 font-medium"
         >
           Go Home
         </button>
@@ -70,7 +70,7 @@ export const PageErrorFallback = ({ error, resetErrorBoundary }: ErrorFallbackPr
       )}
       <button
         onClick={resetErrorBoundary}
-        className="px-5 py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium"
+        className="px-5 py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 font-medium"
       >
         Reload Page
       </button>
@@ -89,7 +89,7 @@ export const WidgetErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) 
     </p>
     <button
       onClick={resetErrorBoundary}
-      className="px-3 py-1.5 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+      className="px-3 py-1.5 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
     >
       Retry
     </button>

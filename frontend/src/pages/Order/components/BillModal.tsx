@@ -37,7 +37,7 @@ const BillModal = forwardRef<BillModalHandle, Props>(({ orderId, cart, initialCu
   useEffect(() => {
     setPayments([{ method: 'cash', amount: finalTotal }]);
   // Only reset payments when the final total changes due to cart/discount changes.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [finalTotal]);
 
   const currentPaymentsTotal = round2(payments.reduce((sum, p) => sum + (p.amount || 0), 0));

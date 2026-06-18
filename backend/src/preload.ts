@@ -9,7 +9,7 @@ contextBridge.exposeInMainWorld('api', {
     getOpen: () => ipcRenderer.invoke('orders:getOpen'),
     getByTable: (payload: any) => ipcRenderer.invoke('orders:getByTable', payload),
     sendKOT: (payload: any) => ipcRenderer.invoke('orders:sendKOT', payload),
-    cancelByTable: (payload: any) => ipcRenderer.invoke('orders:cancelByTable', payload),
+    cancelOrder: (payload: any) => ipcRenderer.invoke('orders:cancelOrder', payload),
     updateCustomer: (payload: any) => ipcRenderer.invoke('orders:updateCustomer', payload),
   },
   kds: {
@@ -65,6 +65,7 @@ contextBridge.exposeInMainWorld('api', {
     daily: (payload: any) => ipcRenderer.invoke('reports:daily', payload),
     gst: (payload: any) => ipcRenderer.invoke('reports:gst', payload),
     getPastOrders: (payload: any) => ipcRenderer.invoke('reports:getPastOrders', payload),
+    printPastBill: (payload: any) => ipcRenderer.invoke('reports:printPastBill', payload),
   },
   backup: {
     export: (payload: any) => ipcRenderer.invoke('backup:export', payload),
