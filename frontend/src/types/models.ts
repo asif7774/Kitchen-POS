@@ -6,8 +6,16 @@ export interface Table {
   status?: 'available' | 'occupied' | 'bill_requested';
 }
 
+export interface Menu {
+  id: number;
+  name: string;
+  is_active: number;
+  is_default: number;
+}
+
 export interface Category {
   id: number;
+  menu_id: number;
   name: string;
   sort_order?: number;
   is_active?: number;
@@ -23,6 +31,7 @@ export interface MenuItem {
   hsn_code?: string;
   is_veg: number;
   is_available?: number;
+  image_url?: string | null;
 }
 
 export interface CartItem {

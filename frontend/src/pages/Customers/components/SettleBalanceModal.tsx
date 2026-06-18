@@ -48,7 +48,7 @@ const SettleBalanceModal: React.FC<Props> = ({ customer, onClose, onSuccess }) =
   };
 
   return (
-    <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-4">
+    <form id="settle-balance-form" onSubmit={(e) => { void handleSubmit(e); }} className="space-y-4">
       <div className="bg-blue-50 p-4 rounded-md border border-blue-100 mb-4">
         <p className="text-sm text-blue-800">
           Current Outstanding Balance: <strong className="text-lg text-red-600">₹{customer.outstanding_balance.toFixed(2)}</strong>
@@ -91,12 +91,6 @@ const SettleBalanceModal: React.FC<Props> = ({ customer, onClose, onSuccess }) =
         </div>
       </div>
 
-      <div className="flex justify-end space-x-3 pt-4 border-t">
-        <Button variant="outline" onClick={onClose} disabled={loading} type="button">Cancel</Button>
-        <Button variant="primary" type="submit" disabled={loading}>
-          {loading ? 'Processing...' : 'Settle Balance'}
-        </Button>
-      </div>
     </form>
   );
 };

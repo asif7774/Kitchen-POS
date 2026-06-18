@@ -74,9 +74,6 @@ const CustomerHistoryModal: React.FC<Props> = ({ customer, onClose }) => {
         )}
       </div>
 
-      <div className="pt-4 border-t mt-4 text-right">
-        <Button variant="outline" onClick={onClose}>Close</Button>
-      </div>
     </div>
   );
 };

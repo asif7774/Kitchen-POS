@@ -31,7 +31,13 @@ const CustomersPage: React.FC = () => {
       content: <CustomerModal 
         onClose={hideModal} 
         onSuccess={() => { hideModal(); void loadCustomers(); }} 
-      />
+      />,
+      actions: (
+        <>
+          <Button variant="outline" onClick={hideModal}>Cancel</Button>
+          <Button type="submit" form="customer-form" variant="primary">Save Customer</Button>
+        </>
+      )
     });
   };
 
@@ -42,7 +48,13 @@ const CustomersPage: React.FC = () => {
         customer={customer} 
         onClose={hideModal} 
         onSuccess={() => { hideModal(); void loadCustomers(); }} 
-      />
+      />,
+      actions: (
+        <>
+          <Button variant="outline" onClick={hideModal}>Cancel</Button>
+          <Button type="submit" form="customer-form" variant="primary">Save Customer</Button>
+        </>
+      )
     });
   };
 
@@ -75,14 +87,23 @@ const CustomersPage: React.FC = () => {
         customer={customer} 
         onClose={hideModal} 
         onSuccess={() => { hideModal(); void loadCustomers(); }} 
-      />
+      />,
+      actions: (
+        <>
+          <Button variant="outline" onClick={hideModal}>Cancel</Button>
+          <Button type="submit" form="settle-balance-form" variant="primary">Settle Balance</Button>
+        </>
+      )
     });
   };
 
   const handleViewHistory = (customer: Customer) => {
     showModal({
       title: 'Order History',
-      content: <CustomerHistoryModal customer={customer} onClose={hideModal} />
+      content: <CustomerHistoryModal customer={customer} onClose={hideModal} />,
+      actions: (
+        <Button variant="outline" onClick={hideModal}>Close</Button>
+      )
     });
   };
 

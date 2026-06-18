@@ -18,9 +18,22 @@ const MenuItemModal: React.FC<Props> = ({ item, categoryId, onSuccess }) => {
   const [cgst, setCgst] = useState(item?.cgst_rate?.toString() ?? '2.5');
   const [sgst, setSgst] = useState(item?.sgst_rate?.toString() ?? '2.5');
   const [hsn, setHsn] = useState(item?.hsn_code ?? '');
-  
+  const [imageUrl, setImageUrl] = useState(item?.image_url ?? '');
 
   const { showToast } = useToast();
+
+  const handleImageUpload = async () => {
+    try {
+      const res = await api.menu.uploadImage();
+      if (res.success && res.data) {
+        setImageUrl(res.data);
+      } else if (res.error !== 'Upload cancelled') {
+        showToast({ message: res.error ?? 'Failed to upload image', variant: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -36,6 +49,7 @@ const MenuItemModal: React.FC<Props> = ({ item, categoryId, onSuccess }) => {
         cgst_rate: parseFloat(cgst) || 0,
         sgst_rate: parseFloat(sgst) || 0,
         hsn_code: hsn,
+        image_url: imageUrl || null,
         is_available: item ? item.is_available : 1
       };
 
@@ -66,6 +80,25 @@ const MenuItemModal: React.FC<Props> = ({ item, categoryId, onSuccess }) => {
           placeholder="e.g. Butter Chicken"
           autoFocus
         />
+
+        <div className="flex gap-4 items-end">
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
+            <div className="flex items-center gap-3">
+              {imageUrl && (
+                <img src={imageUrl} alt="Dish" className="w-12 h-12 rounded object-cover border" />
+              )}
+              <Button type="button" variant="outline" onClick={() => { void handleImageUpload(); }}>
+                {imageUrl ? 'Change Image' : 'Upload Image'}
+              </Button>
+              {imageUrl && (
+                <Button type="button" variant="ghost" className="text-red-500" onClick={() => { setImageUrl(''); }}>
+                  Remove
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
 
         <div className="grid grid-cols-2 gap-4">
           <Input 

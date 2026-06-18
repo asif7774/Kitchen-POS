@@ -23,13 +23,40 @@ const SettingsPage: React.FC = () => {
     });
   }, []);
 
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+
   const handleExport = async () => {
+    setIsExporting(true);
     try {
-      await api.backup.export({});
-      showToast({ message: 'Backup exported successfully', variant: 'success' });
+      const res = await api.backup.export({});
+      if (res.success && res.data) {
+        showToast({ message: `Backup exported successfully to ${res.data as string}`, variant: 'success' });
+      } else if (res.error !== 'Export cancelled') {
+        showToast({ message: res.error ?? 'Failed to export backup', variant: 'error' });
+      }
     } catch (err) {
       console.error(err);
       showToast({ message: 'Failed to export backup', variant: 'error' });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImport = async () => {
+    setIsImporting(true);
+    try {
+      const res = await api.backup.import({});
+      if (res.success) {
+        showToast({ message: 'Backup imported! App will restart now.', variant: 'success' });
+      } else if (res.error !== 'Import cancelled') {
+        showToast({ message: res.error ?? 'Failed to import backup', variant: 'error' });
+      }
+    } catch (err) {
+      console.error(err);
+      showToast({ message: 'Failed to import backup', variant: 'error' });
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -70,11 +97,11 @@ const SettingsPage: React.FC = () => {
             <CardTitle>Backup & Restore</CardTitle>
           </CardHeader>
           <CardContent className="space-x-4">
-            <Button variant="secondary" onClick={() => { void handleExport(); }}>
-               Export Backup
+            <Button variant="secondary" onClick={() => { void handleExport(); }} disabled={isExporting || isImporting}>
+               {isExporting ? 'Exporting...' : 'Export Backup'}
             </Button>
-            <Button variant="outline" className="text-red-500 border-red-500 hover:bg-red-50">
-               Import Backup
+            <Button variant="outline" className="text-red-500 border-red-500 hover:bg-red-50 disabled:opacity-50" onClick={() => { void handleImport(); }} disabled={isExporting || isImporting}>
+               {isImporting ? 'Importing...' : 'Import Backup'}
             </Button>
           </CardContent>
         </Card>

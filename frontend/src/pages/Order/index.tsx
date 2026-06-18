@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MenuPanel from './components/MenuPanel';
 import CartPanel from './components/CartPanel';
-import { CartItem, MenuItem, Customer } from '../../types/models';
+import { CartItem, MenuItem, Customer, Menu } from '../../types/models';
 import BillModal from './components/BillModal';
 import CancelOrderModal from './components/CancelOrderModal';
 import { api } from '../../lib/ipc';
@@ -21,6 +21,23 @@ const OrderPage: React.FC = () => {
   const [occupiedTime, setOccupiedTime] = useState<string>('');
   const { showModal, hideModal } = useModal();
   const { showToast } = useToast();
+  
+  const [menus, setMenus] = useState<Menu[]>([]);
+  const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    api.menu.getMenus().then(res => {
+      if (active && res.success && res.data) {
+        setMenus(res.data);
+        if (res.data.length > 0) {
+          const defaultMenu = res.data.find(m => m.is_default);
+          setActiveMenuId(defaultMenu?.id ?? res.data[0].id);
+        }
+      }
+    }).catch(console.error);
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -182,9 +199,22 @@ const OrderPage: React.FC = () => {
         </Button>
       </div>
 
-      <div className="flex-1 p-6 pt-20 border-r bg-gray-50 overflow-hidden">
-        <h1 className="text-2xl font-bold mb-4">Menu</h1>
-        <MenuPanel onAddItem={handleAddItem} />
+      <div className="flex-1 p-6 pt-20 border-r bg-gray-50 flex flex-col overflow-hidden">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold">Menu</h1>
+          {menus.length > 0 && (
+            <select
+              className="border border-gray-300 rounded px-3 py-1.5 text-sm bg-white"
+              value={activeMenuId ?? ''}
+              onChange={(e) => { setActiveMenuId(Number(e.target.value)); }}
+            >
+              {menus.map(m => (
+                <option key={m.id} value={m.id}>{m.name}</option>
+              ))}
+            </select>
+          )}
+        </div>
+        <MenuPanel menuId={activeMenuId} onAddItem={handleAddItem} />
       </div>
 
       <div className="w-96 bg-white p-6 pt-6 flex flex-col shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] z-0">

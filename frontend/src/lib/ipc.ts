@@ -51,6 +51,10 @@ const mockApi = {
         }
       ]
     }),
+    getMenus: () => Promise.resolve({ success: true, data: [{ id: 1, name: 'Main Menu', is_active: 1, is_default: 1 }] }),
+    upsertMenu: () => Promise.resolve({ success: true, data: { id: 999 } }),
+    duplicateMenu: () => Promise.resolve({ success: true, data: { id: 999 } }),
+    uploadImage: () => Promise.resolve({ success: true, data: 'file:///tmp/img.png' }),
     upsertItem: () => Promise.resolve({ success: true, data: { id: 999 } }),
     deleteItem: () => Promise.resolve({ success: true }),
     toggleAvailable: () => Promise.resolve({ success: true }),
@@ -172,7 +176,11 @@ export const api = (ipcApi ?? mockApi) as {
     updateOrderStatus: (payload: { orderId: number; status: 'pending' | 'preparing' | 'ready' | 'served' }) => Promise<IPCResponse<unknown>>;
   };
   menu: {
-    getAll: () => Promise<IPCResponse<(Category & { items: MenuItem[] })[]>>;
+    getMenus: () => Promise<IPCResponse<import('../types/models').Menu[]>>;
+    upsertMenu: (payload: { id?: number; name: string; is_default?: number }) => Promise<IPCResponse<{ id: number }>>;
+    duplicateMenu: (payload: { id: number; newName: string }) => Promise<IPCResponse<{ id: number }>>;
+    uploadImage: () => Promise<IPCResponse<string>>;
+    getAll: (menuId?: number) => Promise<IPCResponse<(Category & { items: MenuItem[] })[]>>;
     upsertItem: (payload: Partial<MenuItem>) => Promise<IPCResponse<MenuItem>>;
     deleteItem: (payload: { id: number }) => Promise<IPCResponse<unknown>>;
     toggleAvailable: (payload: { id: number; is_available: number }) => Promise<IPCResponse<unknown>>;

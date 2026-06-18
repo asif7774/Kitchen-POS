@@ -7,11 +7,11 @@ import { useToast } from '../../../hooks/useToast';
 
 interface Props {
   category: Category | null;
-
+  menuId: number;
   onSuccess: () => void;
 }
 
-const CategoryModal: React.FC<Props> = ({ category, onSuccess }) => {
+const CategoryModal: React.FC<Props> = ({ category, menuId, onSuccess }) => {
   const [name, setName] = useState(category?.name ?? '');
 
   const { showToast } = useToast();
@@ -22,7 +22,7 @@ const CategoryModal: React.FC<Props> = ({ category, onSuccess }) => {
 
 
     try {
-      const payload: Partial<Category> = { name };
+      const payload: Partial<Category> = { name, menu_id: menuId };
       if (category) {payload.id = category.id;}
 
       const res = await api.menu.upsertCategory(payload);

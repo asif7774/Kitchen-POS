@@ -51,7 +51,7 @@ const CustomerModal: React.FC<Props> = ({ customer, onClose, onSuccess }) => {
   };
 
   return (
-    <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-4">
+    <form id="customer-form" onSubmit={(e) => { void handleSubmit(e); }} className="space-y-4">
       {error && <div className="p-3 bg-red-100 text-red-700 rounded-md text-sm">{error}</div>}
       
       <div>
@@ -100,12 +100,6 @@ const CustomerModal: React.FC<Props> = ({ customer, onClose, onSuccess }) => {
         <p className="text-xs text-gray-500 mt-1">Maximum allowed unpaid balance for this customer.</p>
       </div>
 
-      <div className="flex justify-end space-x-3 pt-4 border-t">
-        <Button variant="outline" onClick={onClose} disabled={loading} type="button">Cancel</Button>
-        <Button variant="primary" type="submit" disabled={loading}>
-          {loading ? 'Saving...' : 'Save Customer'}
-        </Button>
-      </div>
     </form>
   );
 };
