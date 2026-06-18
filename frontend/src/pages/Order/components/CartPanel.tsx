@@ -7,7 +7,7 @@ interface Props {
   cart: CartItem[];
   onUpdateQty: (id: number, delta: number) => void;
   onUpdateNote: (id: number, note: string) => void;
-  onSendKOT: () => void;
+  onSendKOT: (print: boolean) => void;
   onGenerateBill: () => void;
   onVoidOrder: () => void;
 }
@@ -57,14 +57,24 @@ const CartPanel: React.FC<Props> = ({ cart, onUpdateQty, onUpdateNote, onSendKOT
           <span className="text-xl font-bold">₹{subtotal.toFixed(2)}</span>
         </div>
         <div className="space-y-3">
-          <Button 
-            variant="secondary"
-            className="w-full py-3"
-            onClick={onSendKOT}
-            disabled={cart.length === 0}
-          >
-            Print KOT
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              className="flex-1 py-3"
+              onClick={() => { onSendKOT(false); }}
+              disabled={cart.length === 0}
+            >
+              Save Order
+            </Button>
+            <Button 
+              variant="secondary"
+              className="flex-1 py-3"
+              onClick={() => { onSendKOT(true); }}
+              disabled={cart.length === 0}
+            >
+              Print KOT
+            </Button>
+          </div>
           <Button 
             variant="primary"
             className="w-full py-3"

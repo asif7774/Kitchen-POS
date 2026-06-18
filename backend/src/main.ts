@@ -15,6 +15,7 @@ import { registerPrinterIPC } from './ipc/printer';
 import { registerKDSIPC } from './ipc/kds';
 import { registerShiftsIPC } from './ipc/shifts';
 import { registerExpensesIPC } from './ipc/expenses';
+import { registerCustomersIPC } from './ipc/customers';
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -86,6 +87,7 @@ function registerAllIPC() {
   registerKDSIPC();
   registerShiftsIPC();
   registerExpensesIPC();
+  registerCustomersIPC();
 }
 
 void app.whenReady().then(async () => {

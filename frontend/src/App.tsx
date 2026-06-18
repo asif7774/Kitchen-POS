@@ -12,8 +12,9 @@ import SettingsPage from './pages/Settings';
 import ExpensesPage from './pages/Expenses/index';
 import StaffPage from './pages/Staff';
 import KDSPage from './pages/KDS';
-import HomePage from './pages/Home';
+import CustomersPage from './pages/Customers';
 import ComponentsPage from './pages/Components';
+import PastOrdersPage from './pages/PastOrders';
 import OpenShiftModal from './components/organisms/modal/OpenShiftModal';
 import AppLayout from './layouts/AppLayout';
 
@@ -87,6 +88,14 @@ const App: React.FC = () => {
         } 
       />
       <Route 
+        path="/customers" 
+        element={
+          <ProtectedRoute>
+            <CustomersPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/staff" 
         element={
           <ProtectedRoute>
@@ -99,6 +108,14 @@ const App: React.FC = () => {
         element={
           <ProtectedRoute>
             <ReportsPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/past-orders" 
+        element={
+          <ProtectedRoute>
+            <PastOrdersPage />
           </ProtectedRoute>
         } 
       />

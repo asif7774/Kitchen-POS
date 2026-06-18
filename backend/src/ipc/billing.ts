@@ -4,8 +4,8 @@ import { createBill } from '../services/billing';
 export function registerBillingIPC() {
   ipcMain.handle('billing:createBill', async (event, payload) => {
     try {
-      const { orderId, payments, discount } = payload;
-      const res = createBill(orderId, payments, discount ?? 0);
+      const { orderId, payments, discount, customerId } = payload;
+      const res = createBill(orderId, payments, discount ?? 0, customerId);
       return { success: true, data: res };
     } catch (e: any) {
       return { success: false, error: e.message };

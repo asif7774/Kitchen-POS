@@ -143,18 +143,28 @@ const mockApi = {
     create: () => Promise.resolve({ success: true, data: { id: 1 } }),
     delete: () => Promise.resolve({ success: true }),
   },
+  customers: {
+    getAll: () => Promise.resolve({ success: true, data: [] }),
+    create: () => Promise.resolve({ success: true, data: { id: 1 } }),
+    update: () => Promise.resolve({ success: true }),
+    delete: () => Promise.resolve({ success: true }),
+    search: () => Promise.resolve({ success: true, data: [] }),
+    settleBalance: () => Promise.resolve({ success: true }),
+    getHistory: () => Promise.resolve({ success: true, data: [] }),
+  },
 };
 
 export const api = (ipcApi ?? mockApi) as {
   orders: {
-    create: (payload: { tableId: number; staffId?: number; covers?: number; note?: string }) => Promise<IPCResponse<number>>;
+    create: (payload: { tableId: number; staffId?: number; covers?: number; note?: string; customerId?: number }) => Promise<IPCResponse<number>>;
     addItem: (payload: unknown) => Promise<IPCResponse<unknown>>;
     updateItem: (payload: unknown) => Promise<IPCResponse<unknown>>;
     removeItem: (payload: unknown) => Promise<IPCResponse<unknown>>;
     getOpen: () => Promise<IPCResponse<unknown>>;
     getByTable: (payload: { tableId: number }) => Promise<IPCResponse<(Order & { items: OrderItem[] }) | null>>;
-    sendKOT: (payload: { tableId: number; items: CartItem[]; staffId?: number; covers?: number; note?: string }) => Promise<IPCResponse<number>>;
+    sendKOT: (payload: { tableId: number; items: CartItem[]; staffId?: number; covers?: number; note?: string; customerId?: number }) => Promise<IPCResponse<{ orderId: number; itemsToPrint: CartItem[] }>>;
     cancelByTable: (payload: { tableId: number; note?: string }) => Promise<IPCResponse<unknown>>;
+    updateCustomer: (payload: { orderId: number; customerId: number }) => Promise<IPCResponse<unknown>>;
   };
   kds: {
     getActiveTickets: () => Promise<IPCResponse<KDSTicket[]>>;
@@ -204,6 +214,7 @@ export const api = (ipcApi ?? mockApi) as {
   reports: {
     daily: (payload: unknown) => Promise<IPCResponse<unknown>>;
     gst: (payload: unknown) => Promise<IPCResponse<unknown>>;
+    getPastOrders: (payload: { filter: 'daily' | 'weekly' | 'monthly' | 'yearly' }) => Promise<IPCResponse<{ stats: import('../types/models').PastOrderStats; orders: import('../types/models').PastOrderData[] }>>;
   };
   backup: {
     export: (payload: unknown) => Promise<IPCResponse<unknown>>;
@@ -217,5 +228,14 @@ export const api = (ipcApi ?? mockApi) as {
     getAll: (payload?: { start?: string, end?: string }) => Promise<IPCResponse<Expense[]>>;
     create: (payload: { date: string, category: string, amount: number, description?: string, staff_id?: number }) => Promise<IPCResponse<{id: number}>>;
     delete: (payload: { id: number }) => Promise<IPCResponse<unknown>>;
+  };
+  customers: {
+    getAll: () => Promise<IPCResponse<import('../types/models').Customer[]>>;
+    create: (payload: Partial<import('../types/models').Customer>) => Promise<IPCResponse<{id: number}>>;
+    update: (payload: Partial<import('../types/models').Customer> & {id: number}) => Promise<IPCResponse<unknown>>;
+    delete: (payload: number) => Promise<IPCResponse<unknown>>;
+    search: (payload: string) => Promise<IPCResponse<import('../types/models').Customer[]>>;
+    settleBalance: (payload: { customerId: number; amount: number; method: string }) => Promise<IPCResponse<unknown>>;
+    getHistory: (payload: number) => Promise<IPCResponse<import('../types/models').CustomerHistory[]>>;
   };
 };

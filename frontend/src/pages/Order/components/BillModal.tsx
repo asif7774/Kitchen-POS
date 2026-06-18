@@ -1,22 +1,26 @@
 import { Button, Input, Select } from '../../../components/atoms';
 import React, { useState } from 'react';
 import { api } from '../../../lib/ipc';
-import { CartItem } from '../../../types/models';
+import { CartItem, Customer } from '../../../types/models';
 import { useToast } from '../../../hooks/useToast';
+import { CustomerSelect } from '../../../components/organisms/CustomerSelect';
 
 interface Props {
   orderId: number;
   cart: CartItem[];
+  initialCustomer?: Customer | null;
   onClose: () => void;
 }
 
-const BillModal: React.FC<Props> = ({ orderId, cart, onClose }) => {
+const BillModal: React.FC<Props> = ({ orderId, cart, initialCustomer, onClose }) => {
   const initialTaxable = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
   const initialTotal = initialTaxable + (initialTaxable * 0.05);
   const { showToast } = useToast();
 
   const [discount, setDiscount] = useState(0);
   const [payments, setPayments] = useState<{method: string, amount: number}[]>([{ method: 'cash', amount: initialTotal }]);
+
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(initialCustomer ?? null);
 
   // Calculations
   const taxableTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
@@ -26,9 +30,15 @@ const BillModal: React.FC<Props> = ({ orderId, cart, onClose }) => {
   const finalTotal = totalAfterDiscount + cgstTotal + sgstTotal;
 
   React.useEffect(() => {
-    if (payments.length === 1) {
-      setPayments([{ ...payments[0], amount: Number(finalTotal.toFixed(2)) }]);
-    }
+    const timer = setTimeout(() => {
+      setPayments(prev => {
+        if (prev.length === 1) {
+          return [{ ...prev[0], amount: Number(finalTotal.toFixed(2)) }];
+        }
+        return prev;
+      });
+    }, 0);
+    return () => { clearTimeout(timer); };
   }, [finalTotal]);
 
   const currentPaymentsTotal = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
@@ -51,7 +61,7 @@ const BillModal: React.FC<Props> = ({ orderId, cart, onClose }) => {
     setPayments(newPayments);
   };
 
-  const handleConfirm = async () => {
+  const handleConfirm = async (shouldPrint: boolean) => {
     if (!isBalanced) {
       showToast({ message: 'Payments must balance the grand total', variant: 'warning' });
       return;
@@ -60,17 +70,32 @@ const BillModal: React.FC<Props> = ({ orderId, cart, onClose }) => {
       showToast({ message: 'Invalid final total', variant: 'error' });
       return;
     }
+    const unpaidAmount = payments.filter(p => p.method === 'unpaid').reduce((sum, p) => sum + p.amount, 0);
+    if (unpaidAmount > 0) {
+      if (!selectedCustomer) {
+        showToast({ message: 'Please select a customer for unpaid balance', variant: 'warning' });
+        return;
+      }
+      if (selectedCustomer.outstanding_balance + unpaidAmount > selectedCustomer.credit_limit) {
+        showToast({ message: 'Credit limit exceeded for this customer', variant: 'error' });
+        return;
+      }
+    }
+
     try {
       const res = await api.billing.createBill({
          orderId,
          payments,
-         discount
+         discount,
+         customerId: selectedCustomer?.id
       });
       if (res.success) {
-         const mappedItems = cart.map(i => ({ name: i.name, qty: i.qty, unit_price: i.price }));
-         const printRes = await api.print.bill({ bill: res.data, orderItems: mappedItems, settings: {} });
-         if (!printRes.success) {
-           alert('Failed to print bill: ' + printRes.error);
+         if (shouldPrint) {
+           const mappedItems = cart.map(i => ({ name: i.name, qty: i.qty, unit_price: i.price }));
+           const printRes = await api.print.bill({ bill: res.data, orderItems: mappedItems, settings: {} });
+           if (!printRes.success) {
+             showToast({ message: `Failed to print bill: ${printRes.error}`, variant: 'error' });
+           }
          }
          showToast({ message: 'Bill generated successfully', variant: 'success' });
          onClose();
@@ -84,7 +109,9 @@ const BillModal: React.FC<Props> = ({ orderId, cart, onClose }) => {
   };
 
   return (
-    <form id="bill-form" onSubmit={(e) => { e.preventDefault(); void handleConfirm(); }}>
+    <form id="bill-form" onSubmit={(e) => { e.preventDefault(); }}>
+      <button id="btn-save" type="button" className="hidden" onClick={() => { void handleConfirm(false); }} />
+      <button id="btn-print" type="button" className="hidden" onClick={() => { void handleConfirm(true); }} />
       <div className="flex-1 overflow-auto p-6 flex flex-col md:flex-row gap-8">
         {/* Left Side - Itemized Breakdown */}
         <div className="flex-1">
@@ -156,7 +183,15 @@ const BillModal: React.FC<Props> = ({ orderId, cart, onClose }) => {
         </div>
 
         {/* Right Side - Payment Split */}
-        <div className="w-full md:w-64 bg-gray-50 p-4 rounded border">
+        <div className="w-full md:w-64 bg-gray-50 p-4 rounded border flex flex-col h-[calc(100vh-12rem)] overflow-y-auto">
+          <div className="mb-6 relative">
+            <h3 className="font-bold text-gray-700 mb-2 border-b pb-2">Customer</h3>
+            <CustomerSelect 
+              selectedCustomer={selectedCustomer}
+              onSelect={setSelectedCustomer}
+            />
+          </div>
+
           <h3 className="font-bold text-gray-700 border-b pb-2 mb-4">Payments</h3>
           <div className="space-y-3">
             {payments.map((p, i) => (
@@ -174,6 +209,7 @@ const BillModal: React.FC<Props> = ({ orderId, cart, onClose }) => {
                       <option value="card">Card</option>
                       <option value="upi">UPI</option>
                       <option value="complimentary">Complimentary</option>
+                      <option value="unpaid">Unpaid Balance</option>
                     </Select>
                   </div>
                   <div className="flex-1">
@@ -182,9 +218,14 @@ const BillModal: React.FC<Props> = ({ orderId, cart, onClose }) => {
                       placeholder="Amount"
                       value={p.amount === 0 && payments.length === 1 ? '' : p.amount}
                       onChange={(e) => { handlePaymentChange(i, 'amount', Number(e.target.value)); }}
-                      min="0"
+                      min={p.method === 'unpaid' ? undefined : "0"}
                       step="0.01"
                     />
+                    {p.method === 'unpaid' && (
+                      <p className="text-[10px] text-gray-500 mt-1 leading-tight">
+                        Use a negative number to log an advance/change due.
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

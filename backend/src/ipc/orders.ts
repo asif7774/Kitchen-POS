@@ -27,15 +27,27 @@ interface SendKOTPayload {
   staffId?: number;
   covers?: number;
   note?: string;
+  customerId?: number;
 }
 
 export function registerOrdersIPC() {
-  ipcMain.handle('orders:create', async (_, payload: { tableId: number; staffId?: number; covers?: number; note?: string }) => {
+  ipcMain.handle('orders:create', async (_, payload: { tableId: number; staffId?: number; covers?: number; note?: string; customerId?: number }) => {
     try {
       const db = getDB();
-      const stmt = db.prepare('INSERT INTO orders (table_id, staff_id, covers, note, status) VALUES (?, ?, ?, ?, "open")');
-      const info = stmt.run(payload.tableId, payload.staffId ?? 1, payload.covers ?? 1, payload.note ?? '');
+      const stmt = db.prepare('INSERT INTO orders (table_id, staff_id, covers, note, customer_id, status) VALUES (?, ?, ?, ?, ?, "open")');
+      const info = stmt.run(payload.tableId, payload.staffId ?? 1, payload.covers ?? 1, payload.note ?? '', payload.customerId ?? null);
       return { success: true, data: info.lastInsertRowid };
+    } catch (e: unknown) {
+      if (e instanceof Error) { return { success: false, error: e.message }; }
+      return { success: false, error: 'Unknown error occurred' };
+    }
+  });
+  
+  ipcMain.handle('orders:updateCustomer', async (_, payload: { orderId: number; customerId: number }) => {
+    try {
+      const db = getDB();
+      db.prepare('UPDATE orders SET customer_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(payload.customerId, payload.orderId);
+      return { success: true };
     } catch (e: unknown) {
       if (e instanceof Error) { return { success: false, error: e.message }; }
       return { success: false, error: 'Unknown error occurred' };
@@ -45,7 +57,12 @@ export function registerOrdersIPC() {
   ipcMain.handle('orders:getOpen', async () => {
     try {
       const db = getDB();
-      const orders = db.prepare('SELECT * FROM orders WHERE status != "billed" AND status != "cancelled"').all();
+      const orders = db.prepare(`
+        SELECT o.*, c.name as customer_name 
+        FROM orders o 
+        LEFT JOIN customers c ON o.customer_id = c.id
+        WHERE o.status != 'billed' AND o.status != 'cancelled'
+      `).all();
       return { success: true, data: orders };
     } catch (e: unknown) {
       if (e instanceof Error) { return { success: false, error: e.message }; }
@@ -58,8 +75,10 @@ export function registerOrdersIPC() {
       const db = getDB();
       // Get the active open or kot_sent order for the table
       const order = db.prepare(`
-        SELECT * FROM orders 
-        WHERE table_id = ? AND status != 'billed' AND status != 'cancelled'
+        SELECT o.*, c.name as customer_name 
+        FROM orders o 
+        LEFT JOIN customers c ON o.customer_id = c.id
+        WHERE o.table_id = ? AND o.status != 'billed' AND o.status != 'cancelled'
         LIMIT 1
       `).get(payload.tableId) as { id: number } | undefined;
 
@@ -90,10 +109,10 @@ export function registerOrdersIPC() {
         let orderId: number;
         if (!order) {
           const insertStmt = db.prepare(`
-            INSERT INTO orders (table_id, staff_id, covers, note, status)
-            VALUES (?, ?, ?, ?, 'kot_sent')
+            INSERT INTO orders (table_id, staff_id, covers, note, customer_id, status)
+            VALUES (?, ?, ?, ?, ?, 'kot_sent')
           `);
-          const info = insertStmt.run(payload.tableId, payload.staffId ?? 1, payload.covers ?? 1, payload.note ?? '');
+          const info = insertStmt.run(payload.tableId, payload.staffId ?? 1, payload.covers ?? 1, payload.note ?? '', payload.customerId ?? null);
           orderId = Number(info.lastInsertRowid);
         } else {
           orderId = order.id;
@@ -111,6 +130,7 @@ export function registerOrdersIPC() {
         const existingItemMap = new Map(existingItems.map(item => [item.menu_item_id, item]));
 
         // 3. Process each item in the KOT cart
+        const itemsToPrint: CartItemPayload[] = [];
         for (const item of payload.items) {
           const existing = existingItemMap.get(item.id);
           let qtyDelta = item.qty;
@@ -129,6 +149,10 @@ export function registerOrdersIPC() {
             `).run(item.qty, item.note, newStatus, existing.id);
             
             existingItemMap.delete(item.id); // mark as processed
+
+            if (qtyDelta > 0) {
+              itemsToPrint.push({ ...item, qty: qtyDelta });
+            }
           } else {
             // Snapshot from menu_items
             const menuDetails = db.prepare(`
@@ -154,6 +178,7 @@ export function registerOrdersIPC() {
                 menuDetails.hsn_code,
                 item.note
               );
+              itemsToPrint.push({ ...item });
             }
           }
 
@@ -194,7 +219,7 @@ export function registerOrdersIPC() {
           db.prepare('DELETE FROM order_items WHERE id = ?').run(item.id);
         }
 
-        return orderId;
+        return { orderId, itemsToPrint };
       })();
 
       return { success: true, data: result };

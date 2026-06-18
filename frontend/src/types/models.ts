@@ -62,11 +62,28 @@ export interface Order {
   id: number;
   table_id: number;
   staff_id?: number | null;
+  customer_id?: number | null;
+  customer_name?: string | null;
   status: 'open' | 'kot_sent' | 'billed' | 'cancelled';
   covers: number;
   note: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface PastOrderData {
+  id: number;
+  amount: number;
+  customerName: string;
+  date: string;
+  occupiedTimeMs: number;
+  items: { name: string; qty: number }[];
+}
+
+export interface PastOrderStats {
+  totalOrders: number;
+  totalRevenue: number;
+  averageOrderValue: number;
 }
 
 export interface OrderItem {
@@ -134,4 +151,24 @@ export interface Expense {
   staff_id: number | null;
   staff_name?: string | null;
   created_at: string;
+}
+
+export interface Customer {
+  id: number;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  loyalty_points: number;
+  total_visits: number;
+  credit_limit: number;
+  outstanding_balance: number;
+  created_at: string;
+}
+
+export interface CustomerHistory {
+  orderId: number;
+  date: string;
+  billNumber: string;
+  totalAmount: number;
+  items: { name: string; qty: number }[];
 }

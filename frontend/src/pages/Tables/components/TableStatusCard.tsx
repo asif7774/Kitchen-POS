@@ -1,15 +1,36 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { SvgIcon } from '../../../components/atoms/svg-sprite-loader';
 
 interface Props {
   name: string;
   capacity: number;
   status: 'available' | 'occupied' | 'bill_requested';
+  customerName?: string | null;
+  createdAt?: string | null;
   onEdit?: () => void;
   onDelete?: () => void;
 }
 
-const TableStatusCard: React.FC<Props> = ({ name, capacity, status, onEdit, onDelete }) => {
+const TableStatusCard: React.FC<Props> = ({ name, capacity, status, customerName, createdAt, onEdit, onDelete }) => {
+  const [occupiedTime, setOccupiedTime] = useState<string>('');
+
+  useEffect(() => {
+    if (status === 'available' || !createdAt) {
+      setTimeout(() => { setOccupiedTime(''); }, 0);
+      return;
+    }
+    const updateTime = () => {
+      const ms = Date.now() - new Date(createdAt).getTime();
+      const mins = Math.floor(ms / 60000);
+      const hrs = Math.floor(mins / 60);
+      const remainingMins = mins % 60;
+      setOccupiedTime(`${hrs.toString().padStart(2, '0')}:${remainingMins.toString().padStart(2, '0')}`);
+    };
+    updateTime();
+    const timerId = setInterval(updateTime, 60000);
+    return () => { clearInterval(timerId); };
+  }, [createdAt, status]);
+
   const statusColors = {
     available: 'bg-green-100 text-green-700 border-green-200',
     occupied: 'bg-amber-100 text-amber-700 border-amber-200',
@@ -57,8 +78,13 @@ const TableStatusCard: React.FC<Props> = ({ name, capacity, status, onEdit, onDe
         </div>
 
         <div className="flex justify-between items-start mb-3 mt-0.5">
-          <div>
+          <div className="flex-1">
             <h3 className="text-lg font-extrabold text-gray-900 tracking-tight leading-none mb-1.5">{name}</h3>
+            {status !== 'available' && (
+              <p className="text-xs font-semibold text-gray-700 mb-1 truncate pr-2">
+                {customerName ?? 'Walk-in'}
+              </p>
+            )}
             <div className="flex items-center text-xs font-medium text-gray-500 gap-1">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -66,6 +92,11 @@ const TableStatusCard: React.FC<Props> = ({ name, capacity, status, onEdit, onDe
               <span>{capacity} Seats</span>
             </div>
           </div>
+          {occupiedTime && (
+            <div className="bg-gray-100 rounded px-1.5 py-0.5 text-[10px] font-mono font-bold text-gray-600 shadow-inner">
+              {occupiedTime}
+            </div>
+          )}
         </div>
 
         <div className="mt-auto pt-2 border-t border-gray-50 flex items-center justify-between">

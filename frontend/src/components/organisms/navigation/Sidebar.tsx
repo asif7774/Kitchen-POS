@@ -20,7 +20,9 @@ const navItems = [
   { name: "Staff", path: "/staff", icon: "users" },
   { name: "Expenses", path: "/expenses", icon: "chart-bar" },
   { name: "KDS", path: "/kds", icon: "clipboard-list" },
+  { name: "Customers", path: "/customers", icon: "users" },
   { name: "Reports", path: "/reports", icon: "chart-bar" },
+  { name: "Past Orders", path: "/past-orders", icon: "clipboard-list" },
   { name: "Settings", path: "/settings", icon: "settings" },
 ];
 

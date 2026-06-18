@@ -11,7 +11,7 @@ export function getNextBillNumber(): string {
   return `INV-${year}-${nextNumber.toString().padStart(4, '0')}`;
 }
 
-export function createBill(orderId: number, payments: any[], discount: number) {
+export function createBill(orderId: number, payments: any[], discount: number, customerId?: number) {
   const db = getDB();
 
   const transaction = db.transaction(() => {
@@ -27,12 +27,12 @@ export function createBill(orderId: number, payments: any[], discount: number) {
     const billNumber = getNextBillNumber();
 
     const insertBill = db.prepare(`
-      INSERT INTO bills (bill_number, order_id, taxable_amount, cgst_amount, sgst_amount, discount_amount, total_amount)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO bills (bill_number, order_id, taxable_amount, cgst_amount, sgst_amount, discount_amount, total_amount, customer_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
     
     const info = insertBill.run(
-      billNumber, orderId, totals.taxable_amount, totals.cgst_amount, totals.sgst_amount, totals.discount_amount, totals.total_amount
+      billNumber, orderId, totals.taxable_amount, totals.cgst_amount, totals.sgst_amount, totals.discount_amount, totals.total_amount, customerId ?? null
     );
 
     const insertPayment = db.prepare(`
@@ -42,9 +42,15 @@ export function createBill(orderId: number, payments: any[], discount: number) {
     
     for (const p of payments) {
       insertPayment.run(orderId, p.method, p.amount, p.reference ?? null);
+      if (p.method === 'unpaid') {
+        if (!customerId) {
+          throw new Error('Customer must be selected for unpaid balances.');
+        }
+        db.prepare('UPDATE customers SET outstanding_balance = outstanding_balance + ? WHERE id = ?').run(p.amount, customerId);
+      }
     }
 
-    db.prepare('UPDATE orders SET status = ? WHERE id = ?').run('billed', orderId);
+    db.prepare('UPDATE orders SET status = ?, customer_id = ? WHERE id = ?').run('billed', customerId ?? null, orderId);
 
     // Save incremented counter
     const lastNumber = store.get('last_bill_number', 0) as number;

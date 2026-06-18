@@ -1,12 +1,6 @@
 import { create } from 'zustand';
 import { api } from '../lib/ipc';
-import { MenuItem } from '../types/models';
-
-interface Order {
-  id: number;
-  table_id: number;
-  status: string;
-}
+import { MenuItem, Order } from '../types/models';
 
 interface OrderState {
   activeOrders: Order[];

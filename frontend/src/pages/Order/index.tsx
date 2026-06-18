@@ -3,18 +3,24 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MenuPanel from './components/MenuPanel';
 import CartPanel from './components/CartPanel';
-import { CartItem, MenuItem } from '../../types/models';
+import { CartItem, MenuItem, Customer } from '../../types/models';
 import BillModal from './components/BillModal';
 import CancelOrderModal from './components/CancelOrderModal';
 import { api } from '../../lib/ipc';
 import { useModal } from '../../hooks/useModal';
+import { useToast } from '../../hooks/useToast';
+import { CustomerSelect } from '../../components/organisms/CustomerSelect';
 
 const OrderPage: React.FC = () => {
   const { tableId } = useParams();
   const navigate = useNavigate();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [orderId, setOrderId] = useState<number | null>(null);
+  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [createdAt, setCreatedAt] = useState<string | null>(null);
+  const [occupiedTime, setOccupiedTime] = useState<string>('');
   const { showModal, hideModal } = useModal();
+  const { showToast } = useToast();
 
   useEffect(() => {
     let active = true;
@@ -23,6 +29,15 @@ const OrderPage: React.FC = () => {
         .then(res => {
           if (active && res.success && res.data) {
             setOrderId(res.data.id);
+            setCreatedAt(res.data.created_at);
+            if (res.data.customer_id && res.data.customer_name) {
+              setCustomer({ 
+                id: res.data.customer_id, 
+                name: res.data.customer_name, 
+                phone: null, email: null, loyalty_points: 0, total_visits: 0, 
+                credit_limit: 0, outstanding_balance: 0, created_at: '' 
+              });
+            }
             const items: CartItem[] = res.data.items.map(i => ({
               id: i.menu_item_id,
               name: i.name,
@@ -39,6 +54,47 @@ const OrderPage: React.FC = () => {
     }
     return () => { active = false; };
   }, [tableId]);
+
+  useEffect(() => {
+    if (!createdAt) {
+      setTimeout(() => { setOccupiedTime(''); }, 0);
+      return;
+    }
+    const updateTime = () => {
+      const ms = Date.now() - new Date(createdAt).getTime();
+      const mins = Math.floor(ms / 60000);
+      const hrs = Math.floor(mins / 60);
+      const remainingMins = mins % 60;
+      setOccupiedTime(`${hrs.toString().padStart(2, '0')}:${remainingMins.toString().padStart(2, '0')}`);
+    };
+    updateTime();
+    const timer = setInterval(updateTime, 60000); // update every minute since we only show hh:mm
+    return () => { clearInterval(timer); };
+  }, [createdAt]);
+
+  const handleCustomerSelect = async (selected: Customer | null) => {
+    setCustomer(selected);
+    if (!selected) {
+      // Unsetting customer not fully supported yet without an API call, but UI will reflect it.
+      return;
+    }
+    
+    if (orderId) {
+      // Order exists, update it
+      await api.orders.updateCustomer({ orderId, customerId: selected.id });
+    } else if (tableId) {
+      // Order doesn't exist, create it to reserve the table
+      const res = await api.orders.create({ 
+        tableId: Number(tableId), 
+        customerId: selected.id 
+      });
+      if (res.success && res.data) {
+        setOrderId(res.data);
+        setCreatedAt(new Date().toISOString());
+        showToast({ message: `Table reserved for ${  selected.name}`, variant: 'success' });
+      }
+    }
+  };
 
   const handleAddItem = (menuItem: MenuItem) => {
     setCart(prev => {
@@ -74,16 +130,25 @@ const OrderPage: React.FC = () => {
     ));
   };
 
-  const handleSendKOT = async () => {
+  const handleSendKOT = async (shouldPrint: boolean) => {
     if ((cart.length === 0 && !orderId) || !tableId) { return; }
     
     const res = await api.orders.sendKOT({ 
       tableId: Number(tableId), 
-      items: cart 
+      items: cart,
+      customerId: customer?.id
     });
-    if (res.success) {
-      // Fire and forget print so it doesn't block UI navigation
-      api.print.kot({ items: cart, tableName: `Table ${tableId}`, orderNote: '' }).catch(console.error);
+    if (res.success && res.data) {
+      if (shouldPrint) {
+        if (res.data.itemsToPrint.length > 0) {
+          // Fire and forget print so it doesn't block UI navigation
+          api.print.kot({ items: res.data.itemsToPrint, tableName: `Table ${tableId}`, orderNote: '' }).catch(console.error);
+        } else {
+          showToast({ message: 'No new items to print.', variant: 'warning' });
+        }
+      } else {
+        showToast({ message: 'Order saved successfully.', variant: 'success' });
+      }
       navigate('/tables');
     }
   };
@@ -104,7 +169,7 @@ const OrderPage: React.FC = () => {
       hideModal();
       navigate('/tables');
     } else {
-      alert('Failed to cancel order: ' + res.error);
+      showToast({ message: `Failed to cancel order: ${res.error}`, variant: 'error' });
     }
   };
 
@@ -124,27 +189,40 @@ const OrderPage: React.FC = () => {
 
       <div className="w-96 bg-white p-6 pt-6 flex flex-col shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] z-0">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-800">Current Order</h2>
+          <div className="flex flex-col">
+            <h2 className="text-xl font-bold text-gray-800">Current Order</h2>
+            {occupiedTime && <span className="text-xs font-medium text-gray-500">Occupied: {occupiedTime}</span>}
+          </div>
           <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-bold">Table {tableId}</span>
         </div>
+        
+        <div className="mb-4">
+          <CustomerSelect 
+            selectedCustomer={customer} 
+            onSelect={(c) => { void handleCustomerSelect(c); }} 
+            placeholder="Assign Customer (Optional)" 
+          />
+        </div>
+        
         <CartPanel 
           cart={cart}
           onUpdateQty={handleUpdateQty}
           onUpdateNote={handleUpdateNote}
-          onSendKOT={() => { void handleSendKOT(); }}
+          onSendKOT={(print) => { void handleSendKOT(print); }}
           onGenerateBill={() => { 
             if (!orderId) {
-               alert('Order has not been sent to kitchen yet!');
+               showToast({ message: 'Order has not been sent to kitchen yet!', variant: 'warning' });
                return;
             }
             showModal({
               title: "Generate Final Bill",
-              content: <BillModal orderId={orderId} cart={cart} onClose={hideModal} />,
+              content: <BillModal orderId={orderId} cart={cart} initialCustomer={customer} onClose={hideModal} />,
               size: "xl",
               actions: (
                 <>
                   <Button variant="outline" onClick={hideModal}>Cancel</Button>
-                  <Button type="submit" form="bill-form" variant="primary">Confirm & Print</Button>
+                  <Button type="button" variant="secondary" onClick={() => { document.getElementById('btn-save')?.click(); }}>Complete & Save</Button>
+                  <Button type="button" variant="primary" onClick={() => { document.getElementById('btn-print')?.click(); }}>Print Receipt</Button>
                 </>
               )
             });

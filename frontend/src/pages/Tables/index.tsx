@@ -31,11 +31,19 @@ const TablesPage: React.FC = () => {
           setTables(res.data);
         }
       })
-      .catch(console.error);
+      .catch((err: unknown) => { console.error(err); });
 
     void fetchOpenOrders();
+    
+    // Polling to keep tables synced across windows
+    const intervalId = setInterval(() => {
+      void fetchOpenOrders();
+    }, 5000);
 
-    return () => { mounted = false; };
+    return () => { 
+      mounted = false; 
+      clearInterval(intervalId);
+    };
   }, [fetchOpenOrders]);
 
   const handleTableClick = (id: number) => {
@@ -96,17 +104,22 @@ const TablesPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-        {tables.map(table => (
-          <div key={table.id} onClick={() => { handleTableClick(table.id); }}>
-              <TableStatusCard
-                name={table.name}
-                capacity={table.capacity}
-                status={getTableStatus(table.id)}
-                onEdit={() => { handleEdit(table); }}
-                onDelete={() => { void handleDelete(table.id); }}
-              />
-          </div>
-        ))}
+        {tables.map(table => {
+          const order = activeOrders.find(o => o.table_id === table.id);
+          return (
+            <div key={table.id} onClick={() => { handleTableClick(table.id); }}>
+                <TableStatusCard
+                  name={table.name}
+                  capacity={table.capacity}
+                  status={getTableStatus(table.id)}
+                  customerName={order?.customer_name}
+                  createdAt={order?.created_at}
+                  onEdit={() => { handleEdit(table); }}
+                  onDelete={() => { void handleDelete(table.id); }}
+                />
+            </div>
+          );
+        })}
       </div>
 
 

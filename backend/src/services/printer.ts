@@ -29,8 +29,8 @@ interface OutletSettings {
 const hiddenWindows = new Set<BrowserWindow>();
 
 async function printHtmlSilent(htmlContent: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    let win = new BrowserWindow({
+  return new Promise((resolve, _reject) => {
+    const win = new BrowserWindow({
       show: false,
       webPreferences: {
         nodeIntegration: false,
@@ -72,7 +72,7 @@ async function printHtmlSilent(htmlContent: string): Promise<void> {
       });
     });
 
-    win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
+    void win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
   });
 }
 
