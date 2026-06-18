@@ -36,6 +36,10 @@ interface UpsertMenuPayload {
   id?: number;
   name: string;
   is_default?: number;
+  is_active?: number;
+  auto_enable_time?: string | null;
+  auto_disable_time?: string | null;
+  schedule_enabled?: number;
 }
 
 interface UpsertCategoryPayload {
@@ -86,7 +90,7 @@ export function registerMenuIPC() {
   ipcMain.handle('menu:getMenus', async () => {
     try {
       const db = getDB();
-      const menus = db.prepare('SELECT * FROM menus WHERE is_active = 1 ORDER BY created_at ASC').all() as MenuRow[];
+      const menus = db.prepare('SELECT * FROM menus ORDER BY created_at ASC').all() as MenuRow[];
       return { success: true, data: menus };
     } catch (e: unknown) {
       if (e instanceof Error) {return { success: false, error: e.message };}
@@ -98,7 +102,8 @@ export function registerMenuIPC() {
     try {
       const db = getDB();
       if (payload.id) {
-        db.prepare('UPDATE menus SET name = ? WHERE id = ?').run(payload.name, payload.id);
+        db.prepare('UPDATE menus SET name = ?, is_active = ?, auto_enable_time = ?, auto_disable_time = ?, schedule_enabled = ? WHERE id = ?')
+          .run(payload.name, payload.is_active ?? 1, payload.auto_enable_time ?? null, payload.auto_disable_time ?? null, payload.schedule_enabled ?? 0, payload.id);
         if (payload.is_default) {
           db.prepare('UPDATE menus SET is_default = 0').run();
           db.prepare('UPDATE menus SET is_default = 1 WHERE id = ?').run(payload.id);
@@ -106,7 +111,8 @@ export function registerMenuIPC() {
         return { success: true, data: { id: payload.id } };
       }
       
-      const result = db.prepare('INSERT INTO menus (name, is_default) VALUES (?, ?)').run(payload.name, payload.is_default ?? 0);
+      const result = db.prepare('INSERT INTO menus (name, is_default, is_active, auto_enable_time, auto_disable_time, schedule_enabled) VALUES (?, ?, ?, ?, ?, ?)')
+        .run(payload.name, payload.is_default ?? 0, payload.is_active ?? 1, payload.auto_enable_time ?? null, payload.auto_disable_time ?? null, payload.schedule_enabled ?? 0);
       if (payload.is_default) {
         db.prepare('UPDATE menus SET is_default = 0 WHERE id != ?').run(result.lastInsertRowid);
       }

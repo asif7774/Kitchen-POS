@@ -11,9 +11,6 @@ const ipcApi = (window as unknown as { api: unknown }).api;
 const mockApi = {
   orders: {
     create: () => Promise.resolve({ success: true, data: 1 }),
-    addItem: () => Promise.resolve({ success: true }),
-    updateItem: () => Promise.resolve({ success: true }),
-    removeItem: () => Promise.resolve({ success: true }),
     getOpen: () => Promise.resolve({ success: true, data: [] }),
     getByTable: () => Promise.resolve({ success: true, data: null }),
     sendKOT: () => Promise.resolve({ success: true, data: 1 }),
@@ -149,6 +146,7 @@ const mockApi = {
   },
   customers: {
     getAll: () => Promise.resolve({ success: true, data: [] }),
+    getById: () => Promise.resolve({ success: true, data: null }),
     create: () => Promise.resolve({ success: true, data: { id: 1 } }),
     update: () => Promise.resolve({ success: true }),
     delete: () => Promise.resolve({ success: true }),
@@ -156,14 +154,17 @@ const mockApi = {
     settleBalance: () => Promise.resolve({ success: true }),
     getHistory: () => Promise.resolve({ success: true, data: [] }),
   },
+  dashboard: {
+    getMetrics: () => Promise.resolve({ success: true, data: { metrics: { totalSales: 0, totalOrders: 0, averageOrderValue: 0, totalCustomers: 0, outstandingBalances: 0 }, trendData: [], topItemsData: [] } }),
+  },
+  onMenuScheduleTriggered: (_callback: (data: { menuId: number; menuName: string; action: 'enabled' | 'disabled' }) => void) => {
+    // mock implementation does nothing
+  }
 };
 
 export const api = (ipcApi ?? mockApi) as {
   orders: {
     create: (payload: { tableId: number; staffId?: number; covers?: number; note?: string; customerId?: number }) => Promise<IPCResponse<number>>;
-    addItem: (payload: unknown) => Promise<IPCResponse<unknown>>;
-    updateItem: (payload: unknown) => Promise<IPCResponse<unknown>>;
-    removeItem: (payload: unknown) => Promise<IPCResponse<unknown>>;
     getOpen: () => Promise<IPCResponse<unknown>>;
     getByTable: (payload: { tableId: number }) => Promise<IPCResponse<(Order & { items: OrderItem[] }) | null>>;
     sendKOT: (payload: { tableId: number; items: CartItem[]; staffId?: number; covers?: number; note?: string; customerId?: number }) => Promise<IPCResponse<{ orderId: number; itemsToPrint: CartItem[] }>>;
@@ -177,7 +178,7 @@ export const api = (ipcApi ?? mockApi) as {
   };
   menu: {
     getMenus: () => Promise<IPCResponse<import('../types/models').Menu[]>>;
-    upsertMenu: (payload: { id?: number; name: string; is_default?: number }) => Promise<IPCResponse<{ id: number }>>;
+    upsertMenu: (payload: { id?: number; name: string; is_default?: number; is_active?: number; auto_enable_time?: string | null; auto_disable_time?: string | null; schedule_enabled?: number; }) => Promise<IPCResponse<{ id: number }>>;
     duplicateMenu: (payload: { id: number; newName: string }) => Promise<IPCResponse<{ id: number }>>;
     uploadImage: () => Promise<IPCResponse<string>>;
     getAll: (menuId?: number) => Promise<IPCResponse<(Category & { items: MenuItem[] })[]>>;
@@ -239,6 +240,7 @@ export const api = (ipcApi ?? mockApi) as {
   };
   customers: {
     getAll: () => Promise<IPCResponse<import('../types/models').Customer[]>>;
+    getById: (id: number) => Promise<IPCResponse<import('../types/models').Customer>>;
     create: (payload: Partial<import('../types/models').Customer>) => Promise<IPCResponse<{id: number}>>;
     update: (payload: Partial<import('../types/models').Customer> & {id: number}) => Promise<IPCResponse<unknown>>;
     delete: (payload: number) => Promise<IPCResponse<unknown>>;
@@ -246,4 +248,18 @@ export const api = (ipcApi ?? mockApi) as {
     settleBalance: (payload: { customerId: number; amount: number; method: string }) => Promise<IPCResponse<unknown>>;
     getHistory: (payload: number) => Promise<IPCResponse<import('../types/models').CustomerHistory[]>>;
   };
+  dashboard: {
+    getMetrics: (payload: { filter: string }) => Promise<IPCResponse<{
+      metrics: {
+        totalSales: number;
+        totalOrders: number;
+        averageOrderValue: number;
+        totalCustomers: number;
+        outstandingBalances: number;
+      };
+      trendData: { label: string; sales: number }[];
+      topItemsData: { name: string; quantity: number }[];
+    }>>;
+  };
+  onMenuScheduleTriggered: (callback: (data: { menuId: number; menuName: string; action: 'enabled' | 'disabled' }) => void) => void;
 };

@@ -2,6 +2,7 @@ import { app, BrowserWindow, Menu, Tray } from 'electron';
 import * as path from 'path';
 import { runMigrations } from './db/migrate';
 import { getDB } from './db';
+import { startScheduler } from './scheduler';
 import { registerOrdersIPC } from './ipc/orders';
 import { registerMenuIPC } from './ipc/menu';
 import { registerTablesIPC } from './ipc/tables';
@@ -16,6 +17,7 @@ import { registerKDSIPC } from './ipc/kds';
 import { registerShiftsIPC } from './ipc/shifts';
 import { registerExpensesIPC } from './ipc/expenses';
 import { registerCustomersIPC } from './ipc/customers';
+import { registerDashboardIPC } from './ipc/dashboard';
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -24,6 +26,8 @@ async function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    minWidth: 1024,
+    minHeight: 768,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -88,6 +92,7 @@ function registerAllIPC() {
   registerShiftsIPC();
   registerExpensesIPC();
   registerCustomersIPC();
+  registerDashboardIPC();
 }
 
 void app.whenReady().then(async () => {
@@ -96,6 +101,7 @@ void app.whenReady().then(async () => {
   runMigrations();
 
   registerAllIPC();
+  startScheduler();
 
   void createWindow();
   createTray();

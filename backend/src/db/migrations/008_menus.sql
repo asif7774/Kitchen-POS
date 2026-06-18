@@ -12,7 +12,7 @@ SELECT 'Main Menu', 1
 WHERE NOT EXISTS (SELECT 1 FROM menus);
 
 -- Add menu_id to categories
-ALTER TABLE categories ADD COLUMN menu_id INTEGER REFERENCES menus(id) DEFAULT 1;
+ALTER TABLE categories ADD COLUMN menu_id INTEGER DEFAULT 1;
 
 -- Add image_url to menu_items
 ALTER TABLE menu_items ADD COLUMN image_url TEXT;

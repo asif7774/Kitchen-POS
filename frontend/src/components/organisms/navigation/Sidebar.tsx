@@ -13,6 +13,7 @@ interface SidebarProps {
 }
 
 const navItems = [
+  { name: "Dashboard", path: "/dashboard", icon: "dashboard" },
   { name: "Tables", path: "/tables", icon: "home" },
   { name: "Order", path: "/order/0", icon: "clipboard-list" },
   { name: "Menu", path: "/menu", icon: "folder" },

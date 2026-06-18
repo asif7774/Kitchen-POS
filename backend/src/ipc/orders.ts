@@ -30,27 +30,29 @@ interface SendKOTPayload {
   customerId?: number;
 }
 
+function errMsg(e: unknown): string {
+  return e instanceof Error ? e.message : 'Unknown error occurred';
+}
+
 export function registerOrdersIPC() {
   ipcMain.handle('orders:create', async (_, payload: { tableId: number; staffId?: number; covers?: number; note?: string; customerId?: number }) => {
     try {
       const db = getDB();
-      const stmt = db.prepare('INSERT INTO orders (table_id, staff_id, covers, note, customer_id, status) VALUES (?, ?, ?, ?, ?, "open")');
-      const info = stmt.run(payload.tableId, payload.staffId ?? 1, payload.covers ?? 1, payload.note ?? '', payload.customerId ?? null);
+      const info = db.prepare('INSERT INTO orders (table_id, staff_id, covers, note, customer_id, status) VALUES (?, ?, ?, ?, ?, "open")')
+        .run(payload.tableId, payload.staffId ?? null, payload.covers ?? 1, payload.note ?? '', payload.customerId ?? null);
       return { success: true, data: info.lastInsertRowid };
     } catch (e: unknown) {
-      if (e instanceof Error) { return { success: false, error: e.message }; }
-      return { success: false, error: 'Unknown error occurred' };
+      return { success: false, error: errMsg(e) };
     }
   });
-  
+
   ipcMain.handle('orders:updateCustomer', async (_, payload: { orderId: number; customerId: number }) => {
     try {
       const db = getDB();
       db.prepare('UPDATE orders SET customer_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(payload.customerId, payload.orderId);
       return { success: true };
     } catch (e: unknown) {
-      if (e instanceof Error) { return { success: false, error: e.message }; }
-      return { success: false, error: 'Unknown error occurred' };
+      return { success: false, error: errMsg(e) };
     }
   });
 
@@ -58,162 +60,106 @@ export function registerOrdersIPC() {
     try {
       const db = getDB();
       const orders = db.prepare(`
-        SELECT o.*, c.name as customer_name 
-        FROM orders o 
+        SELECT o.*, c.name as customer_name
+        FROM orders o
         LEFT JOIN customers c ON o.customer_id = c.id
         WHERE o.status != 'billed' AND o.status != 'cancelled'
       `).all();
       return { success: true, data: orders };
     } catch (e: unknown) {
-      if (e instanceof Error) { return { success: false, error: e.message }; }
-      return { success: false, error: 'Unknown error occurred' };
+      return { success: false, error: errMsg(e) };
     }
   });
 
   ipcMain.handle('orders:getByTable', async (_, payload: { tableId: number }) => {
     try {
       const db = getDB();
-      // Get the active open or kot_sent order for the table
       const order = db.prepare(`
-        SELECT o.*, c.name as customer_name 
-        FROM orders o 
+        SELECT o.*, c.name as customer_name
+        FROM orders o
         LEFT JOIN customers c ON o.customer_id = c.id
         WHERE o.table_id = ? AND o.status != 'billed' AND o.status != 'cancelled'
         LIMIT 1
       `).get(payload.tableId) as { id: number } | undefined;
 
-      if (!order) {
-        return { success: true, data: null };
-      }
+      if (!order) return { success: true, data: null };
 
       const items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(order.id);
       return { success: true, data: { ...order, items } };
     } catch (e: unknown) {
-      if (e instanceof Error) { return { success: false, error: e.message }; }
-      return { success: false, error: 'Unknown error occurred' };
+      return { success: false, error: errMsg(e) };
     }
   });
 
   ipcMain.handle('orders:sendKOT', async (_, payload: SendKOTPayload) => {
     try {
       const db = getDB();
-      
+      const isAutoDebitEnabled = store.get('inventory_auto_debit', true) as boolean;
+
       const result = db.transaction(() => {
-        // 1. Find or create active order for this table
         const order = db.prepare(`
-          SELECT * FROM orders 
+          SELECT * FROM orders
           WHERE table_id = ? AND status != 'billed' AND status != 'cancelled'
           LIMIT 1
         `).get(payload.tableId) as { id: number; status: string } | undefined;
 
         let orderId: number;
         if (!order) {
-          const insertStmt = db.prepare(`
+          const info = db.prepare(`
             INSERT INTO orders (table_id, staff_id, covers, note, customer_id, status)
             VALUES (?, ?, ?, ?, ?, 'kot_sent')
-          `);
-          const info = insertStmt.run(payload.tableId, payload.staffId ?? 1, payload.covers ?? 1, payload.note ?? '', payload.customerId ?? null);
+          `).run(payload.tableId, payload.staffId ?? null, payload.covers ?? 1, payload.note ?? '', payload.customerId ?? null);
           orderId = Number(info.lastInsertRowid);
         } else {
           orderId = order.id;
-          // Update order status to kot_sent
-          db.prepare(`
-            UPDATE orders SET status = 'kot_sent', updated_at = CURRENT_TIMESTAMP WHERE id = ?
-          `).run(orderId);
+          db.prepare(`UPDATE orders SET status = 'kot_sent', updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(orderId);
         }
 
-        // 2. Fetch current items in the DB for this order
-        const existingItems = db.prepare(`
-          SELECT * FROM order_items WHERE order_id = ?
-        `).all(orderId) as Array<{ id: number; menu_item_id: number; qty: number; preparation_status: string }>;
-
+        const existingItems = db.prepare(`SELECT * FROM order_items WHERE order_id = ?`).all(orderId) as Array<{ id: number; menu_item_id: number; qty: number; preparation_status: string }>;
         const existingItemMap = new Map(existingItems.map(item => [item.menu_item_id, item]));
 
-        // 3. Process each item in the KOT cart
         const itemsToPrint: CartItemPayload[] = [];
         for (const item of payload.items) {
           const existing = existingItemMap.get(item.id);
           let qtyDelta = item.qty;
-          
+
           if (existing) {
             qtyDelta = item.qty - existing.qty;
-            // Update quantity. If new qty is greater, set status of the new additions to 'pending'
-            const newStatus = existing.preparation_status === 'served' || existing.preparation_status === 'ready' 
-              ? 'pending' // reset if they are ordering more of a finished item
+            const newStatus = existing.preparation_status === 'served' || existing.preparation_status === 'ready'
+              ? 'pending'
               : existing.preparation_status;
-
-            db.prepare(`
-              UPDATE order_items 
-              SET qty = ?, note = ?, preparation_status = ?
-              WHERE id = ?
-            `).run(item.qty, item.note, newStatus, existing.id);
-            
-            existingItemMap.delete(item.id); // mark as processed
-
-            if (qtyDelta > 0) {
-              itemsToPrint.push({ ...item, qty: qtyDelta });
-            }
+            db.prepare(`UPDATE order_items SET qty = ?, note = ?, preparation_status = ? WHERE id = ?`)
+              .run(item.qty, item.note, newStatus, existing.id);
+            existingItemMap.delete(item.id);
+            if (qtyDelta > 0) itemsToPrint.push({ ...item, qty: qtyDelta });
           } else {
-            // Snapshot from menu_items
-            const menuDetails = db.prepare(`
-              SELECT id, name, price, cgst_rate, sgst_rate, hsn_code 
-              FROM menu_items 
-              WHERE id = ?
-            `).get(item.id) as MenuItemRow | undefined;
-
+            const menuDetails = db.prepare(`SELECT id, name, price, cgst_rate, sgst_rate, hsn_code FROM menu_items WHERE id = ?`).get(item.id) as MenuItemRow | undefined;
             if (menuDetails) {
               db.prepare(`
-                INSERT INTO order_items (
-                  order_id, menu_item_id, name, qty, unit_price, 
-                  cgst_rate, sgst_rate, hsn_code, note, preparation_status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
-              `).run(
-                orderId,
-                menuDetails.id,
-                menuDetails.name,
-                item.qty,
-                menuDetails.price,
-                menuDetails.cgst_rate,
-                menuDetails.sgst_rate,
-                menuDetails.hsn_code,
-                item.note
-              );
+                INSERT INTO order_items (order_id, menu_item_id, name, qty, unit_price, cgst_rate, sgst_rate, hsn_code, note, preparation_status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+              `).run(orderId, menuDetails.id, menuDetails.name, item.qty, menuDetails.price, menuDetails.cgst_rate, menuDetails.sgst_rate, menuDetails.hsn_code, item.note);
               itemsToPrint.push({ ...item });
             }
           }
 
-          // Auto-deduct inventory
-          const isAutoDebitEnabled = store.get('inventory_auto_debit', true);
           if (isAutoDebitEnabled && qtyDelta !== 0) {
             const recipe = db.prepare('SELECT inventory_item_id, qty_used FROM menu_inventory_map WHERE menu_item_id = ?').all(item.id) as { inventory_item_id: number; qty_used: number }[];
             for (const r of recipe) {
-              const invDelta = -(qtyDelta * r.qty_used); // Add if negative qtyDelta (reducing KOT), deduct if positive (adding to KOT)
+              const invDelta = -(qtyDelta * r.qty_used);
               db.prepare('UPDATE inventory_items SET qty_in_stock = qty_in_stock + ? WHERE id = ?').run(invDelta, r.inventory_item_id);
-              db.prepare('INSERT INTO inventory_log (item_id, type, qty_change, note) VALUES (?, ?, ?, ?)').run(
-                r.inventory_item_id,
-                qtyDelta > 0 ? 'sale' : 'adjustment',
-                invDelta,
-                `Order #${orderId} KOT Update`
-              );
+              db.prepare('INSERT INTO inventory_log (item_id, type, qty_change, note) VALUES (?, ?, ?, ?)').run(r.inventory_item_id, qtyDelta > 0 ? 'sale' : 'adjustment', invDelta, `Order #${orderId} KOT Update`);
             }
           }
         }
 
-        // 4. Remove any items that are no longer in the cart
-        const isAutoDebitEnabled = store.get('inventory_auto_debit', true);
-        for (const [_, item] of existingItemMap) {
-          // Restore inventory
+        for (const [, item] of existingItemMap) {
           if (isAutoDebitEnabled) {
             const recipe = db.prepare('SELECT inventory_item_id, qty_used FROM menu_inventory_map WHERE menu_item_id = ?').all(item.menu_item_id) as { inventory_item_id: number; qty_used: number }[];
             for (const r of recipe) {
-              const invDelta = item.qty * r.qty_used; // adding back full qty
+              const invDelta = item.qty * r.qty_used;
               db.prepare('UPDATE inventory_items SET qty_in_stock = qty_in_stock + ? WHERE id = ?').run(invDelta, r.inventory_item_id);
-              db.prepare('INSERT INTO inventory_log (item_id, type, qty_change, note) VALUES (?, ?, ?, ?)').run(
-                r.inventory_item_id,
-                'adjustment',
-                invDelta,
-                `Order #${orderId} Item Removed`
-              );
+              db.prepare('INSERT INTO inventory_log (item_id, type, qty_change, note) VALUES (?, ?, ?, ?)').run(r.inventory_item_id, 'adjustment', invDelta, `Order #${orderId} Item Removed`);
             }
           }
           db.prepare('DELETE FROM order_items WHERE id = ?').run(item.id);
@@ -224,61 +170,46 @@ export function registerOrdersIPC() {
 
       return { success: true, data: result };
     } catch (e: unknown) {
-      if (e instanceof Error) { return { success: false, error: e.message }; }
-      return { success: false, error: 'Unknown error occurred' };
+      return { success: false, error: errMsg(e) };
     }
   });
 
   ipcMain.handle('orders:cancelByTable', async (_, payload: { tableId: number; note?: string }) => {
     try {
       const db = getDB();
-      
+      const isAutoDebitEnabled = store.get('inventory_auto_debit', true) as boolean;
+
       const result = db.transaction(() => {
-        // Find active order for this table
         const order = db.prepare(`
-          SELECT * FROM orders 
+          SELECT * FROM orders
           WHERE table_id = ? AND status != 'billed' AND status != 'cancelled'
           LIMIT 1
         `).get(payload.tableId) as { id: number; status: string } | undefined;
 
-        if (!order) {
-          throw new Error('No active order found for this table.');
-        }
+        if (!order) throw new Error('No active order found for this table.');
 
-        const isAutoDebitEnabled = store.get('inventory_auto_debit', true);
-
-        // Restore inventory for all items
         if (isAutoDebitEnabled) {
           const items = db.prepare('SELECT menu_item_id, qty FROM order_items WHERE order_id = ?').all(order.id) as { menu_item_id: number; qty: number }[];
           for (const item of items) {
             const recipe = db.prepare('SELECT inventory_item_id, qty_used FROM menu_inventory_map WHERE menu_item_id = ?').all(item.menu_item_id) as { inventory_item_id: number; qty_used: number }[];
             for (const r of recipe) {
-              const invDelta = item.qty * r.qty_used; // adding back full qty
+              const invDelta = item.qty * r.qty_used;
               db.prepare('UPDATE inventory_items SET qty_in_stock = qty_in_stock + ? WHERE id = ?').run(invDelta, r.inventory_item_id);
-              db.prepare('INSERT INTO inventory_log (item_id, type, qty_change, note) VALUES (?, ?, ?, ?)').run(
-                r.inventory_item_id,
-                'adjustment',
-                invDelta,
-                `Order #${order.id} Cancelled`
-              );
+              db.prepare('INSERT INTO inventory_log (item_id, type, qty_change, note) VALUES (?, ?, ?, ?)').run(r.inventory_item_id, 'adjustment', invDelta, `Order #${order.id} Cancelled`);
             }
           }
         }
 
-        // Update order status
         db.prepare('UPDATE orders SET status = "cancelled", note = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(payload.note ?? '', order.id);
-
         return order.id;
       })();
 
       return { success: true, data: result };
     } catch (e: unknown) {
-      if (e instanceof Error) { return { success: false, error: e.message }; }
-      return { success: false, error: 'Unknown error occurred' };
+      return { success: false, error: errMsg(e) };
     }
   });
 
-  // Stubs for remaining unused ones to satisfy TypeScript
   ipcMain.handle('orders:addItem', async () => ({ success: true }));
   ipcMain.handle('orders:updateItem', async () => ({ success: true }));
   ipcMain.handle('orders:removeItem', async () => ({ success: true }));

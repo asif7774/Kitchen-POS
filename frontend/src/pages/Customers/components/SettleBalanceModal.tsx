@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
 import { Customer } from '../../../types/models';
 import { api } from '../../../lib/ipc';
-import { Button, Input } from '../../../components/atoms';
+import { Input } from '../../../components/atoms';
 
 interface Props {
   customer: Customer;
-  onClose: () => void;
   onSuccess: () => void;
 }
 
-const SettleBalanceModal: React.FC<Props> = ({ customer, onClose, onSuccess }) => {
+const SettleBalanceModal: React.FC<Props> = ({ customer, onSuccess }) => {
   const [amount, setAmount] = useState(customer.outstanding_balance.toString());
   const [method, setMethod] = useState<'cash' | 'card' | 'upi'>('cash');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
@@ -29,7 +27,6 @@ const SettleBalanceModal: React.FC<Props> = ({ customer, onClose, onSuccess }) =
       return;
     }
 
-    setLoading(true);
     setError('');
 
     const res = await api.customers.settleBalance({ 
@@ -37,8 +34,6 @@ const SettleBalanceModal: React.FC<Props> = ({ customer, onClose, onSuccess }) =
       amount: settleAmt, 
       method 
     });
-
-    setLoading(false);
 
     if (res.success) {
       onSuccess();

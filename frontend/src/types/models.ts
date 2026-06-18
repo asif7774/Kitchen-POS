@@ -11,6 +11,9 @@ export interface Menu {
   name: string;
   is_active: number;
   is_default: number;
+  auto_enable_time?: string | null;
+  auto_disable_time?: string | null;
+  schedule_enabled?: number;
 }
 
 export interface Category {

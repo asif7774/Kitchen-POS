@@ -1,0 +1,3 @@
+-- Migration 007 intentionally skipped.
+-- This number is reserved to preserve the sequence after 006_customers.sql.
+-- Do not use 007 for future migrations.

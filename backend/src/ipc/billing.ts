@@ -1,14 +1,26 @@
 import { ipcMain } from 'electron';
 import { createBill } from '../services/billing';
 
+interface PaymentPayload {
+  method: string;
+  amount: number;
+  reference?: string;
+}
+
+interface CreateBillPayload {
+  orderId: number;
+  payments: PaymentPayload[];
+  discount?: number;
+  customerId?: number;
+}
+
 export function registerBillingIPC() {
-  ipcMain.handle('billing:createBill', async (event, payload) => {
+  ipcMain.handle('billing:createBill', async (_, payload: CreateBillPayload) => {
     try {
-      const { orderId, payments, discount, customerId } = payload;
-      const res = createBill(orderId, payments, discount ?? 0, customerId);
+      const res = createBill(payload.orderId, payload.payments, payload.discount ?? 0, payload.customerId);
       return { success: true, data: res };
-    } catch (e: any) {
-      return { success: false, error: e.message };
+    } catch (e: unknown) {
+      return { success: false, error: e instanceof Error ? e.message : 'Unknown error occurred' };
     }
   });
 

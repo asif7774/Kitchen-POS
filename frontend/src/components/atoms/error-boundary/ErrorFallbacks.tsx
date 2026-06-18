@@ -19,18 +19,16 @@ export const AppErrorFallback = ({ error, resetErrorBoundary }: ErrorFallbackPro
       <p className="text-gray-600 mb-6">
         The application encountered an unexpected error and cannot continue.
       </p>
-      {import.meta.env.DEV && (
-        <details className="mb-6 text-left bg-red-50 border border-red-200 rounded-lg p-4">
-          <summary className="text-sm font-medium text-red-800 cursor-pointer">
-            Error Details (dev only)
-          </summary>
-          <pre className="mt-2 text-xs text-red-700 whitespace-pre-wrap wrap-break-word">
-            {error.message}
-            {'\n\n'}
-            {error.stack}
-          </pre>
-        </details>
-      )}
+      <details className="mb-6 text-left bg-red-50 border border-red-200 rounded-lg p-4">
+        <summary className="text-sm font-medium text-red-800 cursor-pointer">
+          Error Details
+        </summary>
+        <pre className="mt-2 text-xs text-red-700 whitespace-pre-wrap wrap-break-word">
+          {error.message}
+          {'\n\n'}
+          {error.stack}
+        </pre>
+      </details>
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <button
           onClick={resetErrorBoundary}

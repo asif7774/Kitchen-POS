@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Customer, CustomerHistory } from '../../../types/models';
 import { api } from '../../../lib/ipc';
-import { Button } from '../../../components/atoms';
 
 interface Props {
   customer: Customer;
-  onClose: () => void;
 }
 
-const CustomerHistoryModal: React.FC<Props> = ({ customer, onClose }) => {
+const CustomerHistoryModal: React.FC<Props> = ({ customer }) => {
   const [history, setHistory] = useState<CustomerHistory[]>([]);
   const [loading, setLoading] = useState(true);
 

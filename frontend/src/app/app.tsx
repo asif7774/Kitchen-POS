@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { HashRouter as Router } from 'react-router-dom';
 import { AuthProvider } from 'contexts/AuthContext';
 import { SvgSpriteLoader } from 'components/atoms/svg-sprite-loader';
@@ -10,6 +10,24 @@ import { ToastContainer } from 'components/organisms/toast/toast-container';
 
 import { ModalProvider } from 'contexts/ModalContext';
 import { ModalContainer } from 'components/organisms/modal/modal-container';
+import { useToast } from 'hooks/useToast';
+import { api } from '../lib/ipc';
+
+const GlobalListeners = () => {
+  const { showToast } = useToast();
+
+  React.useEffect(() => {
+    api.onMenuScheduleTriggered((data: { menuId: number; menuName: string; action: 'enabled' | 'disabled' }) => {
+      showToast({
+        message: `Scheduled Menu: ${data.menuName} has been automatically ${data.action}.`,
+        variant: 'info',
+        duration: 0 // persistent
+      });
+    });
+  }, [showToast]);
+
+  return null;
+};
 
 // Lazy load pages for POS App
 const LoadingSpinner = () => (
@@ -35,6 +53,7 @@ function App() {
             >
               <ToastContainer />
               <ModalContainer />
+              <GlobalListeners />
             <Router>
               <Suspense fallback={<LoadingSpinner />}>
                 <PosApp />

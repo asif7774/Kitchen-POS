@@ -61,7 +61,16 @@ const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="container-responsive p-6 max-w-2xl mx-auto">
+    <div className="container-responsive p-6 max-w-2xl mx-auto relative">
+      {(isExporting || isImporting) && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4"></div>
+          <p className="text-lg font-medium text-gray-800">
+            {isExporting ? 'Exporting Backup...' : 'Importing Backup...'}
+          </p>
+          <p className="text-sm text-gray-500 mt-2">Please wait, do not close the application.</p>
+        </div>
+      )}
       <div className="space-y-8">
         <Card>
           <CardHeader>
@@ -149,13 +158,19 @@ const SettingsPage: React.FC = () => {
           <div className="space-y-4 pt-4 border-t border-gray-100 mt-4">
             <Toggle
               checked={notificationsEnabled}
-              onChange={(e) => { setNotificationsEnabled(e.target.checked); }}
+              onChange={(e) => { 
+                setNotificationsEnabled(e.target.checked); 
+                showToast({ message: `Notifications ${e.target.checked ? 'enabled' : 'disabled'}`, variant: 'success' });
+              }}
               label="Enable Notifications"
               description="Receive alerts for low inventory"
             />
             <Toggle
               checked={darkModeEnabled}
-              onChange={(e) => { setDarkModeEnabled(e.target.checked); }}
+              onChange={(e) => { 
+                setDarkModeEnabled(e.target.checked); 
+                showToast({ message: `Dark mode ${e.target.checked ? 'enabled' : 'disabled'}`, variant: 'success' });
+              }}
               label="Dark Mode"
               description="Switch between light and dark themes"
             />

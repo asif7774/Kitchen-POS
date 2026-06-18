@@ -1,19 +1,21 @@
-import { Button } from '../../components/atoms';
-import React, { useState, useEffect } from 'react';
+import { Button, Select } from '../../components/atoms';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MenuPanel from './components/MenuPanel';
 import CartPanel from './components/CartPanel';
 import { CartItem, MenuItem, Customer, Menu } from '../../types/models';
-import BillModal from './components/BillModal';
+import BillModal, { BillModalHandle } from './components/BillModal';
 import CancelOrderModal from './components/CancelOrderModal';
 import { api } from '../../lib/ipc';
 import { useModal } from '../../hooks/useModal';
 import { useToast } from '../../hooks/useToast';
 import { CustomerSelect } from '../../components/organisms/CustomerSelect';
+import { useAuthStore } from '../../store/auth';
 
 const OrderPage: React.FC = () => {
   const { tableId } = useParams();
   const navigate = useNavigate();
+  const staff = useAuthStore(s => s.staff);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [orderId, setOrderId] = useState<number | null>(null);
   const [customer, setCustomer] = useState<Customer | null>(null);
@@ -21,7 +23,8 @@ const OrderPage: React.FC = () => {
   const [occupiedTime, setOccupiedTime] = useState<string>('');
   const { showModal, hideModal } = useModal();
   const { showToast } = useToast();
-  
+  const billModalRef = useRef<BillModalHandle>(null);
+
   const [menus, setMenus] = useState<Menu[]>([]);
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
 
@@ -29,10 +32,11 @@ const OrderPage: React.FC = () => {
     let active = true;
     api.menu.getMenus().then(res => {
       if (active && res.success && res.data) {
-        setMenus(res.data);
-        if (res.data.length > 0) {
-          const defaultMenu = res.data.find(m => m.is_default);
-          setActiveMenuId(defaultMenu?.id ?? res.data[0].id);
+        const activeMenus = res.data.filter(m => m.is_active === 1);
+        setMenus(activeMenus);
+        if (activeMenus.length > 0) {
+          const defaultMenu = activeMenus.find(m => m.is_default);
+          setActiveMenuId(defaultMenu?.id ?? activeMenus[0].id);
         }
       }
     }).catch(console.error);
@@ -47,68 +51,68 @@ const OrderPage: React.FC = () => {
           if (active && res.success && res.data) {
             setOrderId(res.data.id);
             setCreatedAt(res.data.created_at);
-            if (res.data.customer_id && res.data.customer_name) {
-              setCustomer({ 
-                id: res.data.customer_id, 
-                name: res.data.customer_name, 
-                phone: null, email: null, loyalty_points: 0, total_visits: 0, 
-                credit_limit: 0, outstanding_balance: 0, created_at: '' 
-              });
+            if (res.data.customer_id) {
+              api.customers.getById(res.data.customer_id).then(custRes => {
+                if (active && custRes.success && custRes.data) {
+                  setCustomer(custRes.data);
+                } else if (active) {
+                  setCustomer({
+                    id: res.data.customer_id,
+                    name: res.data.customer_name ?? 'Unknown',
+                    phone: null, email: null, loyalty_points: 0, total_visits: 0,
+                    credit_limit: 0, outstanding_balance: 0, created_at: '',
+                  });
+                }
+              }).catch(console.error);
             }
             const items: CartItem[] = res.data.items.map(i => ({
               id: i.menu_item_id,
               name: i.name,
               price: i.unit_price,
               qty: i.qty,
-              note: i.note ?? ''
+              note: i.note ?? '',
             }));
             setCart(items);
           }
         })
-        .catch((err: unknown) => {
-          console.error(err);
-        });
+        .catch((err: unknown) => { console.error(err); });
     }
     return () => { active = false; };
   }, [tableId]);
 
   useEffect(() => {
     if (!createdAt) {
-      setTimeout(() => { setOccupiedTime(''); }, 0);
+      setOccupiedTime('');
       return;
     }
     const updateTime = () => {
-      const ms = Date.now() - new Date(createdAt).getTime();
+      const dateStr = createdAt.endsWith('Z') ? createdAt : createdAt.replace(' ', 'T') + 'Z';
+      const ms = Math.max(0, Date.now() - new Date(dateStr).getTime());
       const mins = Math.floor(ms / 60000);
       const hrs = Math.floor(mins / 60);
-      const remainingMins = mins % 60;
-      setOccupiedTime(`${hrs.toString().padStart(2, '0')}:${remainingMins.toString().padStart(2, '0')}`);
+      setOccupiedTime(`${hrs.toString().padStart(2, '0')}:${(mins % 60).toString().padStart(2, '0')}`);
     };
     updateTime();
-    const timer = setInterval(updateTime, 60000); // update every minute since we only show hh:mm
+    const timer = setInterval(updateTime, 60000);
     return () => { clearInterval(timer); };
   }, [createdAt]);
 
   const handleCustomerSelect = async (selected: Customer | null) => {
     setCustomer(selected);
-    if (!selected) {
-      // Unsetting customer not fully supported yet without an API call, but UI will reflect it.
-      return;
-    }
-    
+    if (!selected) return;
+
     if (orderId) {
-      // Order exists, update it
       await api.orders.updateCustomer({ orderId, customerId: selected.id });
     } else if (tableId) {
-      // Order doesn't exist, create it to reserve the table
-      const res = await api.orders.create({ 
-        tableId: Number(tableId), 
-        customerId: selected.id 
+      const res = await api.orders.create({
+        tableId: Number(tableId),
+        staffId: staff?.id,
+        customerId: selected.id,
       });
       if (res.success && res.data) {
         setOrderId(res.data);
         setCreatedAt(new Date().toISOString());
-        showToast({ message: `Table reserved for ${  selected.name}`, variant: 'success' });
+        showToast({ message: `Table reserved for ${selected.name}`, variant: 'success' });
       }
     }
   };
@@ -117,48 +121,32 @@ const OrderPage: React.FC = () => {
     setCart(prev => {
       const existing = prev.find(item => item.id === menuItem.id);
       if (existing) {
-        return prev.map(item => 
-          item.id === menuItem.id ? { ...item, qty: item.qty + 1 } : item
-        );
+        return prev.map(item => item.id === menuItem.id ? { ...item, qty: item.qty + 1 } : item);
       }
-      return [...prev, { 
-        id: menuItem.id, 
-        name: menuItem.name, 
-        price: menuItem.price, 
-        qty: 1, 
-        note: '' 
-      }];
+      return [...prev, { id: menuItem.id, name: menuItem.name, price: menuItem.price, qty: 1, note: '' }];
     });
   };
 
   const handleUpdateQty = (id: number, delta: number) => {
-    setCart(prev => prev.map(item => {
-      if (item.id === id) {
-        const newQty = item.qty + delta;
-        return { ...item, qty: newQty };
-      }
-      return item;
-    }).filter(item => item.qty > 0));
+    setCart(prev => prev.map(item => item.id === id ? { ...item, qty: item.qty + delta } : item).filter(item => item.qty > 0));
   };
 
   const handleUpdateNote = (id: number, note: string) => {
-    setCart(prev => prev.map(item => 
-      item.id === id ? { ...item, note } : item
-    ));
+    setCart(prev => prev.map(item => item.id === id ? { ...item, note } : item));
   };
 
   const handleSendKOT = async (shouldPrint: boolean) => {
-    if ((cart.length === 0 && !orderId) || !tableId) { return; }
-    
-    const res = await api.orders.sendKOT({ 
-      tableId: Number(tableId), 
+    if ((cart.length === 0 && !orderId) || !tableId) return;
+
+    const res = await api.orders.sendKOT({
+      tableId: Number(tableId),
       items: cart,
-      customerId: customer?.id
+      staffId: staff?.id,
+      customerId: customer?.id,
     });
     if (res.success && res.data) {
       if (shouldPrint) {
         if (res.data.itemsToPrint.length > 0) {
-          // Fire and forget print so it doesn't block UI navigation
           api.print.kot({ items: res.data.itemsToPrint, tableName: `Table ${tableId}`, orderNote: '' }).catch(console.error);
         } else {
           showToast({ message: 'No new items to print.', variant: 'warning' });
@@ -171,9 +159,7 @@ const OrderPage: React.FC = () => {
   };
 
   const handleCancelOrder = async (note: string) => {
-    if (!tableId) {
-      return;
-    }
+    if (!tableId) return;
     if (!orderId) {
       setCart([]);
       hideModal();
@@ -192,7 +178,6 @@ const OrderPage: React.FC = () => {
 
   return (
     <div className="flex h-full bg-white relative">
-      {/* Header/Back Button */}
       <div className="absolute top-0 left-0 p-4 z-10">
         <Button variant="link" onClick={() => { navigate('/tables'); }}>
           ← Back to Tables
@@ -202,16 +187,17 @@ const OrderPage: React.FC = () => {
       <div className="flex-1 p-6 pt-20 border-r bg-gray-50 flex flex-col overflow-hidden">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold">Menu</h1>
-          {menus.length > 0 && (
-            <select
-              className="border border-gray-300 rounded px-3 py-1.5 text-sm bg-white"
-              value={activeMenuId ?? ''}
-              onChange={(e) => { setActiveMenuId(Number(e.target.value)); }}
-            >
-              {menus.map(m => (
-                <option key={m.id} value={m.id}>{m.name}</option>
-              ))}
-            </select>
+          {menus.length > 1 && (
+            <div className="w-48">
+              <Select
+                value={String(activeMenuId ?? '')}
+                onChange={(e) => { setActiveMenuId(Number(e.target.value)); }}
+              >
+                {menus.map(m => (
+                  <option key={m.id} value={String(m.id)}>{m.name}</option>
+                ))}
+              </Select>
+            </div>
           )}
         </div>
         <MenuPanel menuId={activeMenuId} onAddItem={handleAddItem} />
@@ -225,48 +211,48 @@ const OrderPage: React.FC = () => {
           </div>
           <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-bold">Table {tableId}</span>
         </div>
-        
+
         <div className="mb-4">
-          <CustomerSelect 
-            selectedCustomer={customer} 
-            onSelect={(c) => { void handleCustomerSelect(c); }} 
-            placeholder="Assign Customer (Optional)" 
+          <CustomerSelect
+            selectedCustomer={customer}
+            onSelect={(c) => { void handleCustomerSelect(c); }}
+            placeholder="Assign Customer (Optional)"
           />
         </div>
-        
-        <CartPanel 
+
+        <CartPanel
           cart={cart}
           onUpdateQty={handleUpdateQty}
           onUpdateNote={handleUpdateNote}
           onSendKOT={(print) => { void handleSendKOT(print); }}
-          onGenerateBill={() => { 
+          onGenerateBill={() => {
             if (!orderId) {
-               showToast({ message: 'Order has not been sent to kitchen yet!', variant: 'warning' });
-               return;
+              showToast({ message: 'Order has not been sent to kitchen yet!', variant: 'warning' });
+              return;
             }
             showModal({
-              title: "Generate Final Bill",
-              content: <BillModal orderId={orderId} cart={cart} initialCustomer={customer} onClose={hideModal} />,
-              size: "xl",
+              title: 'Generate Final Bill',
+              content: <BillModal ref={billModalRef} orderId={orderId} cart={cart} initialCustomer={customer} onClose={hideModal} />,
+              size: 'xl',
               actions: (
                 <>
                   <Button variant="outline" onClick={hideModal}>Cancel</Button>
-                  <Button type="button" variant="secondary" onClick={() => { document.getElementById('btn-save')?.click(); }}>Complete & Save</Button>
-                  <Button type="button" variant="primary" onClick={() => { document.getElementById('btn-print')?.click(); }}>Print Receipt</Button>
+                  <Button type="button" variant="secondary" onClick={() => { billModalRef.current?.save(); }}>Complete & Save</Button>
+                  <Button type="button" variant="primary" onClick={() => { billModalRef.current?.print(); }}>Print Receipt</Button>
                 </>
-              )
+              ),
             });
           }}
-          onVoidOrder={() => { 
+          onVoidOrder={() => {
             showModal({
-              title: "Void Order",
+              title: 'Void Order',
               content: <CancelOrderModal onConfirm={(note) => { void handleCancelOrder(note); }} />,
               actions: (
                 <>
                   <Button variant="outline" onClick={hideModal}>Go Back</Button>
                   <Button type="submit" form="cancel-order-form" variant="danger">Confirm Void Order</Button>
                 </>
-              )
+              ),
             });
           }}
         />

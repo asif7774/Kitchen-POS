@@ -1,20 +1,18 @@
 import React, { useState } from 'react';
 import { Customer } from '../../../types/models';
 import { api } from '../../../lib/ipc';
-import { Button, Input } from '../../../components/atoms';
+import { Input } from '../../../components/atoms';
 
 interface Props {
-  customer?: Customer;
-  onClose: () => void;
+  customer?: Customer | null;
   onSuccess: () => void;
 }
 
-const CustomerModal: React.FC<Props> = ({ customer, onClose, onSuccess }) => {
+const CustomerModal: React.FC<Props> = ({ customer, onSuccess }) => {
   const [name, setName] = useState(customer?.name ?? '');
   const [phone, setPhone] = useState(customer?.phone ?? '');
   const [email, setEmail] = useState(customer?.email ?? '');
   const [creditLimit, setCreditLimit] = useState(customer?.credit_limit.toString() ?? '0');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
@@ -23,8 +21,6 @@ const CustomerModal: React.FC<Props> = ({ customer, onClose, onSuccess }) => {
       setError('Name is required');
       return;
     }
-    
-    setLoading(true);
     setError('');
 
     const payload = {
@@ -40,8 +36,6 @@ const CustomerModal: React.FC<Props> = ({ customer, onClose, onSuccess }) => {
     } else {
       res = await api.customers.create(payload);
     }
-
-    setLoading(false);
 
     if (res.success) {
       onSuccess();

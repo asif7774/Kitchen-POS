@@ -29,7 +29,6 @@ const CustomersPage: React.FC = () => {
     showModal({
       title: 'Add Customer',
       content: <CustomerModal 
-        onClose={hideModal} 
         onSuccess={() => { hideModal(); void loadCustomers(); }} 
       />,
       actions: (
@@ -46,7 +45,6 @@ const CustomersPage: React.FC = () => {
       title: 'Edit Customer',
       content: <CustomerModal 
         customer={customer} 
-        onClose={hideModal} 
         onSuccess={() => { hideModal(); void loadCustomers(); }} 
       />,
       actions: (
@@ -85,7 +83,6 @@ const CustomersPage: React.FC = () => {
       title: `Settle Balance: ${customer.name}`,
       content: <SettleBalanceModal 
         customer={customer} 
-        onClose={hideModal} 
         onSuccess={() => { hideModal(); void loadCustomers(); }} 
       />,
       actions: (
@@ -100,7 +97,7 @@ const CustomersPage: React.FC = () => {
   const handleViewHistory = (customer: Customer) => {
     showModal({
       title: 'Order History',
-      content: <CustomerHistoryModal customer={customer} onClose={hideModal} />,
+      content: <CustomerHistoryModal customer={customer} />,
       actions: (
         <Button variant="outline" onClick={hideModal}>Close</Button>
       )

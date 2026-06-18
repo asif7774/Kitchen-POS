@@ -20,16 +20,14 @@ export function StockAdjustmentModal({ onClose, onRefresh, item }: Props) {
 
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    if (qtyChange === '' || qtyChange <= 0) {
-      showToast({ message: 'Quantity must be greater than 0', variant: 'error' });
+    if (qtyChange === '') {
+      showToast({ message: 'Please enter a valid quantity', variant: 'error' });
       return;
     }
 
-
-
-    // If wastage or a negative adjustment, quantity should be negative
     let finalQty = qtyChange;
-    if (type === 'wastage') {
+    // For wastage, the user enters a positive amount they want to remove, so we negate it.
+    if (type === 'wastage' && finalQty > 0) {
       finalQty = -finalQty;
     }
 
@@ -72,19 +70,18 @@ export function StockAdjustmentModal({ onClose, onRefresh, item }: Props) {
         onChange={e => { setType(e.target.value as 'purchase' | 'adjustment' | 'wastage'); }}
       >
         <option value="purchase">Purchase (Add Stock)</option>
-        <option value="adjustment">Manual Adjustment (Add Stock)</option>
+        <option value="adjustment">Manual Adjustment (Add or Remove)</option>
         <option value="wastage">Wastage (Remove Stock)</option>
       </Select>
 
       <Input
-        label={`Quantity ${type === 'wastage' ? 'to Remove' : 'to Add'} (${item.unit})`}
+        label={type === 'wastage' ? 'Quantity to Remove' : type === 'purchase' ? 'Quantity to Add' : 'Quantity Change (use negative to remove)'}
         type="number"
-        min="0.01"
         step="0.01"
         required
         value={qtyChange}
         onChange={e => { setQtyChange(e.target.value === '' ? '' : Number(e.target.value)); }}
-        placeholder="e.g., 5.5"
+        placeholder={type === 'adjustment' ? "e.g., -5.5 or 10" : "e.g., 5.5"}
       />
 
       <Textarea

@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('api', {
     getByTable: (payload: any) => ipcRenderer.invoke('orders:getByTable', payload),
     sendKOT: (payload: any) => ipcRenderer.invoke('orders:sendKOT', payload),
     cancelByTable: (payload: any) => ipcRenderer.invoke('orders:cancelByTable', payload),
+    updateCustomer: (payload: any) => ipcRenderer.invoke('orders:updateCustomer', payload),
   },
   kds: {
     getActiveTickets: () => ipcRenderer.invoke('kds:getActiveTickets'),
@@ -17,12 +18,18 @@ contextBridge.exposeInMainWorld('api', {
     updateOrderStatus: (payload: any) => ipcRenderer.invoke('kds:updateOrderStatus', payload),
   },
   menu: {
-    getAll: () => ipcRenderer.invoke('menu:getAll'),
+    getMenus: () => ipcRenderer.invoke('menu:getMenus'),
+    upsertMenu: (payload: any) => ipcRenderer.invoke('menu:upsertMenu', payload),
+    duplicateMenu: (payload: any) => ipcRenderer.invoke('menu:duplicateMenu', payload),
+    uploadImage: () => ipcRenderer.invoke('menu:uploadImage'),
+    getAll: (menuId?: number) => ipcRenderer.invoke('menu:getAll', menuId),
     upsertItem: (payload: any) => ipcRenderer.invoke('menu:upsertItem', payload),
     deleteItem: (payload: any) => ipcRenderer.invoke('menu:deleteItem', payload),
     toggleAvailable: (payload: any) => ipcRenderer.invoke('menu:toggleAvailable', payload),
     upsertCategory: (payload: any) => ipcRenderer.invoke('menu:upsertCategory', payload),
     deleteCategory: (payload: any) => ipcRenderer.invoke('menu:deleteCategory', payload),
+    getRecipe: (payload: any) => ipcRenderer.invoke('menu:getRecipe', payload),
+    updateRecipe: (payload: any) => ipcRenderer.invoke('menu:updateRecipe', payload),
   },
   tables: {
     getAll: () => ipcRenderer.invoke('tables:getAll'),
@@ -57,6 +64,7 @@ contextBridge.exposeInMainWorld('api', {
   reports: {
     daily: (payload: any) => ipcRenderer.invoke('reports:daily', payload),
     gst: (payload: any) => ipcRenderer.invoke('reports:gst', payload),
+    getPastOrders: (payload: any) => ipcRenderer.invoke('reports:getPastOrders', payload),
   },
   backup: {
     export: (payload: any) => ipcRenderer.invoke('backup:export', payload),
@@ -70,5 +78,21 @@ contextBridge.exposeInMainWorld('api', {
     getAll: (payload?: any) => ipcRenderer.invoke('expenses:getAll', payload),
     create: (payload: any) => ipcRenderer.invoke('expenses:create', payload),
     delete: (payload: any) => ipcRenderer.invoke('expenses:delete', payload),
+  },
+  customers: {
+    getAll: () => ipcRenderer.invoke('customers:getAll'),
+    getById: (id: number) => ipcRenderer.invoke('customers:getById', id),
+    create: (payload: any) => ipcRenderer.invoke('customers:create', payload),
+    update: (payload: any) => ipcRenderer.invoke('customers:update', payload),
+    delete: (payload: any) => ipcRenderer.invoke('customers:delete', payload),
+    search: (payload: any) => ipcRenderer.invoke('customers:search', payload),
+    settleBalance: (payload: any) => ipcRenderer.invoke('customers:settleBalance', payload),
+    getHistory: (payload: any) => ipcRenderer.invoke('customers:getHistory', payload),
+  },
+  dashboard: {
+    getMetrics: (payload: any) => ipcRenderer.invoke('dashboard:getMetrics', payload),
+  },
+  onMenuScheduleTriggered: (callback: (data: any) => void) => {
+    ipcRenderer.on('menu:scheduleTriggered', (_event, value) => { callback(value); });
   }
 });

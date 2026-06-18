@@ -13,6 +13,10 @@ const MenuModal: React.FC<Props> = ({ menu, onSuccess }) => {
   const { showToast } = useToast();
   const [name, setName] = useState(menu?.name ?? '');
   const [isDefault, setIsDefault] = useState(menu?.is_default === 1);
+  const [isActive, setIsActive] = useState(menu?.is_active !== 0); // Defaults to true if new
+  const [scheduleEnabled, setScheduleEnabled] = useState(menu?.schedule_enabled === 1);
+  const [autoEnableTime, setAutoEnableTime] = useState(menu?.auto_enable_time ?? '');
+  const [autoDisableTime, setAutoDisableTime] = useState(menu?.auto_disable_time ?? '');
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -25,7 +29,11 @@ const MenuModal: React.FC<Props> = ({ menu, onSuccess }) => {
       const res = await api.menu.upsertMenu({
         id: menu?.id,
         name,
-        is_default: isDefault ? 1 : 0
+        is_default: isDefault ? 1 : 0,
+        is_active: isActive ? 1 : 0,
+        schedule_enabled: scheduleEnabled ? 1 : 0,
+        auto_enable_time: scheduleEnabled ? autoEnableTime : null,
+        auto_disable_time: scheduleEnabled ? autoDisableTime : null,
       });
 
       if (res.success) {
@@ -56,6 +64,38 @@ const MenuModal: React.FC<Props> = ({ menu, onSuccess }) => {
         checked={isDefault} 
         onChange={(e) => { setIsDefault(e.target.checked); }} 
       />
+      <Toggle 
+        label="Is Active" 
+        description="Disabled menus will not appear on the Order screen."
+        checked={isActive} 
+        onChange={(e) => { setIsActive(e.target.checked); }} 
+      />
+      <div className="border-t pt-4 mt-4">
+        <Toggle 
+          label="Enable Auto-Schedule" 
+          description="Automatically enable or disable this menu based on time."
+          checked={scheduleEnabled} 
+          onChange={(e) => { setScheduleEnabled(e.target.checked); }} 
+        />
+        {scheduleEnabled && (
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <Input 
+              type="time"
+              label="Enable At" 
+              value={autoEnableTime} 
+              onChange={(e) => { setAutoEnableTime(e.target.value); }} 
+              required={scheduleEnabled}
+            />
+            <Input 
+              type="time"
+              label="Disable At" 
+              value={autoDisableTime} 
+              onChange={(e) => { setAutoDisableTime(e.target.value); }} 
+              required={scheduleEnabled}
+            />
+          </div>
+        )}
+      </div>
     </form>
   );
 };

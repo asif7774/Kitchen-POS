@@ -20,8 +20,9 @@ const TableStatusCard: React.FC<Props> = ({ name, capacity, status, customerName
       return;
     }
     const updateTime = () => {
-      const ms = Date.now() - new Date(createdAt).getTime();
-      const mins = Math.floor(ms / 60000);
+      const dateStr = createdAt.endsWith('Z') ? createdAt : createdAt.replace(' ', 'T') + 'Z';
+      const ms = Date.now() - new Date(dateStr).getTime();
+      const mins = Math.max(0, Math.floor(ms / 60000));
       const hrs = Math.floor(mins / 60);
       const remainingMins = mins % 60;
       setOccupiedTime(`${hrs.toString().padStart(2, '0')}:${remainingMins.toString().padStart(2, '0')}`);

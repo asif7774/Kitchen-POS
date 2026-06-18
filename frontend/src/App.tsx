@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/auth';
 
 import LoginPage from './pages/Login';
+import DashboardPage from './pages/Dashboard';
 import TablesPage from './pages/Tables';
 import OrderPage from './pages/Order';
 import MenuPage from './pages/Menu';
@@ -36,9 +37,17 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const App: React.FC = () => {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/tables" replace />} />
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/components" element={<ComponentsPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route 
+        path="/dashboard" 
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        } 
+      />
       <Route 
         path="/tables" 
         element={
