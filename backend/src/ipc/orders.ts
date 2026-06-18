@@ -67,7 +67,7 @@ export function registerOrdersIPC() {
         return { success: true, data: null };
       }
 
-      const items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all();
+      const items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(order.id);
       return { success: true, data: { ...order, items } };
     } catch (e: unknown) {
       if (e instanceof Error) { return { success: false, error: e.message }; }
@@ -106,7 +106,7 @@ export function registerOrdersIPC() {
         // 2. Fetch current items in the DB for this order
         const existingItems = db.prepare(`
           SELECT * FROM order_items WHERE order_id = ?
-        `).all() as Array<{ id: number; menu_item_id: number; qty: number; preparation_status: string }>;
+        `).all(orderId) as Array<{ id: number; menu_item_id: number; qty: number; preparation_status: string }>;
 
         const existingItemMap = new Map(existingItems.map(item => [item.menu_item_id, item]));
 

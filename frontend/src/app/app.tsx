@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { HashRouter as Router } from 'react-router-dom';
 import { AuthProvider } from 'contexts/AuthContext';
 import { SvgSpriteLoader } from 'components/atoms/svg-sprite-loader';
 import { ErrorBoundary, AppErrorFallback } from 'components/atoms/error-boundary';
@@ -27,7 +27,7 @@ function App() {
           <ModalProvider>
             {/* SvgSpriteLoader wraps Router to provide context, but loading is deferred internally */}
             <SvgSpriteLoader
-              url="/sprites/app-icons.svg"
+              url="./sprites/app-icons.svg"
               version="1.0.0"
               // eslint-disable-next-line no-console
               onLoad={import.meta.env.DEV ? () => { console.log('✅ SVG sprite loaded successfully'); } : undefined}

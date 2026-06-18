@@ -5,6 +5,8 @@ directories:
 files:
   - backend/dist/**/*
   - frontend/dist/**/*
+  - node_modules/**/*
+  - package.json
 extraResources:
   - from: backend/src/db/migrations
     to: migrations

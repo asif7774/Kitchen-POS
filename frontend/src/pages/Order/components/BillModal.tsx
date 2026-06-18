@@ -25,6 +25,12 @@ const BillModal: React.FC<Props> = ({ orderId, cart, onClose }) => {
   const sgstTotal = totalAfterDiscount * 0.025; // 2.5%
   const finalTotal = totalAfterDiscount + cgstTotal + sgstTotal;
 
+  React.useEffect(() => {
+    if (payments.length === 1) {
+      setPayments([{ ...payments[0], amount: Number(finalTotal.toFixed(2)) }]);
+    }
+  }, [finalTotal]);
+
   const currentPaymentsTotal = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
   // Allow a small epsilon for floating point issues
   const isBalanced = Math.abs(currentPaymentsTotal - finalTotal) < 0.01;
@@ -61,8 +67,12 @@ const BillModal: React.FC<Props> = ({ orderId, cart, onClose }) => {
          discount
       });
       if (res.success) {
-         await api.print.bill({ bill: res.data, orderItems: cart, settings: {} });
-         showToast({ message: 'Bill generated and printed', variant: 'success' });
+         const mappedItems = cart.map(i => ({ name: i.name, qty: i.qty, unit_price: i.price }));
+         const printRes = await api.print.bill({ bill: res.data, orderItems: mappedItems, settings: {} });
+         if (!printRes.success) {
+           alert('Failed to print bill: ' + printRes.error);
+         }
+         showToast({ message: 'Bill generated successfully', variant: 'success' });
          onClose();
       } else {
          showToast({ message: res.error ?? 'Failed to generate bill', variant: 'error' });

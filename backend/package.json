@@ -10,9 +10,7 @@
   "dependencies": {
     "archiver": "^6.0.1",
     "better-sqlite3": "^9.4.3",
-    "electron-store": "^8.1.0",
-    "escpos": "^3.0.0-alpha.6",
-    "escpos-usb": "^3.0.0-alpha.4"
+    "electron-store": "^8.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -13,6 +13,7 @@ const OrderPage: React.FC = () => {
   const { tableId } = useParams();
   const navigate = useNavigate();
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [orderId, setOrderId] = useState<number | null>(null);
   const { showModal, hideModal } = useModal();
 
   useEffect(() => {
@@ -21,6 +22,7 @@ const OrderPage: React.FC = () => {
       api.orders.getByTable({ tableId: Number(tableId) })
         .then(res => {
           if (active && res.success && res.data) {
+            setOrderId(res.data.id);
             const items: CartItem[] = res.data.items.map(i => ({
               id: i.menu_item_id,
               name: i.name,
@@ -73,14 +75,15 @@ const OrderPage: React.FC = () => {
   };
 
   const handleSendKOT = async () => {
-    if (cart.length === 0 || !tableId) { return; }
+    if ((cart.length === 0 && !orderId) || !tableId) { return; }
     
     const res = await api.orders.sendKOT({ 
       tableId: Number(tableId), 
       items: cart 
     });
     if (res.success) {
-      await api.print.kot({ items: cart, tableName: `Table ${tableId}`, orderNote: '' });
+      // Fire and forget print so it doesn't block UI navigation
+      api.print.kot({ items: cart, tableName: `Table ${tableId}`, orderNote: '' }).catch(console.error);
       navigate('/tables');
     }
   };
@@ -89,13 +92,19 @@ const OrderPage: React.FC = () => {
     if (!tableId) {
       return;
     }
+    if (!orderId) {
+      setCart([]);
+      hideModal();
+      navigate('/tables');
+      return;
+    }
     const res = await api.orders.cancelByTable({ tableId: Number(tableId), note });
     if (res.success) {
       setCart([]);
       hideModal();
       navigate('/tables');
     } else {
-      console.error('Failed to cancel order:', res.error);
+      alert('Failed to cancel order: ' + res.error);
     }
   };
 
@@ -124,9 +133,13 @@ const OrderPage: React.FC = () => {
           onUpdateNote={handleUpdateNote}
           onSendKOT={() => { void handleSendKOT(); }}
           onGenerateBill={() => { 
+            if (!orderId) {
+               alert('Order has not been sent to kitchen yet!');
+               return;
+            }
             showModal({
               title: "Generate Final Bill",
-              content: <BillModal orderId={parseInt(tableId ?? '0')} cart={cart} onClose={hideModal} />,
+              content: <BillModal orderId={orderId} cart={cart} onClose={hideModal} />,
               size: "xl",
               actions: (
                 <>

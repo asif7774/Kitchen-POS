@@ -16,7 +16,7 @@ export function runMigrations() {
   `);
 
   const migrationsDir = app.isPackaged 
-    ? path.join(__dirname, 'migrations')
+    ? path.join(process.resourcesPath, 'migrations')
     : path.join(__dirname, '../../src/db/migrations');
     
   if (!fs.existsSync(migrationsDir)) {

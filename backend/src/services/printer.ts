@@ -1,8 +1,4 @@
-import escpos from 'escpos';
-import escposUsb from 'escpos-usb';
-
-// Bind USB adapter to escpos
-(escpos as unknown as { USB: unknown }).USB = escposUsb;
+import { BrowserWindow } from 'electron';
 
 interface KOTPrintItem {
   name: string;
@@ -30,154 +26,139 @@ interface OutletSettings {
   gstin?: string;
 }
 
-export async function printKOT(items: KOTPrintItem[], tableName: string, orderNote: string): Promise<void> {
-  try {
-    const device = new escpos.USB();
-    const printer = new escpos.Printer(device);
-    
-    return new Promise<void>((resolve, reject) => {
-      device.open((err: unknown) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        try {
-          printer
-            .align('ct')
-            .size(2, 2)
-            .text('KOT')
-            .size(1, 1)
-            .text(`Table: ${tableName}`)
-            .text(`Date: ${new Date().toLocaleString()}`)
-            .text('--------------------------------')
-            .align('lt');
-            
-          items.forEach(item => {
-            printer.text(`${item.qty} x ${item.name}`);
-          });
-          
-          if (orderNote) {
-            printer
-              .text('--------------------------------')
-              .text(`Note: ${orderNote}`);
-          }
-          
-          printer
-            .text('--------------------------------')
-            .feed(2)
-            .cut()
-            .close();
-            
+const hiddenWindows = new Set<BrowserWindow>();
+
+async function printHtmlSilent(htmlContent: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    let win = new BrowserWindow({
+      show: false,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+      }
+    });
+
+    hiddenWindows.add(win);
+
+    const cleanup = () => {
+      if (!win.isDestroyed()) {
+        win.close();
+      }
+      hiddenWindows.delete(win);
+    };
+
+    // Failsafe timeout set to 5 minutes (user might take time in print dialog)
+    const timeout = setTimeout(() => {
+      cleanup();
+      resolve(); 
+    }, 300000);
+
+    win.webContents.once('did-finish-load', () => {
+      win.webContents.print({ 
+        silent: false, 
+        printBackground: true,
+        color: false,
+        margins: { marginType: 'printableArea' } 
+      }, (success, errorType) => {
+        clearTimeout(timeout);
+        if (!success) {
+          console.error('Print failed:', errorType);
+          // resolve anyway so we don't crash/hang the UI
+          resolve(); 
+        } else {
           resolve();
-        } catch (e) {
-          reject(e);
         }
+        cleanup();
       });
     });
-  } catch (_e: unknown) {
-    // Robust Mock Fallback
-    console.log('\n=== MOCK THERMAL PRINT SLIP (KOT) ===');
-    console.log('====================================');
-    console.log('              KOT SLIP              ');
-    console.log('====================================');
-    console.log(`Table: ${tableName.padEnd(14)} Time: ${new Date().toLocaleTimeString()}`);
-    console.log('------------------------------------');
-    items.forEach(i => {
-      console.log(`${i.qty} x ${i.name}`);
-    });
-    if (orderNote) {
-      console.log('------------------------------------');
-      console.log(`Note: ${orderNote}`);
-    }
-    console.log('====================================\n');
-    return Promise.resolve();
-  }
+
+    win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
+  });
+}
+
+export async function printKOT(items: KOTPrintItem[], tableName: string, orderNote: string): Promise<void> {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        @page { margin: 0; }
+        body { font-family: 'Courier New', monospace; font-size: 14px; font-weight: bold; width: 100%; max-width: 300px; padding: 0; margin: 0; color: black; line-height: 1.3; }
+        .text-center { text-align: center; }
+        .fw-bold { font-weight: bold; }
+        .fs-large { font-size: 18px; }
+        .divider { border-bottom: 2px dashed #000; margin: 10px 0; }
+        .item { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 15px; }
+        .note { margin-top: 10px; font-style: italic; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="text-center fw-bold fs-large">*** KOT ***</div>
+      <div class="text-center fs-large mt-2">Table: ${tableName}</div>
+      <div class="text-center mt-2">Date: ${new Date().toLocaleString()}</div>
+      <div class="divider"></div>
+      ${items.map(i => `<div class="item"><span>${i.qty} x ${i.name}</span></div>`).join('')}
+      ${orderNote ? `<div class="divider"></div><div class="note">Note: ${orderNote}</div>` : ''}
+      <div class="divider"></div>
+      <div class="text-center">End of KOT</div>
+    </body>
+    </html>
+  `;
+  
+  await printHtmlSilent(html);
 }
 
 export async function printBill(bill: BillPrintPayload, orderItems: BillItemPrintPayload[], settings: OutletSettings): Promise<void> {
-  try {
-    const device = new escpos.USB();
-    const printer = new escpos.Printer(device);
-    
-    return new Promise<void>((resolve, reject) => {
-      device.open((err: unknown) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        try {
-          printer
-            .align('ct')
-            .size(1.5, 1.5)
-            .text(settings.outlet_name ?? 'Restaurant POS')
-            .size(1, 1)
-            .text(settings.address ?? '')
-            .text(`GSTIN: ${settings.gstin ?? 'N/A'}`)
-            .text('--------------------------------')
-            .align('lt')
-            .text(`Bill: ${bill.bill_number}`)
-            .text(`Date: ${new Date().toLocaleString()}`)
-            .text('--------------------------------');
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          @page { margin: 0; }
+          body { font-family: 'Courier New', monospace; font-size: 13px; font-weight: bold; width: 100%; max-width: 300px; padding: 0; margin: 0; color: black; line-height: 1.3; }
+          .text-center { text-align: center; }
+          .text-right { text-align: right; }
+          .fw-bold { font-weight: bold; }
+          .fs-large { font-size: 18px; }
+          .divider { border-bottom: 2px dashed #000; margin: 10px 0; }
+          .item { display: flex; justify-content: space-between; margin-bottom: 4px; }
+          .item-name { width: 60%; }
+          .item-qty { width: 10%; text-align: right; }
+          .item-total { width: 30%; text-align: right; }
+          .summary-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        </style>
+      </head>
+    <body>
+      <div class="text-center fw-bold fs-large">${settings.outlet_name ?? 'Restaurant POS'}</div>
+      ${settings.address ? `<div class="text-center">${settings.address}</div>` : ''}
+      <div class="text-center">GSTIN: ${settings.gstin ?? 'N/A'}</div>
+      <div class="divider"></div>
+      <div>Bill: ${bill.bill_number}</div>
+      <div>Date: ${new Date().toLocaleString()}</div>
+      <div class="divider"></div>
+      
+      ${orderItems.map(i => `
+        <div class="item">
+          <span class="item-name">${i.name}</span>
+          <span class="item-qty">${i.qty}x</span>
+          <span class="item-total">₹${(i.qty * i.unit_price).toFixed(2)}</span>
+        </div>
+      `).join('')}
+      
+      <div class="divider"></div>
+      <div class="summary-row"><span>Subtotal:</span><span>₹${bill.taxable_amount.toFixed(2)}</span></div>
+      <div class="summary-row"><span>CGST:</span><span>₹${bill.cgst_amount.toFixed(2)}</span></div>
+      <div class="summary-row"><span>SGST:</span><span>₹${bill.sgst_amount.toFixed(2)}</span></div>
+      ${bill.discount_amount > 0 ? `<div class="summary-row"><span>Discount:</span><span>-₹${bill.discount_amount.toFixed(2)}</span></div>` : ''}
+      <div class="divider"></div>
+      <div class="summary-row fw-bold fs-large"><span>GRAND TOTAL:</span><span>₹${bill.total_amount.toFixed(2)}</span></div>
+      <div class="divider"></div>
+      <div class="text-center fw-bold">Thank You! Visit Again.</div>
+    </body>
+    </html>
+  `;
 
-          orderItems.forEach(item => {
-            const amount = item.qty * item.unit_price;
-            printer.text(`${item.qty} x ${item.name.padEnd(18)} ₹${amount.toFixed(2)}`);
-          });
-
-          printer
-            .text('--------------------------------')
-            .text(`Subtotal:      ₹${bill.taxable_amount.toFixed(2)}`)
-            .text(`CGST:          ₹${bill.cgst_amount.toFixed(2)}`)
-            .text(`SGST:          ₹${bill.sgst_amount.toFixed(2)}`);
-            
-          if (bill.discount_amount > 0) {
-            printer.text(`Discount:     -₹${bill.discount_amount.toFixed(2)}`);
-          }
-
-          printer
-            .text('--------------------------------')
-            .size(1.2, 1.2)
-            .text(`GRAND TOTAL:   ₹${bill.total_amount.toFixed(2)}`)
-            .size(1, 1)
-            .text('--------------------------------')
-            .align('ct')
-            .text('Thank You! Visit Again.')
-            .feed(2)
-            .cut()
-            .close();
-
-          resolve();
-        } catch (e) {
-          reject(e);
-        }
-      });
-    });
-  } catch (_e: unknown) {
-    // Robust Mock Fallback
-    console.log('\n=== MOCK THERMAL PRINT SLIP (BILL) ===');
-    console.log('====================================');
-    console.log((settings.outlet_name ?? 'Restaurant POS').toUpperCase().padStart(26));
-    if (settings.address) {console.log(settings.address.padStart(26));}
-    console.log(`GSTIN: ${settings.gstin ?? 'N/A'}`.padStart(26));
-    console.log('====================================');
-    console.log(`Invoice: ${bill.bill_number.padEnd(14)} Time: ${new Date().toLocaleTimeString()}`);
-    console.log('------------------------------------');
-    orderItems.forEach(i => {
-      const amt = i.qty * i.unit_price;
-      console.log(`${i.qty} x ${i.name.padEnd(20)} ₹${amt.toFixed(2)}`);
-    });
-    console.log('------------------------------------');
-    console.log(`Subtotal:             ₹${bill.taxable_amount.toFixed(2)}`);
-    console.log(`CGST:                 ₹${bill.cgst_amount.toFixed(2)}`);
-    console.log(`SGST:                 ₹${bill.sgst_amount.toFixed(2)}`);
-    if (bill.discount_amount > 0) {
-      console.log(`Discount:            -₹${bill.discount_amount.toFixed(2)}`);
-    }
-    console.log('------------------------------------');
-    console.log(`GRAND TOTAL:          ₹${bill.total_amount.toFixed(2)}`);
-    console.log('====================================');
-    console.log('       THANK YOU! VISIT AGAIN.      ');
-    console.log('====================================\n');
-    return Promise.resolve();
-  }
+  await printHtmlSilent(html);
 }

@@ -35,7 +35,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const App: React.FC = () => {
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
+      <Route path="/" element={<Navigate to="/tables" replace />} />
       <Route path="/components" element={<ComponentsPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route 

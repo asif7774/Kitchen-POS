@@ -50,7 +50,15 @@ export function createBill(orderId: number, payments: any[], discount: number) {
     const lastNumber = store.get('last_bill_number', 0) as number;
     store.set('last_bill_number', lastNumber + 1);
 
-    return { billId: info.lastInsertRowid, billNumber };
+    return { 
+      billId: info.lastInsertRowid, 
+      bill_number: billNumber,
+      taxable_amount: totals.taxable_amount,
+      cgst_amount: totals.cgst_amount,
+      sgst_amount: totals.sgst_amount,
+      discount_amount: totals.discount_amount,
+      total_amount: totals.total_amount
+    };
   });
 
   return transaction();

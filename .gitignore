@@ -66,3 +66,6 @@ backend/test-results/
 backend/playwright-video/
 # Added by code-review-graph
 .code-review-graph/
+
+/dist-electron
+/dist-electron/*

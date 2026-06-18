@@ -51,7 +51,15 @@ const SettingsPage: React.FC = () => {
             <CardTitle>Printer</CardTitle>
           </CardHeader>
           <CardContent>
-            <Button variant="secondary" onClick={() => { void Promise.resolve(); }} className="w-full text-left justify-start">
+            <Button variant="secondary" onClick={() => { 
+              void api.print.kot({
+                tableName: 'TEST PAGE',
+                items: [
+                  { name: 'System Print Test', qty: 1 }
+                ],
+                orderNote: 'If you can read this, printing is working!'
+              }); 
+            }} className="w-full text-left justify-start">
               Test Print
             </Button>
           </CardContent>
