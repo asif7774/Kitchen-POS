@@ -2,12 +2,41 @@ import { Button } from '../../components/atoms';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth';
+import { api } from '../../lib/ipc';
+import { useToast } from '../../hooks/useToast';
 
 const LoginPage: React.FC = () => {
   const [pin, setPin] = useState('');
   const [error, setError] = useState(false);
   const login = useAuthStore((state) => state.login);
   const navigate = useNavigate();
+  const { showToast } = useToast();
+
+  const handleExportBackup = async () => {
+    try {
+      const res = await api.backup.export({});
+      if (res.success) {
+        showToast({ message: `Backup exported to ${res.data as string}`, variant: 'success' });
+      } else {
+        showToast({ message: res.error ?? 'Failed to export backup', variant: 'error' });
+      }
+    } catch {
+      showToast({ message: 'Failed to export backup', variant: 'error' });
+    }
+  };
+
+  const handleImportBackup = async () => {
+    try {
+      const res = await api.backup.import({});
+      if (res.success) {
+        showToast({ message: 'Backup imported. App will restart.', variant: 'success' });
+      } else if (res.error && res.error !== 'Import cancelled') {
+        showToast({ message: res.error, variant: 'error' });
+      }
+    } catch {
+      showToast({ message: 'Failed to import backup', variant: 'error' });
+    }
+  };
 
   const handleDigit = (digit: string) => {
     setPin((prev) => prev + digit);
@@ -75,6 +104,15 @@ const LoginPage: React.FC = () => {
         </div>
 
         {error && <p className="text-red-500 font-medium mt-2">Incorrect PIN</p>}
+
+        <div className="mt-6 pt-4 border-t border-gray-100 w-full flex justify-center gap-3">
+          <Button variant="ghost" size="sm" onClick={() => { void handleExportBackup(); }}>
+            Export Backup
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => { void handleImportBackup(); }}>
+            Import Backup
+          </Button>
+        </div>
       </div>
     </div>
   );
