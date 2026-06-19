@@ -110,20 +110,22 @@ const SettingsPage: React.FC = () => {
                 <Button variant="primary" onClick={() => { void handleBackupNow(); }} disabled={isBackingUp || isExporting || isImporting}>
                   {isBackingUp ? 'Backing up... Do not close' : 'Back Up Now'}
                 </Button>
-                <Button variant="outline" disabled={isBackingUp || isExporting || isImporting} onClick={async () => {
-                  setIsExporting(true);
-                  try {
-                    const res = await api.backup.export({});
-                    if (res.success) {
-                      showToast({ message: `Backup exported to ${res.data as string}`, variant: 'success' });
-                    } else {
-                      showToast({ message: res.error ?? 'Failed to export backup', variant: 'error' });
+                <Button variant="outline" onClick={() => {
+                  void (async () => {
+                    setIsExporting(true);
+                    try {
+                      const res = await api.backup.export({});
+                      if (res.success) {
+                        showToast({ message: `Backup exported to ${res.data as string}`, variant: 'success' });
+                      } else {
+                        showToast({ message: res.error ?? 'Failed to export backup', variant: 'error' });
+                      }
+                    } catch {
+                      showToast({ message: 'Failed to export backup', variant: 'error' });
+                    } finally {
+                      setIsExporting(false);
                     }
-                  } catch {
-                    showToast({ message: 'Failed to export backup', variant: 'error' });
-                  } finally {
-                    setIsExporting(false);
-                  }
+                  })();
                 }}>
                   {isExporting ? 'Exporting... Do not close' : 'Export Backup'}
                 </Button>
@@ -134,21 +136,23 @@ const SettingsPage: React.FC = () => {
                     actions: (
                       <>
                         <Button variant="secondary" onClick={hideModal}>Cancel</Button>
-                        <Button variant="danger" onClick={async () => {
-                          hideModal();
-                          setIsImporting(true);
-                          try {
-                            const res = await api.backup.import({});
-                            if (res.success) {
-                              showToast({ message: 'Backup imported. App will restart.', variant: 'success' });
-                            } else if (res.error && res.error !== 'Import cancelled') {
-                              showToast({ message: res.error, variant: 'error' });
+                        <Button variant="danger" onClick={() => {
+                          void (async () => {
+                            hideModal();
+                            setIsImporting(true);
+                            try {
+                              const res = await api.backup.import({});
+                              if (res.success) {
+                                showToast({ message: 'Backup imported. App will restart.', variant: 'success' });
+                              } else if (res.error && res.error !== 'Import cancelled') {
+                                showToast({ message: res.error, variant: 'error' });
+                              }
+                            } catch {
+                              showToast({ message: 'Failed to import backup', variant: 'error' });
+                            } finally {
+                              setIsImporting(false);
                             }
-                          } catch {
-                            showToast({ message: 'Failed to import backup', variant: 'error' });
-                          } finally {
-                            setIsImporting(false);
-                          }
+                          })();
                         }}>
                           Yes, Import
                         </Button>
