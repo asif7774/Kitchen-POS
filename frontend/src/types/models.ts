@@ -91,6 +91,7 @@ export interface PastOrderData {
   amount: number;
   customerName: string;
   date: string;
+  business_date: string | null;
   occupiedTimeMs: number;
   type?: 'dine-in' | 'takeaway' | 'delivery';
   items: {
@@ -191,4 +192,32 @@ export interface CustomerHistory {
   billNumber: string;
   totalAmount: number;
   items: { name: string; qty: number }[];
+}
+
+export interface BusinessSession {
+  id: number;
+  business_date: string;
+  started_at: string;
+  closed_at: string | null;
+  status: 'open' | 'closed';
+  started_by: number | null;
+  closed_by: number | null;
+  notes: string | null;
+}
+
+export interface AutoBackupConfig {
+  enabled: boolean;
+  frequency: 'daily' | 'weekly';
+  path: string | null;
+  dayOfWeek: number;
+  lastBackupAt: string | null;
+}
+
+export interface BackupReminderConfig {
+  enabled: boolean;
+  frequency: 'daily' | 'weekly' | 'monthly';
+  time: string;
+  dayOfWeek: number;
+  dayOfMonth: number;
+  lastRemindedDate: string | null;
 }
