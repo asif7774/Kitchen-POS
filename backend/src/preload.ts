@@ -70,6 +70,10 @@ contextBridge.exposeInMainWorld('api', {
   backup: {
     export: (payload: any) => ipcRenderer.invoke('backup:export', payload),
     import: (payload: any) => ipcRenderer.invoke('backup:import', payload),
+    getAutoBackupConfig: () => ipcRenderer.invoke('backup:getAutoBackupConfig'),
+    setAutoBackupConfig: (payload: any) => ipcRenderer.invoke('backup:setAutoBackupConfig', payload),
+    selectAutoBackupPath: () => ipcRenderer.invoke('backup:selectAutoBackupPath'),
+    triggerNow: () => ipcRenderer.invoke('backup:triggerNow'),
   },
   settings: {
     get: () => ipcRenderer.invoke('settings:get'),
