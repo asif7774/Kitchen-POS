@@ -13,6 +13,7 @@ import { HeaderProvider } from 'contexts/HeaderContext';
 import { ModalContainer } from 'components/organisms/modal/modal-container';
 import { useToast } from 'hooks/useToast';
 import { api } from '../lib/ipc';
+import { BusinessSessionProvider } from '../contexts/BusinessSessionContext';
 
 const GlobalListeners = () => {
   const { showToast } = useToast();
@@ -23,6 +24,16 @@ const GlobalListeners = () => {
         message: `Scheduled Menu: ${data.menuName} has been automatically ${data.action}.`,
         variant: 'info',
         duration: 0 // persistent
+      });
+    });
+  }, [showToast]);
+
+  React.useEffect(() => {
+    api.onBackupReminder(() => {
+      showToast({
+        message: 'Reminder: Back up your data to prevent loss.',
+        variant: 'info',
+        duration: 0 // persistent until dismissed
       });
     });
   }, [showToast]);
@@ -53,6 +64,7 @@ function App() {
               onLoad={import.meta.env.DEV ? () => { console.log('✅ SVG sprite loaded successfully'); } : undefined}
               onError={import.meta.env.DEV ? (error) => { console.error('❌ Failed to load SVG sprite:', error); } : undefined}
             >
+              <BusinessSessionProvider>
               <ToastContainer />
               <ModalContainer />
               <GlobalListeners />
@@ -61,6 +73,7 @@ function App() {
                 <PosApp />
               </Suspense>
           </Router>
+            </BusinessSessionProvider>
         </SvgSpriteLoader>
           </ModalProvider>
           </HeaderProvider>

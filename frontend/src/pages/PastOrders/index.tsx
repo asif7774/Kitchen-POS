@@ -97,6 +97,7 @@ const PastOrdersPage: React.FC = () => {
             <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Business Date</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
@@ -109,14 +110,14 @@ const PastOrdersPage: React.FC = () => {
                 if (loading) {
                   return (
                     <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center text-gray-500">Loading...</td>
+                      <td colSpan={7} className="px-6 py-12 text-center text-gray-500">Loading...</td>
                     </tr>
                   );
                 }
                 if (orders.length === 0) {
                   return (
                     <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center text-gray-500">No orders found for this period.</td>
+                      <td colSpan={7} className="px-6 py-12 text-center text-gray-500">No orders found for this period.</td>
                     </tr>
                   );
                 }
@@ -124,7 +125,10 @@ const PastOrdersPage: React.FC = () => {
                   <React.Fragment key={order.id}>
                     <tr className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(`${order.date  }Z`).toLocaleString()}
+                        {new Date(`${order.date}Z`).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
+                        {order.business_date ?? '—'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{order.customerName}</div>
@@ -163,7 +167,7 @@ const PastOrdersPage: React.FC = () => {
                     </tr>
                     {expandedRow === order.id && (
                       <tr className="bg-blue-50/50">
-                        <td colSpan={6} className="px-6 py-4">
+                        <td colSpan={7} className="px-6 py-4">
                           <div className="flex justify-between items-start max-w-sm">
                             <div className="text-sm text-gray-700 space-y-1 flex-1">
                               <h4 className="font-bold mb-2">Order Items:</h4>

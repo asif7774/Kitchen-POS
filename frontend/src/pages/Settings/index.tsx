@@ -6,6 +6,12 @@ import { useAuthStore } from '../../store/auth';
 import CloseShiftModal from './components/CloseShiftModal';
 import { useModal } from '../../hooks/useModal';
 import { useToast } from '../../hooks/useToast';
+import { AutoBackupConfig, BackupReminderConfig } from '../../types/models';
+
+const DEFAULT_AUTO_BACKUP: AutoBackupConfig = { enabled: false, frequency: 'daily', path: null, dayOfWeek: 1, lastBackupAt: null };
+const DEFAULT_REMINDER: BackupReminderConfig = { enabled: false, frequency: 'daily', time: '20:00', dayOfWeek: 1, dayOfMonth: 1, lastRemindedDate: null };
+
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const SettingsPage: React.FC = () => {
   const activeShift = useAuthStore(state => state.activeShift);
@@ -14,6 +20,8 @@ const SettingsPage: React.FC = () => {
   const [settings, setSettings] = useState<Record<string, unknown>>({});
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
+  const [autoBackup, setAutoBackup] = useState<AutoBackupConfig>(DEFAULT_AUTO_BACKUP);
+  const [reminder, setReminder] = useState<BackupReminderConfig>(DEFAULT_REMINDER);
 
   React.useEffect(() => {
     void api.settings.get().then(res => {
@@ -21,7 +29,49 @@ const SettingsPage: React.FC = () => {
         setSettings(res.data as Record<string, unknown>);
       }
     });
+    void api.backup.getAutoBackupConfig().then(res => {
+      if (res.success && res.data) {
+        setAutoBackup(res.data.autoBackup);
+        setReminder(res.data.backupReminder);
+      }
+    });
   }, []);
+
+  const saveAutoBackup = async (patch: Partial<AutoBackupConfig>) => {
+    const updated = { ...autoBackup, ...patch };
+    setAutoBackup(updated);
+    try {
+      await api.backup.setAutoBackupConfig({ autoBackup: patch });
+    } catch {
+      showToast({ message: 'Failed to save auto-backup settings', variant: 'error' });
+    }
+  };
+
+  const saveReminder = async (patch: Partial<BackupReminderConfig>) => {
+    const updated = { ...reminder, ...patch };
+    setReminder(updated);
+    try {
+      await api.backup.setAutoBackupConfig({ backupReminder: patch });
+    } catch {
+      showToast({ message: 'Failed to save reminder settings', variant: 'error' });
+    }
+  };
+
+  const handleSelectBackupPath = async () => {
+    const res = await api.backup.selectAutoBackupPath();
+    if (res.success && res.data) {
+      await saveAutoBackup({ path: res.data });
+    }
+  };
+
+  const handleBackupNow = async () => {
+    const res = await api.backup.triggerNow();
+    if (res.success) {
+      showToast({ message: 'Backup completed successfully', variant: 'success' });
+    } else {
+      showToast({ message: res.error ?? 'Backup failed', variant: 'error' });
+    }
+  };
 
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
@@ -31,7 +81,7 @@ const SettingsPage: React.FC = () => {
     try {
       const res = await api.backup.export({});
       if (res.success && res.data) {
-        showToast({ message: `Backup exported successfully to ${res.data as string}`, variant: 'success' });
+        showToast({ message: `Backup exported successfully to ${res.data}`, variant: 'success' });
       } else if (res.error !== 'Export cancelled') {
         showToast({ message: res.error ?? 'Failed to export backup', variant: 'error' });
       }
@@ -112,6 +162,126 @@ const SettingsPage: React.FC = () => {
             <Button variant="outline" className="text-red-500 border-red-500 hover:bg-red-50 disabled:opacity-50" onClick={() => { void handleImport(); }} disabled={isExporting || isImporting}>
                {isImporting ? 'Importing...' : 'Import Backup'}
             </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Auto-Backup</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Toggle
+              checked={autoBackup.enabled}
+              onChange={(e) => { void saveAutoBackup({ enabled: e.target.checked }); }}
+              label="Enable Auto-Backup"
+              description="Automatically back up your data on a schedule"
+            />
+            {autoBackup.enabled && (
+              <>
+                <div className="flex gap-2">
+                  {(['daily', 'weekly'] as const).map(f => (
+                    <Button
+                      key={f}
+                      size="sm"
+                      variant={autoBackup.frequency === f ? 'primary' : 'outline'}
+                      onClick={() => { void saveAutoBackup({ frequency: f }); }}
+                      className="capitalize"
+                    >
+                      {f}
+                    </Button>
+                  ))}
+                </div>
+                {autoBackup.frequency === 'weekly' && (
+                  <div className="flex gap-2 flex-wrap">
+                    {DAY_NAMES.map((name, idx) => (
+                      <Button
+                        key={idx}
+                        size="sm"
+                        variant={autoBackup.dayOfWeek === idx ? 'secondary' : 'ghost'}
+                        onClick={() => { void saveAutoBackup({ dayOfWeek: idx }); }}
+                      >
+                        {name}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-600 flex-1 truncate">
+                    {autoBackup.path ?? 'Default folder (app data)'}
+                  </span>
+                  <Button size="sm" variant="outline" onClick={() => { void handleSelectBackupPath(); }}>
+                    Change
+                  </Button>
+                </div>
+                {autoBackup.lastBackupAt && (
+                  <p className="text-xs text-gray-500">
+                    Last backup: {new Date(autoBackup.lastBackupAt).toLocaleString()}
+                  </p>
+                )}
+                <Button size="sm" variant="secondary" onClick={() => { void handleBackupNow(); }}>
+                  Back Up Now
+                </Button>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Backup Reminder</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Toggle
+              checked={reminder.enabled}
+              onChange={(e) => { void saveReminder({ enabled: e.target.checked }); }}
+              label="Enable Backup Reminder"
+              description="Get a notification reminding you to back up"
+            />
+            {reminder.enabled && (
+              <>
+                <div className="flex gap-2">
+                  {(['daily', 'weekly', 'monthly'] as const).map(f => (
+                    <Button
+                      key={f}
+                      size="sm"
+                      variant={reminder.frequency === f ? 'primary' : 'outline'}
+                      onClick={() => { void saveReminder({ frequency: f }); }}
+                      className="capitalize"
+                    >
+                      {f}
+                    </Button>
+                  ))}
+                </div>
+                <Input
+                  label="Reminder Time"
+                  type="time"
+                  value={reminder.time}
+                  onChange={(e) => { void saveReminder({ time: e.target.value }); }}
+                />
+                {reminder.frequency === 'weekly' && (
+                  <div className="flex gap-2 flex-wrap">
+                    {DAY_NAMES.map((name, idx) => (
+                      <Button
+                        key={idx}
+                        size="sm"
+                        variant={reminder.dayOfWeek === idx ? 'secondary' : 'ghost'}
+                        onClick={() => { void saveReminder({ dayOfWeek: idx }); }}
+                      >
+                        {name}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+                {reminder.frequency === 'monthly' && (
+                  <Input
+                    label="Day of Month"
+                    type="number"
+                    value={String(reminder.dayOfMonth)}
+                    onChange={(e) => { void saveReminder({ dayOfMonth: Math.min(28, Math.max(1, Number(e.target.value))) }); }}
+                  />
+                )}
+              </>
+            )}
           </CardContent>
         </Card>
 

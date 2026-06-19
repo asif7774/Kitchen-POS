@@ -1,4 +1,4 @@
-import { Category, MenuItem, InventoryItem, Order, OrderItem, CartItem, KDSTicket, Shift, RecipeItem, Table, Expense, Staff } from '../types/models';
+import { Category, MenuItem, InventoryItem, Order, OrderItem, CartItem, KDSTicket, Shift, RecipeItem, Table, Expense, Staff, BusinessSession, AutoBackupConfig, BackupReminderConfig } from '../types/models';
 
 export interface IPCResponse<T> {
   success: boolean;
@@ -126,8 +126,12 @@ const mockApi = {
     gst: () => Promise.resolve({ success: true, data: {} }),
   },
   backup: {
-    export: () => Promise.resolve({ success: true }),
+    export: () => Promise.resolve({ success: true, data: '/mock/backup.db' }),
     import: () => Promise.resolve({ success: true }),
+    getAutoBackupConfig: () => Promise.resolve({ success: true, data: { autoBackup: { enabled: false, frequency: 'daily' as const, path: null, dayOfWeek: 1, lastBackupAt: null }, backupReminder: { enabled: false, frequency: 'daily' as const, time: '20:00', dayOfWeek: 1, dayOfMonth: 1, lastRemindedDate: null } } }),
+    setAutoBackupConfig: () => Promise.resolve({ success: true }),
+    selectAutoBackupPath: () => Promise.resolve({ success: true, data: '/mock/backups' }),
+    triggerNow: () => Promise.resolve({ success: true }),
   },
   settings: (() => {
     let settingsStore: Record<string, unknown> = { outlet_name: 'Mock Restaurant' };
@@ -156,6 +160,27 @@ const mockApi = {
   },
   dashboard: {
     getMetrics: () => Promise.resolve({ success: true, data: { metrics: { totalSales: 0, totalOrders: 0, averageOrderValue: 0, totalCustomers: 0, outstandingBalances: 0 }, trendData: [], topItemsData: [] } }),
+  },
+  businessSession: (() => {
+    let session: BusinessSession | null = null;
+    return {
+      getActive: () => Promise.resolve({ success: true, data: session }),
+      start: (payload: { staffId: number; notes?: string }) => {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        session = { id: 1, business_date: `${y}-${m}-${d}`, started_at: now.toISOString(), closed_at: null, status: 'open', started_by: payload.staffId, closed_by: null, notes: payload.notes ?? null };
+        return Promise.resolve({ success: true, data: session });
+      },
+      close: (_payload: { sessionId: number; staffId: number; notes?: string }) => {
+        session = null;
+        return Promise.resolve({ success: true });
+      },
+    };
+  })(),
+  onBackupReminder: (_callback: () => void) => {
+    // mock: no-op
   },
   onMenuScheduleTriggered: (_callback: (data: { menuId: number; menuName: string; action: 'enabled' | 'disabled' }) => void) => {
     // mock implementation does nothing
@@ -227,8 +252,12 @@ export const api = (ipcApi ?? mockApi) as {
     printPastBill: (payload: { orderId: number }) => Promise<IPCResponse<unknown>>;
   };
   backup: {
-    export: (payload: unknown) => Promise<IPCResponse<unknown>>;
+    export: (payload: unknown) => Promise<IPCResponse<string>>;
     import: (payload: unknown) => Promise<IPCResponse<unknown>>;
+    getAutoBackupConfig: () => Promise<IPCResponse<{ autoBackup: AutoBackupConfig; backupReminder: BackupReminderConfig }>>;
+    setAutoBackupConfig: (payload: { autoBackup?: Partial<AutoBackupConfig>; backupReminder?: Partial<BackupReminderConfig> }) => Promise<IPCResponse<unknown>>;
+    selectAutoBackupPath: () => Promise<IPCResponse<string>>;
+    triggerNow: () => Promise<IPCResponse<unknown>>;
   };
   settings: {
     get: () => Promise<IPCResponse<unknown>>;
@@ -262,5 +291,11 @@ export const api = (ipcApi ?? mockApi) as {
       topItemsData: { name: string; quantity: number }[];
     }>>;
   };
+  businessSession: {
+    getActive: () => Promise<IPCResponse<BusinessSession | null>>;
+    start: (payload: { staffId: number; notes?: string }) => Promise<IPCResponse<BusinessSession>>;
+    close: (payload: { sessionId: number; staffId: number; notes?: string }) => Promise<IPCResponse<unknown>>;
+  };
+  onBackupReminder: (callback: () => void) => void;
   onMenuScheduleTriggered: (callback: (data: { menuId: number; menuName: string; action: 'enabled' | 'disabled' }) => void) => void;
 };

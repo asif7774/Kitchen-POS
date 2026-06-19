@@ -45,7 +45,7 @@ export function registerCustomersIPC() {
     try {
       const db = getDB();
       const customer = db.prepare('SELECT * FROM customers WHERE id = ?').get(id) as CustomerRow | undefined;
-      if (!customer) return { success: false, error: 'Customer not found' };
+      if (!customer) { return { success: false, error: 'Customer not found' }; }
       return { success: true, data: customer };
     } catch (e: unknown) {
       return { success: false, error: errMsg(e) };

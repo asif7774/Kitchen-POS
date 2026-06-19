@@ -18,6 +18,7 @@ import { registerShiftsIPC } from './ipc/shifts';
 import { registerExpensesIPC } from './ipc/expenses';
 import { registerCustomersIPC } from './ipc/customers';
 import { registerDashboardIPC } from './ipc/dashboard';
+import { registerBusinessSessionIPC } from './ipc/business-session';
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -94,12 +95,13 @@ function registerAllIPC() {
   registerExpensesIPC();
   registerCustomersIPC();
   registerDashboardIPC();
+  registerBusinessSessionIPC();
 }
 
 void app.whenReady().then(async () => {
   // Register custom protocol for local images
   protocol.handle('local', (request) => {
-    return net.fetch('file://' + request.url.slice('local://'.length));
+    return net.fetch(`file://${request.url.slice('local://'.length)}`);
   });
 
   // Initialize DB and Run migrations before registering IPC

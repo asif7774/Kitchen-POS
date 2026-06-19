@@ -35,12 +35,21 @@ function errMsg(e: unknown): string {
   return e instanceof Error ? e.message : 'Unknown error occurred';
 }
 
+function getActiveBusinessDate(db: ReturnType<typeof getDB>): string | null {
+  const row = db.prepare(
+    "SELECT business_date FROM business_sessions WHERE status = 'open' LIMIT 1"
+  ).get() as { business_date: string } | undefined;
+  return row?.business_date ?? null;
+}
+
 export function registerOrdersIPC() {
   ipcMain.handle('orders:create', async (_, payload: { tableId: number; staffId?: number; covers?: number; note?: string; customerId?: number; type?: 'dine-in' | 'takeaway' | 'delivery' }) => {
     try {
       const db = getDB();
-      const info = db.prepare('INSERT INTO orders (table_id, staff_id, covers, note, customer_id, type, status) VALUES (?, ?, ?, ?, ?, ?, "open")')
-        .run(payload.tableId, payload.staffId ?? null, payload.covers ?? 1, payload.note ?? '', payload.customerId ?? null, payload.type ?? 'dine-in');
+      const businessDate = getActiveBusinessDate(db);
+      const info = db.prepare(
+        'INSERT INTO orders (table_id, staff_id, covers, note, customer_id, type, status, business_date) VALUES (?, ?, ?, ?, ?, ?, "open", ?)'
+      ).run(payload.tableId, payload.staffId ?? null, payload.covers ?? 1, payload.note ?? '', payload.customerId ?? null, payload.type ?? 'dine-in', businessDate);
       return { success: true, data: info.lastInsertRowid };
     } catch (e: unknown) {
       return { success: false, error: errMsg(e) };
@@ -83,7 +92,7 @@ export function registerOrdersIPC() {
         LIMIT 1
       `).get(payload.tableId) as { id: number } | undefined;
 
-      if (!order) return { success: true, data: null };
+      if (!order) { return { success: true, data: null }; }
 
       const items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(order.id);
       return { success: true, data: { ...order, items } };
@@ -96,6 +105,7 @@ export function registerOrdersIPC() {
     try {
       const db = getDB();
       const isAutoDebitEnabled = store.get('inventory_auto_debit', true) as boolean;
+      const businessDate = getActiveBusinessDate(db);
 
       const result = db.transaction(() => {
         const order = db.prepare(`
@@ -107,9 +117,9 @@ export function registerOrdersIPC() {
         let orderId: number;
         if (!order) {
           const info = db.prepare(`
-            INSERT INTO orders (table_id, staff_id, covers, note, customer_id, type, status)
-            VALUES (?, ?, ?, ?, ?, ?, 'kot_sent')
-          `).run(payload.tableId, payload.staffId ?? null, payload.covers ?? 1, payload.note ?? '', payload.customerId ?? null, payload.type ?? 'dine-in');
+            INSERT INTO orders (table_id, staff_id, covers, note, customer_id, type, status, business_date)
+            VALUES (?, ?, ?, ?, ?, ?, 'kot_sent', ?)
+          `).run(payload.tableId, payload.staffId ?? null, payload.covers ?? 1, payload.note ?? '', payload.customerId ?? null, payload.type ?? 'dine-in', businessDate);
           orderId = Number(info.lastInsertRowid);
         } else {
           orderId = order.id;
@@ -132,7 +142,7 @@ export function registerOrdersIPC() {
             db.prepare(`UPDATE order_items SET qty = ?, note = ?, preparation_status = ? WHERE id = ?`)
               .run(item.qty, item.note, newStatus, existing.id);
             existingItemMap.delete(item.id);
-            if (qtyDelta > 0) itemsToPrint.push({ ...item, qty: qtyDelta });
+            if (qtyDelta > 0) { itemsToPrint.push({ ...item, qty: qtyDelta }); }
           } else {
             const menuDetails = db.prepare(`SELECT id, name, price, cgst_rate, sgst_rate, hsn_code FROM menu_items WHERE id = ?`).get(item.id) as MenuItemRow | undefined;
             if (menuDetails) {
@@ -186,7 +196,7 @@ export function registerOrdersIPC() {
           WHERE id = ? AND status != 'billed' AND status != 'cancelled'
         `).get(payload.orderId) as { id: number; status: string } | undefined;
 
-        if (!order) throw new Error('Order not found or already closed.');
+        if (!order) { throw new Error('Order not found or already closed.'); }
 
         if (isAutoDebitEnabled) {
           const items = db.prepare('SELECT menu_item_id, qty FROM order_items WHERE order_id = ?').all(order.id) as { menu_item_id: number; qty: number }[];

@@ -70,6 +70,10 @@ contextBridge.exposeInMainWorld('api', {
   backup: {
     export: (payload: any) => ipcRenderer.invoke('backup:export', payload),
     import: (payload: any) => ipcRenderer.invoke('backup:import', payload),
+    getAutoBackupConfig: () => ipcRenderer.invoke('backup:getAutoBackupConfig'),
+    setAutoBackupConfig: (payload: any) => ipcRenderer.invoke('backup:setAutoBackupConfig', payload),
+    selectAutoBackupPath: () => ipcRenderer.invoke('backup:selectAutoBackupPath'),
+    triggerNow: () => ipcRenderer.invoke('backup:triggerNow'),
   },
   settings: {
     get: () => ipcRenderer.invoke('settings:get'),
@@ -92,6 +96,14 @@ contextBridge.exposeInMainWorld('api', {
   },
   dashboard: {
     getMetrics: (payload: any) => ipcRenderer.invoke('dashboard:getMetrics', payload),
+  },
+  businessSession: {
+    getActive: () => ipcRenderer.invoke('businessSession:getActive'),
+    start: (payload: { staffId: number; notes?: string }) => ipcRenderer.invoke('businessSession:start', payload),
+    close: (payload: { sessionId: number; staffId: number; notes?: string }) => ipcRenderer.invoke('businessSession:close', payload),
+  },
+  onBackupReminder: (callback: () => void) => {
+    ipcRenderer.on('backup:reminderDue', () => { callback(); });
   },
   onMenuScheduleTriggered: (callback: (data: any) => void) => {
     ipcRenderer.on('menu:scheduleTriggered', (_event, value) => { callback(value); });

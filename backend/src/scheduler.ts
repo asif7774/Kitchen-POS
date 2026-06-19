@@ -1,21 +1,32 @@
 import { getDB } from './db';
 import { BrowserWindow } from 'electron';
+import { performAutoBackup, shouldFireReminder, markReminderFired } from './ipc/backup';
 
 export function startScheduler() {
-  // Run every minute
+  // Menu schedule check — every minute
   setInterval(() => {
     checkMenuSchedules();
   }, 60000);
-  
-  // Also check immediately on startup
   setTimeout(checkMenuSchedules, 5000);
+
+  // Backup reminder + auto-backup check — every minute
+  setInterval(() => {
+    checkAutoBackupAndReminder();
+  }, 60000);
+  setTimeout(checkAutoBackupAndReminder, 10000);
 }
 
 function checkMenuSchedules() {
   try {
     const db = getDB();
-    const menus = db.prepare('SELECT * FROM menus WHERE schedule_enabled = 1').all() as any[];
-    
+    const menus = db.prepare('SELECT * FROM menus WHERE schedule_enabled = 1').all() as Array<{
+      id: number;
+      name: string;
+      auto_enable_time: string | null;
+      auto_disable_time: string | null;
+      is_active: number;
+    }>;
+
     if (menus.length === 0) { return; }
 
     const now = new Date();
@@ -32,28 +43,24 @@ function checkMenuSchedules() {
       const enableM = parseInt(enableParts[1], 10);
       const disableH = parseInt(disableParts[0], 10);
       const disableM = parseInt(disableParts[1], 10);
-      
+
       const enableTimeMinutes = enableH * 60 + enableM;
       const disableTimeMinutes = disableH * 60 + disableM;
 
       let shouldBeActive = false;
 
       if (enableTimeMinutes < disableTimeMinutes) {
-        // e.g. 09:00 to 17:00
         shouldBeActive = currentTimeMinutes >= enableTimeMinutes && currentTimeMinutes < disableTimeMinutes;
       } else {
-        // e.g. 23:00 to 06:00 (crosses midnight)
         shouldBeActive = currentTimeMinutes >= enableTimeMinutes || currentTimeMinutes < disableTimeMinutes;
       }
 
       const isCurrentlyActive = menu.is_active === 1;
 
       if (shouldBeActive && !isCurrentlyActive) {
-        // Enable it
         db.prepare('UPDATE menus SET is_active = 1 WHERE id = ?').run(menu.id);
         notifyFrontend(menu.id, menu.name, 'enabled');
       } else if (!shouldBeActive && isCurrentlyActive) {
-        // Disable it
         db.prepare('UPDATE menus SET is_active = 0 WHERE id = ?').run(menu.id);
         notifyFrontend(menu.id, menu.name, 'disabled');
       }
@@ -67,5 +74,22 @@ function notifyFrontend(menuId: number, menuName: string, action: 'enabled' | 'd
   const windows = BrowserWindow.getAllWindows();
   for (const win of windows) {
     win.webContents.send('menu:scheduleTriggered', { menuId, menuName, action });
+  }
+}
+
+function checkAutoBackupAndReminder(): void {
+  // Backup reminder
+  if (shouldFireReminder()) {
+    markReminderFired();
+    const windows = BrowserWindow.getAllWindows();
+    for (const win of windows) {
+      win.webContents.send('backup:reminderDue');
+    }
+  }
+
+  // Auto-backup runs at midnight (00:00)
+  const now = new Date();
+  if (now.getHours() === 0 && now.getMinutes() === 0) {
+    void performAutoBackup();
   }
 }
