@@ -93,6 +93,14 @@ contextBridge.exposeInMainWorld('api', {
   dashboard: {
     getMetrics: (payload: any) => ipcRenderer.invoke('dashboard:getMetrics', payload),
   },
+  businessSession: {
+    getActive: () => ipcRenderer.invoke('businessSession:getActive'),
+    start: (payload: { staffId: number; notes?: string }) => ipcRenderer.invoke('businessSession:start', payload),
+    close: (payload: { sessionId: number; staffId: number; notes?: string }) => ipcRenderer.invoke('businessSession:close', payload),
+  },
+  onBackupReminder: (callback: () => void) => {
+    ipcRenderer.on('backup:reminderDue', () => { callback(); });
+  },
   onMenuScheduleTriggered: (callback: (data: any) => void) => {
     ipcRenderer.on('menu:scheduleTriggered', (_event, value) => { callback(value); });
   }
