@@ -29,15 +29,17 @@ export function createBill(orderId: number, payments: PaymentPayload[], discount
     totals.discount_amount += discount;
     totals.total_amount = Math.round((totals.total_amount - discount) * 100) / 100;
 
+    const orderRow = db.prepare('SELECT business_date FROM orders WHERE id = ?').get(orderId) as { business_date: string | null };
+
     const info = db.prepare(`
-      INSERT INTO bills (bill_number, order_id, taxable_amount, cgst_amount, sgst_amount, discount_amount, total_amount, customer_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(billNumber, orderId, totals.taxable_amount, totals.cgst_amount, totals.sgst_amount, totals.discount_amount, totals.total_amount, customerId ?? null);
+      INSERT INTO bills (bill_number, order_id, taxable_amount, cgst_amount, sgst_amount, discount_amount, total_amount, customer_id, business_date)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(billNumber, orderId, totals.taxable_amount, totals.cgst_amount, totals.sgst_amount, totals.discount_amount, totals.total_amount, customerId ?? null, orderRow.business_date ?? null);
 
     for (const p of payments) {
       db.prepare(`INSERT INTO payments (order_id, method, amount, reference) VALUES (?, ?, ?, ?)`).run(orderId, p.method, p.amount, p.reference ?? null);
       if (p.method === 'unpaid') {
-        if (!customerId) throw new Error('Customer must be selected for unpaid balances.');
+        if (!customerId) { throw new Error('Customer must be selected for unpaid balances.'); }
         db.prepare('UPDATE customers SET outstanding_balance = outstanding_balance + ? WHERE id = ?').run(p.amount, customerId);
       }
     }

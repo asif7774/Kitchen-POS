@@ -158,7 +158,7 @@ export async function printBill(bill: BillPrintPayload, orderItems: BillItemPrin
         <div class="text-center">GSTIN: ${settings.gstin ?? 'N/A'}</div>
         <div class="divider"></div>
         <div>Bill: ${bill.bill_number}</div>
-        <div>Date: ${bill.date ? new Date(bill.date + 'Z').toLocaleString() : new Date().toLocaleString()}</div>
+        <div>Date: ${bill.date ? new Date(`${bill.date}Z`).toLocaleString() : new Date().toLocaleString()}</div>
         <div class="divider"></div>
         
         ${orderItems.map(i => `

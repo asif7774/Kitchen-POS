@@ -3,9 +3,14 @@ import Store from 'electron-store';
 import { getDB } from '../db';
 import { printBill } from '../services/printer';
 
-interface DailyReportPayload {
-  start: string;
-  end: string;
+interface OrderRow {
+  order_id: number;
+  order_time: string;
+  bill_time: string;
+  total_amount: number;
+  customer_name: string | null;
+  type: 'dine-in' | 'takeaway' | 'delivery';
+  business_date: string | null;
 }
 
 interface AggregateRow {
@@ -142,13 +147,14 @@ export function registerReportsIPC() {
       const totalPages = Math.ceil(totalOrdersCount / limit);
 
       const orders = db.prepare(`
-        SELECT 
-          o.id as order_id, 
-          o.created_at as order_time, 
-          b.created_at as bill_time, 
-          b.total_amount, 
+        SELECT
+          o.id as order_id,
+          o.created_at as order_time,
+          b.created_at as bill_time,
+          b.total_amount,
           c.name as customer_name,
-          o.type
+          o.type,
+          o.business_date
         FROM orders o
         JOIN bills b ON o.id = b.order_id
         LEFT JOIN customers c ON o.customer_id = c.id
@@ -156,7 +162,7 @@ export function registerReportsIPC() {
         GROUP BY o.id
         ORDER BY o.created_at DESC
         LIMIT ? OFFSET ?
-      `).all(limit, offset) as any[];
+      `).all(limit, offset) as OrderRow[];
 
       const aggregates = db.prepare(`
         SELECT 
@@ -179,6 +185,7 @@ export function registerReportsIPC() {
           amount: o.total_amount,
           customerName: o.customer_name ?? 'Walk-in',
           date: o.order_time,
+          business_date: o.business_date ?? null,
           occupiedTimeMs: occupiedMs > 0 ? occupiedMs : 0,
           type: o.type,
           items
@@ -208,7 +215,7 @@ export function registerReportsIPC() {
     try {
       const db = getDB();
       const bill = db.prepare('SELECT * FROM bills WHERE order_id = ?').get(payload.orderId) as any;
-      if (!bill) throw new Error('Bill not found for this order.');
+      if (!bill) { throw new Error('Bill not found for this order.'); }
 
       const items = db.prepare(`
         SELECT name, qty, unit_price 
