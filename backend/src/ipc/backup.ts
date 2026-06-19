@@ -3,6 +3,7 @@ import { getDB } from '../db';
 import * as fs from 'fs';
 import * as path from 'path';
 import Store from 'electron-store';
+import { pruneOldBackups, formatLocalDate, checkShouldFireReminder, type BackupReminderConfig } from './backup-utils';
 
 interface AutoBackupConfig {
   enabled: boolean;
@@ -10,15 +11,6 @@ interface AutoBackupConfig {
   path: string | null;
   dayOfWeek: number;
   lastBackupAt: string | null;
-}
-
-interface BackupReminderConfig {
-  enabled: boolean;
-  frequency: 'daily' | 'weekly' | 'monthly';
-  time: string;
-  dayOfWeek: number;
-  dayOfMonth: number;
-  lastRemindedDate: string | null;
 }
 
 const DEFAULT_AUTO_BACKUP: AutoBackupConfig = {
@@ -37,27 +29,6 @@ const DEFAULT_REMINDER: BackupReminderConfig = {
   dayOfMonth: 1,
   lastRemindedDate: null,
 };
-
-function formatLocalDate(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-function pruneOldBackups(dir: string, keepCount: number): void {
-  try {
-    const files = fs.readdirSync(dir)
-      .filter(f => /^kitchen-pos-backup-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}\.db$/.test(f))
-      .map(f => ({ name: f, time: fs.statSync(path.join(dir, f)).mtime.getTime() }))
-      .sort((a, b) => b.time - a.time);
-    files.slice(keepCount).forEach(f => {
-      try { fs.unlinkSync(path.join(dir, f.name)); } catch { /* ignore unlink errors */ }
-    });
-  } catch (e: unknown) {
-    console.error('Failed to prune backups:', e instanceof Error ? e.message : e);
-  }
-}
 
 export async function performAutoBackup(): Promise<void> {
   const store = new Store();
@@ -84,20 +55,7 @@ export async function performAutoBackup(): Promise<void> {
 export function shouldFireReminder(): boolean {
   const store = new Store();
   const config = store.get('backupReminder', DEFAULT_REMINDER) as BackupReminderConfig;
-  if (!config.enabled) { return false; }
-
-  const now = new Date();
-  const todayStr = formatLocalDate(now);
-  if (config.lastRemindedDate === todayStr) { return false; }
-
-  const [configH, configM] = config.time.split(':').map(Number);
-  const timeMatch = now.getHours() === configH && now.getMinutes() === configM;
-  if (!timeMatch) { return false; }
-
-  if (config.frequency === 'daily') { return true; }
-  if (config.frequency === 'weekly') { return now.getDay() === config.dayOfWeek; }
-  // monthly
-  return now.getDate() === config.dayOfMonth;
+  return checkShouldFireReminder(config, new Date());
 }
 
 export function markReminderFired(): void {
