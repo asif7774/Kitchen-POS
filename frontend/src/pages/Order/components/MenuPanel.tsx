@@ -48,7 +48,7 @@ const MenuPanel: React.FC<Props> = ({ menuId, onAddItem }) => {
           >
             {item.image_url ? (
               <div className="w-full h-32 bg-gray-100 relative">
-                <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                <img src={item.image_url.replace('file://', 'local://')} alt={item.name} className="w-full h-full object-cover" />
                 <span className={`absolute top-2 right-2 w-3 h-3 rounded-full border border-white shadow-sm ${item.is_veg ? 'bg-green-500' : 'bg-red-500'}`}></span>
               </div>
             ) : (

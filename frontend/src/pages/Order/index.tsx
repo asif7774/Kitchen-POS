@@ -75,7 +75,7 @@ const OrderPage: React.FC = () => {
               price: i.unit_price,
               qty: i.qty,
               note: i.note ?? '',
-              status: i.preparation_status ?? 'sent',
+              status: i.preparation_status,
               originalQty: i.qty,
             }));
             setCart(items);

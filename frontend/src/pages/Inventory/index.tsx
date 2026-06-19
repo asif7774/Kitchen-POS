@@ -170,7 +170,7 @@ export default function InventoryPage() {
                     <td className="py-3 px-4 font-medium text-gray-900">{item.name}</td>
                     <td className="py-3 px-4 text-right">
                       <span className={`font-semibold ${isLowStock ? 'text-red-600' : 'text-gray-900'}`}>
-                        {item.qty_in_stock}
+                        {parseFloat(item.qty_in_stock.toFixed(2))}
                       </span>
                       <span className="text-gray-500 text-sm ml-1">{item.unit}</span>
                     </td>

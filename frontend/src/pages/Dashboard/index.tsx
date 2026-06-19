@@ -3,6 +3,8 @@ import { api } from '../../lib/ipc';
 import { Button } from '../../components/atoms';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/atoms/card';
 import { useHeader } from '../../contexts/HeaderContext';
+import SvgIcon from '../../components/atoms/svg-sprite-loader/SvgIcon';
+import { KPICard } from '../../components/molecules/KPICard';
 import {
   LineChart,
   Line,
@@ -11,9 +13,14 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  PieChart,
+  Pie,
+  Legend,
   BarChart,
   Bar
 } from 'recharts';
+
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
 type FilterType = 'today' | 'yesterday' | 'weekly' | 'monthly' | 'yearly';
 
@@ -25,6 +32,70 @@ const filters: { label: string; value: FilterType }[] = [
   { label: 'Yearly', value: 'yearly' }
 ];
 
+const formatDateLabel = (label: string) => {
+  if (typeof label !== 'string') {return label;}
+  if (/^\d{4}-\d{2}-\d{2}$/.test(label)) {
+    return new Date(label).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  }
+  if (/^\d{4}-\d{2}$/.test(label)) {
+    return new Date(`${label  }-01`).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }
+  // For %H format (hours)
+  if (/^\d{2}$/.test(label)) {
+    const hour = parseInt(label, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:00 ${ampm}`;
+  }
+  return label;
+};
+
+const formatDateLabelShort = (label: string) => {
+  if (typeof label !== 'string') {return label;}
+  if (/^\d{4}-\d{2}-\d{2}$/.test(label)) {
+    return new Date(label).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+  if (/^\d{4}-\d{2}$/.test(label)) {
+    return new Date(`${label  }-01`).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+  }
+  // For %H format (hours)
+  if (/^\d{2}$/.test(label)) {
+    const hour = parseInt(label, 10);
+    const ampm = hour >= 12 ? 'p' : 'a';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}${ampm}`;
+  }
+  return label;
+};
+
+interface TooltipProps {
+  active?: boolean;
+  payload?: { payload: { sales: number; orders: number } }[];
+  label?: string;
+}
+
+const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
+  if (active && payload && payload.length > 0) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-100">
+        <p className="font-semibold text-gray-800 mb-2">{formatDateLabel(label)}</p>
+        <div className="space-y-1 text-sm">
+          <p className="flex justify-between gap-4">
+            <span className="text-gray-500">Revenue:</span>
+            <span className="font-bold text-blue-600">₹{Math.round(data.sales)}</span>
+          </p>
+          <p className="flex justify-between gap-4">
+            <span className="text-gray-500">Orders:</span>
+            <span className="font-bold text-gray-900">{data.orders}</span>
+          </p>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
 const DashboardPage: React.FC = () => {
   const [filter, setFilter] = useState<FilterType>('today');
   const [metrics, setMetrics] = useState({
@@ -34,9 +105,10 @@ const DashboardPage: React.FC = () => {
     totalCustomers: 0,
     outstandingBalances: 0
   });
-  const [trendData, setTrendData] = useState<{ label: string; sales: number }[]>([]);
+  const [trendData, setTrendData] = useState<{ label: string; sales: number; orders: number }[]>([]);
   const [topItemsData, setTopItemsData] = useState<{ name: string; quantity: number }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [salesChartType, setSalesChartType] = useState<'line' | 'bar'>('line');
 
   useEffect(() => {
     let active = true;
@@ -99,56 +171,104 @@ const DashboardPage: React.FC = () => {
         <>
           {/* Metrics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            <MetricCard 
+            <KPICard 
               title="Total Sales" 
-              value={`₹${metrics.totalSales.toFixed(2)}`} 
-              subtitle="Revenue for selected period"
+              value={`₹${Math.round(metrics.totalSales)}`} 
+              icon={<SvgIcon name="indian-rupee" width={24} height={24} />}
+              trend={12.5}
+              trendLabel="vs last period"
+              sparklineData={[10, 25, 20, 45, 30, 50, 60]}
+              colorTheme="blue"
             />
-            <MetricCard 
+            <KPICard 
               title="Orders" 
-              value={metrics.totalOrders.toString()} 
-              subtitle="Total orders placed"
+              value={metrics.totalOrders} 
+              icon={<SvgIcon name="cart" width={24} height={24} />}
+              trend={8.2}
+              trendLabel="vs last period"
+              sparklineData={[5, 10, 15, 12, 20, 18, 25]}
+              colorTheme="green"
             />
-            <MetricCard 
-              title="Average Order Value" 
-              value={`₹${metrics.averageOrderValue.toFixed(2)}`} 
-              subtitle="Average spend per order"
+            <KPICard 
+              title="Avg Order Value" 
+              value={`₹${Math.round(metrics.averageOrderValue)}`} 
+              icon={<SvgIcon name="trend-up" width={24} height={24} />}
+              trend={-2.4}
+              trendLabel="vs last period"
+              sparklineData={[30, 28, 25, 26, 24, 22, 20]}
+              colorTheme="purple"
             />
-            <MetricCard 
-              title="Customers Served" 
-              value={metrics.totalCustomers.toString()} 
-              subtitle="Based on covers count"
+            <KPICard 
+              title="Customers" 
+              value={metrics.totalCustomers} 
+              icon={<SvgIcon name="users" width={24} height={24} />}
+              trend={15.0}
+              trendLabel="vs last period"
+              sparklineData={[20, 30, 40, 35, 50, 65, 80]}
+              colorTheme="orange"
             />
-            <MetricCard 
-              title="Outstanding Balances" 
-              value={`₹${metrics.outstandingBalances.toFixed(2)}`} 
-              subtitle="Global pending payments"
+            <KPICard 
+              title="Balances" 
+              value={`₹${Math.round(metrics.outstandingBalances)}`} 
+              icon={<SvgIcon name="wallet" width={24} height={24} />}
+              trend={-5.1}
+              trendLabel="vs last period"
+              sparklineData={[50, 45, 40, 35, 30, 25, 20]}
+              colorTheme="blue"
             />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Sales Trend Chart */}
             <Card className="lg:col-span-2">
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Sales Trend</CardTitle>
+                <div className="flex bg-gray-100 p-1 rounded-lg">
+                  <button 
+                    onClick={() => { setSalesChartType('line'); }} 
+                    className={`px-3 py-1 text-sm rounded-md transition-colors ${salesChartType === 'line' ? 'bg-white shadow-sm text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-900'}`}
+                  >
+                    Line
+                  </button>
+                  <button 
+                    onClick={() => { setSalesChartType('bar'); }} 
+                    className={`px-3 py-1 text-sm rounded-md transition-colors ${salesChartType === 'bar' ? 'bg-white shadow-sm text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-900'}`}
+                  >
+                    Bar
+                  </button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="h-80 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={trendData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="label" />
-                      <YAxis tickFormatter={(val: number) => `₹${val}`} />
-                      <Tooltip formatter={(value: unknown) => [`₹${Number(value).toFixed(2)}`, 'Sales']} />
-                      <Line 
-                        type="monotone" 
-                        dataKey="sales" 
-                        stroke="#2563eb" 
-                        strokeWidth={3}
-                        dot={{ r: 4, strokeWidth: 2 }}
-                        activeDot={{ r: 6 }}
-                      />
-                    </LineChart>
+                  <ResponsiveContainer width="100%" height="100%" minHeight={1} minWidth={1}>
+                    {salesChartType === 'line' ? (
+                      <LineChart data={trendData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="label" tickFormatter={formatDateLabelShort} />
+                        <YAxis tickFormatter={(val: number) => `₹${val}`} />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Line 
+                          type="monotone" 
+                          dataKey="sales" 
+                          stroke="#2563eb" 
+                          strokeWidth={3}
+                          dot={{ r: 4, strokeWidth: 2 }}
+                          activeDot={{ r: 6 }}
+                        />
+                      </LineChart>
+                    ) : (
+                      <BarChart data={trendData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="label" tickFormatter={formatDateLabelShort} />
+                        <YAxis tickFormatter={(val: number) => `₹${val}`} />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Bar 
+                          dataKey="sales" 
+                          fill="#2563eb" 
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    )}
                   </ResponsiveContainer>
                 </div>
               </CardContent>
@@ -162,14 +282,22 @@ const DashboardPage: React.FC = () => {
               <CardContent>
                 <div className="h-80 w-full">
                   {topItemsData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={topItemsData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-                        <XAxis type="number" />
-                        <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12 }} />
-                        <Tooltip />
-                        <Bar dataKey="quantity" fill="#10b981" radius={[0, 4, 4, 0]} />
-                      </BarChart>
+                    <ResponsiveContainer width="100%" height="100%" minHeight={1} minWidth={1}>
+                      <PieChart>
+                        <Pie
+                          data={topItemsData.map((item, index) => ({ ...item, fill: COLORS[index % COLORS.length] }))}
+                          dataKey="quantity"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={100}
+                          innerRadius={60}
+                          paddingAngle={2}
+                          label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
+                        />
+                        <Tooltip formatter={(value: number) => [value, 'Quantity']} />
+                        <Legend />
+                      </PieChart>
                     </ResponsiveContainer>
                   ) : (
                     <div className="h-full flex items-center justify-center text-gray-500">
@@ -186,14 +314,6 @@ const DashboardPage: React.FC = () => {
   );
 };
 
-const MetricCard: React.FC<{ title: string; value: string; subtitle: string }> = ({ title, value, subtitle }) => (
-  <Card>
-    <CardContent className="p-6">
-      <p className="text-sm font-medium text-gray-500 truncate">{title}</p>
-      <p className="mt-2 text-3xl font-bold text-gray-900">{value}</p>
-      <p className="mt-1 text-xs text-gray-400">{subtitle}</p>
-    </CardContent>
-  </Card>
-);
+
 
 export default DashboardPage;

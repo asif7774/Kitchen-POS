@@ -79,12 +79,21 @@ export default function KDSPage() {
   };
 
   const getWaitTime = (createdAtStr: string) => {
-    const elapsedMs = currentTime.getTime() - new Date(createdAtStr).getTime();
-    const elapsedMins = Math.floor(elapsedMs / 60000);
-    const elapsedSecs = Math.floor((elapsedMs % 60000) / 1000);
+    const elapsedMs = Math.max(0, currentTime.getTime() - new Date(createdAtStr).getTime());
+    const totalSecs = Math.floor(elapsedMs / 1000);
+    const hours = Math.floor(totalSecs / 3600);
+    const mins = Math.floor((totalSecs % 3600) / 60);
+    const secs = totalSecs % 60;
+
+    let text = '';
+    if (hours > 0) {
+      text += `${hours}h `;
+    }
+    text += `${mins}m ${secs.toString().padStart(2, '0')}s`;
+
     return {
-      mins: elapsedMins,
-      text: `${elapsedMins}m ${elapsedSecs}s`,
+      mins: Math.floor(elapsedMs / 60000),
+      text: text.trim(),
     };
   };
 

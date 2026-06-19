@@ -48,7 +48,7 @@ function App() {
             {/* SvgSpriteLoader wraps Router to provide context, but loading is deferred internally */}
             <SvgSpriteLoader
               url="./sprites/app-icons.svg"
-              version="1.0.0"
+              version="1.0.1"
               // eslint-disable-next-line no-console
               onLoad={import.meta.env.DEV ? () => { console.log('✅ SVG sprite loaded successfully'); } : undefined}
               onError={import.meta.env.DEV ? (error) => { console.error('❌ Failed to load SVG sprite:', error); } : undefined}

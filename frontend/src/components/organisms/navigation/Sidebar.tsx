@@ -14,16 +14,16 @@ interface SidebarProps {
 
 const navItems = [
   { name: "Dashboard", path: "/dashboard", icon: "dashboard" },
-  { name: "Tables", path: "/tables", icon: "home" },
-  { name: "Order", path: "/order/0", icon: "clipboard-list" },
-  { name: "Menu", path: "/menu", icon: "folder" },
-  { name: "Inventory", path: "/inventory", icon: "clipboard-list" },
-  { name: "Staff", path: "/staff", icon: "users" },
-  { name: "Expenses", path: "/expenses", icon: "chart-bar" },
-  { name: "KDS", path: "/kds", icon: "clipboard-list" },
+  { name: "Tables", path: "/tables", icon: "grid" },
+  { name: "Order", path: "/order/0", icon: "list" },
+  { name: "KDS", path: "/kds", icon: "chef-hat" },
+  { name: "Past Orders", path: "/past-orders", icon: "clock" },
   { name: "Customers", path: "/customers", icon: "users" },
-  { name: "Reports", path: "/reports", icon: "chart-bar" },
-  { name: "Past Orders", path: "/past-orders", icon: "clipboard-list" },
+  { name: "Menu", path: "/menu", icon: "book-open" },
+  { name: "Inventory", path: "/inventory", icon: "inventory" },
+  { name: "Expenses", path: "/expenses", icon: "dollar" },
+  { name: "Reports", path: "/reports", icon: "analytics" },
+  { name: "Staff", path: "/staff", icon: "user" },
   { name: "Settings", path: "/settings", icon: "settings" },
 ];
 

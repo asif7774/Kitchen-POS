@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, Tray } from 'electron';
+import { app, BrowserWindow, Menu, Tray, protocol, net } from 'electron';
 import * as path from 'path';
 import { runMigrations } from './db/migrate';
 import { getDB } from './db';
@@ -38,6 +38,7 @@ async function createWindow() {
   const isDev = !app.isPackaged && process.env.NODE_ENV !== 'production';
 
   if (isDev) {
+    process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
     void mainWindow.loadURL('http://localhost:5205');
   } else {
     void mainWindow.loadFile(path.join(__dirname, '../../frontend/dist/index.html'));
@@ -96,6 +97,11 @@ function registerAllIPC() {
 }
 
 void app.whenReady().then(async () => {
+  // Register custom protocol for local images
+  protocol.handle('local', (request) => {
+    return net.fetch('file://' + request.url.slice('local://'.length));
+  });
+
   // Initialize DB and Run migrations before registering IPC
   getDB();
   runMigrations();

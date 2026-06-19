@@ -15,6 +15,7 @@ interface BillPayload {
     sgst_amount: number;
     discount_amount: number;
     total_amount: number;
+    date?: string;
   };
   orderItems: Array<{ name: string; qty: number; unit_price: number }>;
   settings: {

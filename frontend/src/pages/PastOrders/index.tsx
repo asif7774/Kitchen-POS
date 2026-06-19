@@ -49,20 +49,22 @@ const PastOrdersPage: React.FC = () => {
       'Past Orders',
       <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
         {(['daily', 'weekly', 'monthly', 'yearly'] as FilterType[]).map(f => (
-          <button
+          <Button
             key={f}
+            size="sm"
+            variant="ghost"
             onClick={() => { 
               if (filter !== f) {
                 setFilter(f);
                 setCurrentPage(1);
               }
             }}
-            className={`px-4 py-1.5 rounded-md text-sm font-medium capitalize transition-colors ${
-              filter === f ? 'bg-white shadow text-blue-600' : 'text-gray-600 hover:text-gray-900'
+            className={`capitalize ${
+              filter === f ? 'bg-white shadow text-blue-600 hover:bg-white hover:text-blue-600' : 'text-gray-600 hover:text-gray-900 hover:bg-transparent'
             }`}
           >
             {f}
-          </button>
+          </Button>
         ))}
       </div>
     );
@@ -122,7 +124,7 @@ const PastOrdersPage: React.FC = () => {
                   <React.Fragment key={order.id}>
                     <tr className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(order.date).toLocaleString()}
+                        {new Date(`${order.date  }Z`).toLocaleString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{order.customerName}</div>

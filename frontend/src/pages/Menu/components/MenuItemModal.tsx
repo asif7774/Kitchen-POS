@@ -86,7 +86,7 @@ const MenuItemModal: React.FC<Props> = ({ item, categoryId, onSuccess }) => {
             <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
             <div className="flex items-center gap-3">
               {imageUrl && (
-                <img src={imageUrl} alt="Dish" className="w-12 h-12 rounded object-cover border" />
+                <img src={imageUrl.replace('file://', 'local://')} alt="Dish" className="w-12 h-12 rounded object-cover border" />
               )}
               <Button type="button" variant="outline" onClick={() => { void handleImageUpload(); }}>
                 {imageUrl ? 'Change Image' : 'Upload Image'}

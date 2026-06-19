@@ -15,8 +15,8 @@ interface AggregateRow {
   total_sgst: number;
 }
 
-interface HourlyRow {
-  hour_num: string;
+interface TrendRow {
+  label: string;
   orders_count: number;
   revenue_sum: number;
 }
@@ -30,9 +30,42 @@ function formatHour(hourStr: string): string {
 }
 
 export function registerReportsIPC() {
-  ipcMain.handle('reports:daily', async (_, payload: DailyReportPayload) => {
+  ipcMain.handle('reports:daily', async (_, payload: { filter: string, start?: string, end?: string }) => {
     try {
       const db = getDB();
+      const filter = payload.filter;
+
+      let dateCondition = '';
+      let trendGroupFormat = '';
+      const params: any[] = [];
+
+      switch (filter) {
+        case 'daily':
+        case 'today':
+          dateCondition = "date(created_at, 'localtime') = date('now', 'localtime')";
+          trendGroupFormat = "%H"; // Group by hour
+          break;
+        case 'weekly':
+          dateCondition = "date(created_at, 'localtime') >= date('now', '-6 days', 'localtime')";
+          trendGroupFormat = "%Y-%m-%d"; // Group by day
+          break;
+        case 'monthly':
+          dateCondition = "strftime('%Y-%m', created_at, 'localtime') = strftime('%Y-%m', 'now', 'localtime')";
+          trendGroupFormat = "%Y-%m-%d";
+          break;
+        case 'yearly':
+          dateCondition = "strftime('%Y', created_at, 'localtime') = strftime('%Y', 'now', 'localtime')";
+          trendGroupFormat = "%Y-%m"; // Group by month
+          break;
+        case 'custom':
+          dateCondition = "date(created_at, 'localtime') >= date(?) AND date(created_at, 'localtime') <= date(?)";
+          params.push(payload.start, payload.end);
+          trendGroupFormat = "%Y-%m-%d"; // Group by day
+          break;
+        default:
+          dateCondition = "date(created_at, 'localtime') = date('now', 'localtime')";
+          trendGroupFormat = "%H";
+      }
       
       // 1. Get aggregate totals
       const aggregates = db.prepare(`
@@ -42,23 +75,23 @@ export function registerReportsIPC() {
           COALESCE(SUM(cgst_amount), 0) AS total_cgst,
           COALESCE(SUM(sgst_amount), 0) AS total_sgst
         FROM bills
-        WHERE date(created_at) >= date(?) AND date(created_at) <= date(?)
-      `).get(payload.start, payload.end) as AggregateRow | undefined;
+        WHERE ${dateCondition}
+      `).get(...params) as AggregateRow | undefined;
 
-      // 2. Get hourly breakdown
-      const hourlyRaw = db.prepare(`
+      // 2. Get trend breakdown
+      const trendRaw = db.prepare(`
         SELECT 
-          strftime('%H', created_at) AS hour_num,
+          strftime('${trendGroupFormat}', created_at, 'localtime') AS label,
           COUNT(id) AS orders_count,
           COALESCE(SUM(total_amount), 0) AS revenue_sum
         FROM bills
-        WHERE date(created_at) >= date(?) AND date(created_at) <= date(?)
-        GROUP BY hour_num
-        ORDER BY hour_num ASC
-      `).all(payload.start, payload.end) as HourlyRow[];
+        WHERE ${dateCondition}
+        GROUP BY label
+        ORDER BY label ASC
+      `).all(...params) as TrendRow[];
 
-      const hourlyData = hourlyRaw.map(row => ({
-        hour: formatHour(row.hour_num),
+      const trendData = trendRaw.map(row => ({
+        hour: trendGroupFormat === '%H' ? formatHour(row.label) : row.label,
         orders: row.orders_count,
         revenue: row.revenue_sum
       }));
@@ -66,12 +99,12 @@ export function registerReportsIPC() {
       return {
         success: true,
         data: {
-          date: payload.start,
+          date: filter,
           totalOrders: aggregates?.total_orders ?? 0,
           totalRevenue: aggregates?.total_revenue ?? 0,
           totalCGST: aggregates?.total_cgst ?? 0,
           totalSGST: aggregates?.total_sgst ?? 0,
-          hourlyData
+          hourlyData: trendData
         }
       };
     } catch (e: unknown) {
@@ -190,7 +223,7 @@ export function registerReportsIPC() {
         gstin: store.get('gstin') as string,
       };
 
-      await printBill(bill, items, settings);
+      await printBill({ ...bill, date: bill.created_at }, items, settings);
       return { success: true };
     } catch (e: unknown) {
       if (e instanceof Error) { return { success: false, error: e.message }; }

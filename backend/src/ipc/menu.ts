@@ -192,8 +192,8 @@ export function registerMenuIPC() {
 
       fs.copyFileSync(sourceFile, destFile);
 
-      // Return a path that can be served (e.g. file://...) or we can serve it later
-      return { success: true, data: `file://${destFile}` };
+      // Return a path that can be served securely via custom protocol
+      return { success: true, data: `local://${destFile}` };
     } catch (e: unknown) {
       if (e instanceof Error) {return { success: false, error: e.message };}
       return { success: false, error: 'Unknown error occurred' };

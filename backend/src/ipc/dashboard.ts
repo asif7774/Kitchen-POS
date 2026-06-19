@@ -54,12 +54,13 @@ export function registerDashboardIPC() {
       const trendQuery = db.prepare(`
         SELECT 
           strftime('${trendGroupFormat}', created_at, 'localtime') as label, 
-          SUM(total_amount) as sales 
+          SUM(total_amount) as sales,
+          COUNT(id) as orders
         FROM bills 
         WHERE ${dateCondition.replace(/created_at/g, 'created_at')}
         GROUP BY label
         ORDER BY label ASC
-      `).all() as { label: string, sales: number }[];
+      `).all() as { label: string, sales: number, orders: number }[];
 
       // 7. Top Selling Items (Bar/Pie Chart Data)
       const topItemsQuery = db.prepare(`
@@ -68,7 +69,7 @@ export function registerDashboardIPC() {
           SUM(oi.qty) as quantity 
         FROM order_items oi
         JOIN orders o ON oi.order_id = o.id
-        WHERE o.${dateCondition.replace(/created_at/g, 'created_at')}
+        WHERE ${dateCondition.replace(/created_at/g, 'o.created_at')}
         GROUP BY oi.menu_item_id, oi.name
         ORDER BY quantity DESC
         LIMIT 5
