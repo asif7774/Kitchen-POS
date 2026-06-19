@@ -1,0 +1,502 @@
+# Instincts generated from https://github.com/asif7774/Kitchen-POS
+# Generated: 2026-06-19T10:15:23.322Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: Kitchen-POS-commit-conventional
+trigger: "when writing a commit message"
+confidence: 0.85
+domain: git
+source: repo-analysis
+source_repo: https://github.com/asif7774/Kitchen-POS
+---
+
+# Kitchen POS Commit Conventional
+
+## Action
+
+Use conventional commit format with prefixes: feat
+
+## Evidence
+
+- 8 commits analyzed
+- Detected conventional commit pattern
+- Examples: feat: add business_sessions table and business_date columns to orders and bills, feat: add business session IPC handlers and preload bindings
+
+---
+id: Kitchen-POS-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/asif7774/Kitchen-POS
+---
+
+# Kitchen POS Commit Length
+
+## Action
+
+Write moderate-length commit messages (~71 characters)
+
+## Evidence
+
+- Average commit message length: 71 chars
+- Based on 8 commits
+
+---
+id: Kitchen-POS-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/asif7774/Kitchen-POS
+---
+
+# Kitchen POS Naming Files
+
+## Action
+
+Use camelCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: camelCase
+
+---
+id: Kitchen-POS-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/asif7774/Kitchen-POS
+---
+
+# Kitchen POS Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: Kitchen-POS-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/asif7774/Kitchen-POS
+---
+
+# Kitchen POS Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: Kitchen-POS-arch-type-based
+trigger: "when adding new code"
+confidence: 0.8
+domain: architecture
+source: repo-analysis
+source_repo: https://github.com/asif7774/Kitchen-POS
+---
+
+# Kitchen POS Arch Type Based
+
+## Action
+
+Place code in the appropriate type folder (components/, services/, utils/, etc.)
+
+## Evidence
+
+- Type-based module organization detected
+- Folders: 
+
+---
+id: Kitchen-POS-test-separate
+trigger: "when writing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/asif7774/Kitchen-POS
+---
+
+# Kitchen POS Test Separate
+
+## Action
+
+Place tests in the tests/ or __tests__/ directory, mirroring src structure
+
+## Evidence
+
+- Separate test directory pattern detected
+- Tests live in dedicated test folders
+
+---
+id: Kitchen-POS-workflow-feature-development
+trigger: "when implementing a new feature"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/asif7774/Kitchen-POS
+---
+
+# Kitchen POS Workflow Feature Development
+
+## Action
+
+Follow the feature-development workflow:
+1. Add feature implementation
+2. Add tests for feature
+3. Update documentation
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~30x per month
+- Files: backend/src/ipc/*, backend/src/*, backend/src/services/*
+
+---
+id: Kitchen-POS-workflow-add-new-feature-with-ipc-and-frontend-integration
+trigger: "when doing add new feature with ipc and frontend integration"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/asif7774/Kitchen-POS
+---
+
+# Kitchen POS Workflow Add New Feature With Ipc And Frontend Integration
+
+## Action
+
+Follow the add-new-feature-with-ipc-and-frontend-integration workflow:
+1. Create backend IPC handler file (backend/src/ipc/feature-name.ts)
+2. Update preload bindings (backend/src/preload.ts)
+3. Update main entry if needed (backend/src/main.ts)
+4. Define new types/interfaces (frontend/src/types/models.ts)
+5. Add IPC bindings to frontend (frontend/src/lib/ipc.ts)
+6. Create React context/hook if stateful (frontend/src/contexts/FeatureContext.tsx)
+7. Add or update frontend component(s) (frontend/src/components/organisms/feature/FeatureComponent.tsx)
+8. Wire provider into app (frontend/src/app/app.tsx)
+9. Update relevant pages to use new feature (frontend/src/pages/...)
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: backend/src/ipc/*.ts, backend/src/preload.ts, backend/src/main.ts
+
+---
+id: Kitchen-POS-workflow-add-database-table-and-migrate-schema
+trigger: "when doing add database table and migrate schema"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/asif7774/Kitchen-POS
+---
+
+# Kitchen POS Workflow Add Database Table And Migrate Schema
+
+## Action
+
+Follow the add-database-table-and-migrate-schema workflow:
+1. Create migration SQL file (backend/src/db/migrations/NNN_feature.sql)
+2. Update backend logic to use new table/column (backend/src/ipc/*.ts, backend/src/services/*.ts)
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: backend/src/db/migrations/*.sql, backend/src/ipc/*.ts, backend/src/services/*.ts
+
+---
+id: kitchen-pos-camelcase-files
+trigger: "When creating or renaming a file in the codebase"
+confidence: 0.85
+domain: code-style
+source: repo-analysis
+source_repo: asif7774/Kitchen-POS
+---
+
+# Kitchen Pos Camelcase Files
+
+## Action
+
+Name the file using camelCase (e.g., businessSessionContext.tsx)
+
+## Evidence
+
+- Pattern in namingConventions.files: camelCase
+- Seen in frontend/src/contexts/businessSessionContext.tsx
+
+---
+id: kitchen-pos-camelcase-functions
+trigger: "When defining a function"
+confidence: 0.85
+domain: code-style
+source: repo-analysis
+source_repo: asif7774/Kitchen-POS
+---
+
+# Kitchen Pos Camelcase Functions
+
+## Action
+
+Name the function using camelCase (e.g., useBusinessSession)
+
+## Evidence
+
+- Pattern in namingConventions.functions: camelCase
+- Seen in frontend/src/contexts/businessSessionContext.tsx
+
+---
+id: kitchen-pos-pascalcase-classes
+trigger: "When defining a class"
+confidence: 0.85
+domain: code-style
+source: repo-analysis
+source_repo: asif7774/Kitchen-POS
+---
+
+# Kitchen Pos Pascalcase Classes
+
+## Action
+
+Name the class using PascalCase (e.g., BusinessSessionContext)
+
+## Evidence
+
+- Pattern in namingConventions.classes: PascalCase
+- Seen in frontend/src/contexts/BusinessSessionContext.tsx
+
+---
+id: kitchen-pos-screaming-snake-constants
+trigger: "When defining a constant"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: asif7774/Kitchen-POS
+---
+
+# Kitchen Pos Screaming Snake Constants
+
+## Action
+
+Name the constant using SCREAMING_SNAKE_CASE (e.g., AUTO_BACKUP_INTERVAL)
+
+## Evidence
+
+- Pattern in namingConventions.constants: SCREAMING_SNAKE_CASE
+
+---
+id: kitchen-pos-relative-imports
+trigger: "When importing modules"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: asif7774/Kitchen-POS
+---
+
+# Kitchen Pos Relative Imports
+
+## Action
+
+Use relative import paths (e.g., import x from '../utils/x')
+
+## Evidence
+
+- Pattern in importStyle: relative
+- Seen in frontend/src/contexts/businessSessionContext.tsx
+
+---
+id: kitchen-pos-named-exports
+trigger: "When exporting functions, classes, or constants"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: asif7774/Kitchen-POS
+---
+
+# Kitchen Pos Named Exports
+
+## Action
+
+Use named exports instead of default exports
+
+## Evidence
+
+- Pattern in exportStyle: named
+- Seen in frontend/src/contexts/businessSessionContext.tsx
+
+---
+id: kitchen-pos-error-boundaries
+trigger: "When handling errors in React components"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: asif7774/Kitchen-POS
+---
+
+# Kitchen Pos Error Boundaries
+
+## Action
+
+Use error boundaries to catch and handle errors
+
+## Evidence
+
+- Pattern in errorHandling: error-boundaries
+- Seen in frontend/src/app/app.tsx
+
+---
+id: kitchen-pos-conventional-commits-feat
+trigger: "When committing a new feature"
+confidence: 0.9
+domain: git
+source: repo-analysis
+source_repo: asif7774/Kitchen-POS
+---
+
+# Kitchen Pos Conventional Commits Feat
+
+## Action
+
+Use the conventional commit format with 'feat:' prefix (e.g., feat: add business_sessions table)
+
+## Evidence
+
+- Pattern in commits.prefixes: feat
+- Seen in commit: feat: add business_sessions table and business_date columns to orders and bills
+
+---
+id: kitchen-pos-commit-length
+trigger: "When writing a commit message"
+confidence: 0.7
+domain: git
+source: repo-analysis
+source_repo: asif7774/Kitchen-POS
+---
+
+# Kitchen Pos Commit Length
+
+## Action
+
+Keep the commit message concise, around 70 characters
+
+## Evidence
+
+- Pattern in commits.averageLength: 71
+
+---
+id: kitchen-pos-feature-dev-test-location
+trigger: "When writing tests for backend features"
+confidence: 0.7
+domain: testing
+source: repo-analysis
+source_repo: asif7774/Kitchen-POS
+---
+
+# Kitchen Pos Feature Dev Test Location
+
+## Action
+
+Place tests in a separate test directory, not alongside source files
+
+## Evidence
+
+- Pattern in architecture.testLocation: separate
+
+---
+id: kitchen-pos-feature-dev-test-after-impl
+trigger: "When implementing a new feature"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: asif7774/Kitchen-POS
+---
+
+# Kitchen Pos Feature Dev Test After Impl
+
+## Action
+
+Add tests for the feature immediately after implementation
+
+## Evidence
+
+- Pattern in feature-development.commitSequence: Add feature implementation → Add tests for feature
+- Seen in workflow: feature-development
+
+---
+id: kitchen-pos-feature-dev-doc-after-test
+trigger: "When tests for a new feature are added"
+confidence: 0.8
+domain: workflow
+source: repo-analysis
+source_repo: asif7774/Kitchen-POS
+---
+
+# Kitchen Pos Feature Dev Doc After Test
+
+## Action
+
+Update documentation to reflect the new feature
+
+## Evidence
+
+- Pattern in feature-development.commitSequence: Add tests for feature → Update documentation
+- Seen in workflow: feature-development
+
+---
+id: kitchen-pos-add-new-feature-ipc-frontend
+trigger: "When adding a new core feature that requires backend IPC, type definitions, and frontend UI integration"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: asif7774/Kitchen-POS
+---
+
+# Kitchen Pos Add New Feature Ipc Frontend
+
+## Action
+
+Follow the workflow: create backend IPC handler, update preload, update main, define types, add IPC bindings to frontend, create React context/hook, add/update frontend components, wire provider, update relevant pages
+
+## Evidence
+
+- Workflow: add-new-feature-with-ipc-and-frontend-integration
+- Seen in commits and files: feat: add business session IPC handlers and preload bindings, backend/src/ipc/business-session.ts, frontend/src/contexts/businessSessionContext.tsx
+
+---
+id: kitchen-pos-add-database-table-migrate-schema
+trigger: "When introducing a new table or schema change in the database"
+confidence: 0.85
+domain: workflow
+source: repo-analysis
+source_repo: asif7774/Kitchen-POS
+---
+
+# Kitchen Pos Add Database Table Migrate Schema
+
+## Action
+
+Create migration SQL file, then update backend logic to use new table/column
+
+## Evidence
+
+- Workflow: add-database-table-and-migrate-schema
+- Seen in commits: feat: add business_sessions table and business_date columns to orders and bills
+- Seen in files: backend/src/db/migrations/011_business_sessions.sql
+
