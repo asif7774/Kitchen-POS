@@ -14,6 +14,7 @@ import { ModalContainer } from 'components/organisms/modal/modal-container';
 import { useToast } from 'hooks/useToast';
 import { api } from '../lib/ipc';
 import { BusinessSessionProvider } from '../contexts/BusinessSessionContext';
+import QuickActionsFAB from 'components/organisms/quick-actions-fab';
 
 const GlobalListeners = () => {
   const { showToast } = useToast();
@@ -72,7 +73,8 @@ function App() {
               <Suspense fallback={<LoadingSpinner />}>
                 <PosApp />
               </Suspense>
-          </Router>
+              <QuickActionsFAB />
+            </Router>
             </BusinessSessionProvider>
         </SvgSpriteLoader>
           </ModalProvider>

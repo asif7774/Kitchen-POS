@@ -2,17 +2,24 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useBusinessSession } from '../../../contexts/BusinessSessionContext';
 import { useAuthStore } from '../../../store/auth';
 import { useToast } from '../../../hooks/useToast';
+import { useModal } from '../../../hooks/useModal';
 import { SvgIcon } from '../../atoms/svg-sprite-loader';
 import Button from '../../atoms/button/button';
+import { api } from '../../../lib/ipc';
 
-const BusinessSessionFAB: React.FC = () => {
+const QuickActionsFAB: React.FC = () => {
   const { activeSession, startSession, closeSession } = useBusinessSession();
   const staff = useAuthStore(state => state.staff);
   const { showToast } = useToast();
+  const { showModal, hideModal } = useModal();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [elapsed, setElapsed] = useState('');
   const panelRef = useRef<HTMLDivElement>(null);
+
+  // Backup loading states
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   useEffect(() => {
     if (!activeSession) { return; }
@@ -65,10 +72,57 @@ const BusinessSessionFAB: React.FC = () => {
     }
   };
 
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const res = await api.backup.export({});
+      if (res.success && res.data) {
+        showToast({ message: `Backup saved to ${res.data}`, variant: 'success' });
+        setOpen(false);
+      } else {
+        showToast({ message: res.error ?? 'Failed to export backup', variant: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      showToast({ message: 'An unexpected error occurred', variant: 'error' });
+    }
+    setIsExporting(false);
+  };
+
+  const handleImport = () => {
+    showModal({
+      title: 'Import Backup',
+      content: (
+        <p className="text-sm text-gray-600">Warning: Importing a backup will overwrite ALL current data and close the app. Continue?</p>
+      ),
+      actions: (
+        <>
+          <Button variant="secondary" onClick={hideModal}>Cancel</Button>
+          <Button variant="danger" onClick={() => {
+            hideModal();
+            setIsImporting(true);
+            api.backup.import({}).then(res => {
+              if (!res.success && res.error !== 'Cancelled') {
+                showToast({ message: res.error ?? 'Failed to import backup', variant: 'error' });
+              }
+              setIsImporting(false);
+            }).catch((e: unknown) => {
+              console.error(e);
+              showToast({ message: 'An unexpected error occurred', variant: 'error' });
+              setIsImporting(false);
+            });
+          }}>
+            Yes, Import
+          </Button>
+        </>
+      )
+    });
+  };
+
   return (
     <div ref={panelRef} className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
       {open && (
-        <div className="w-72 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
+        <div className="w-72 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col">
           <div className={`px-4 py-3 border-b ${activeSession ? 'bg-green-50 border-green-100' : 'bg-gray-50 border-gray-100'}`}>
             <div className="flex items-center justify-between">
               <span className="font-semibold text-sm text-gray-800">Business Day</span>
@@ -102,12 +156,40 @@ const BusinessSessionFAB: React.FC = () => {
                   variant="primary"
                   className="w-full justify-center"
                   onClick={() => { void handleStart(); }}
-                  disabled={loading}
+                  disabled={loading || !staff}
                 >
-                  {loading ? 'Starting...' : 'Start Business Day'}
+                  {(() => {
+                    if (loading) { return 'Starting...'; }
+                    if (!staff) { return 'Login required to start'; }
+                    return 'Start Business Day';
+                  })()}
                 </Button>
               </>
             )}
+          </div>
+          
+          <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
+            <span className="font-semibold text-xs text-gray-600 uppercase tracking-wider block mb-2">Data & Backups</span>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex-1 text-xs" 
+                onClick={() => { handleExport().catch(console.error); }} 
+                disabled={isExporting || isImporting}
+              >
+                {isExporting ? 'Exporting...' : 'Export'}
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex-1 text-xs text-blue-600 border-blue-200 hover:bg-blue-50" 
+                onClick={() => { handleImport(); }} 
+                disabled={isExporting || isImporting}
+              >
+                {isImporting ? 'Importing...' : 'Import'}
+              </Button>
+            </div>
           </div>
         </div>
       )}
@@ -135,4 +217,4 @@ const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) =
   </div>
 );
 
-export default BusinessSessionFAB;
+export default QuickActionsFAB;

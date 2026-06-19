@@ -19,10 +19,16 @@ import ComponentsPage from './pages/Components';
 import PastOrdersPage from './pages/PastOrders';
 import OpenShiftModal from './components/organisms/modal/OpenShiftModal';
 import AppLayout from './layouts/AppLayout';
+import SetupPage from './pages/Setup';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isSetupComplete = useAuthStore((state) => state.isSetupComplete);
   const activeShift = useAuthStore((state) => state.activeShift);
+
+  if (isSetupComplete === false) {
+    return <Navigate to="/setup" replace />;
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -40,7 +46,12 @@ const App: React.FC = () => {
     <Routes>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/components" element={<ComponentsPage />} />
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/login" element={
+        useAuthStore(state => state.isSetupComplete) === false 
+          ? <Navigate to="/setup" replace /> 
+          : <LoginPage />
+      } />
+      <Route path="/setup" element={<SetupPage />} />
       <Route 
         path="/dashboard" 
         element={

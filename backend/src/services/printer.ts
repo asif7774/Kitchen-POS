@@ -25,6 +25,7 @@ interface OutletSettings {
   outlet_name?: string;
   address?: string;
   gstin?: string;
+  is_gst_enabled?: boolean;
 }
 
 const hiddenWindows = new Set<BrowserWindow>();
@@ -171,8 +172,10 @@ export async function printBill(bill: BillPrintPayload, orderItems: BillItemPrin
         
         <div class="divider"></div>
         <div class="summary-row"><span>Subtotal:</span><span>₹${bill.taxable_amount.toFixed(2)}</span></div>
+        ${settings.is_gst_enabled !== false ? `
         <div class="summary-row"><span>CGST:</span><span>₹${bill.cgst_amount.toFixed(2)}</span></div>
         <div class="summary-row"><span>SGST:</span><span>₹${bill.sgst_amount.toFixed(2)}</span></div>
+        ` : ''}
         ${bill.discount_amount > 0 ? `<div class="summary-row"><span>Discount:</span><span>-₹${bill.discount_amount.toFixed(2)}</span></div>` : ''}
         <div class="divider"></div>
         <div class="summary-row fw-bold fs-large"><span>GRAND TOTAL:</span><span>₹${bill.total_amount.toFixed(2)}</span></div>

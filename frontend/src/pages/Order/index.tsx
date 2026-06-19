@@ -11,6 +11,7 @@ import { useModal } from '../../hooks/useModal';
 import { useToast } from '../../hooks/useToast';
 import { CustomerSelect } from '../../components/organisms/CustomerSelect';
 import { useAuthStore } from '../../store/auth';
+import { useBusinessSession } from '../../contexts/BusinessSessionContext';
 import { SvgIcon } from '../../components/atoms/svg-sprite-loader';
 
 const OrderPage: React.FC = () => {
@@ -23,6 +24,7 @@ const OrderPage: React.FC = () => {
   const [createdAt, setCreatedAt] = useState<string | null>(null);
   const [orderType, setOrderType] = useState<'dine-in' | 'takeaway' | 'delivery'>(Number(tableId) === 0 ? 'takeaway' : 'dine-in');
   const [occupiedTime, setOccupiedTime] = useState<string>('');
+  const { activeSession } = useBusinessSession();
   const { showModal, hideModal } = useModal();
   const { showToast } = useToast();
   const billModalRef = useRef<BillModalHandle>(null);
@@ -96,7 +98,13 @@ const OrderPage: React.FC = () => {
       const ms = Math.max(0, Date.now() - new Date(dateStr).getTime());
       const mins = Math.floor(ms / 60000);
       const hrs = Math.floor(mins / 60);
-      setOccupiedTime(`${hrs.toString().padStart(2, '0')}:${(mins % 60).toString().padStart(2, '0')}`);
+      const remainingMins = mins % 60;
+      let timeStr = '';
+      if (hrs > 0) {
+        timeStr += `${hrs}h `;
+      }
+      timeStr += `${remainingMins}m`;
+      setOccupiedTime(timeStr);
     };
     updateTime();
     const timer = setInterval(updateTime, 60000);
@@ -106,6 +114,11 @@ const OrderPage: React.FC = () => {
   const handleCustomerSelect = async (selected: Customer | null) => {
     setCustomer(selected);
     if (!selected) {
+      return;
+    }
+
+    if (!activeSession && !orderId) {
+      showToast({ message: 'Please start a business day first to create a new order', variant: 'warning' });
       return;
     }
 
@@ -146,6 +159,11 @@ const OrderPage: React.FC = () => {
 
   const handleSendKOT = async (shouldPrint: boolean) => {
     if ((cart.length === 0 && !orderId) || !tableId) {
+      return;
+    }
+
+    if (!activeSession && !orderId) {
+      showToast({ message: 'Please start a business day first to create a new order', variant: 'warning' });
       return;
     }
 

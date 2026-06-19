@@ -143,6 +143,11 @@ const mockApi = {
       },
     };
   })(),
+  system: {
+    isSetupComplete: () => Promise.resolve({ success: true, data: true }),
+    completeSetup: (_payload: { restaurantName: string; adminName: string; adminPin: string }) => Promise.resolve({ success: true }),
+    factoryReset: () => Promise.resolve({ success: true }),
+  },
   expenses: {
     getAll: () => Promise.resolve({ success: true, data: [] }),
     create: () => Promise.resolve({ success: true, data: { id: 1 } }),
@@ -189,7 +194,7 @@ const mockApi = {
 
 export const api = (ipcApi ?? mockApi) as {
   orders: {
-    create: (payload: { tableId: number; staffId?: number; covers?: number; note?: string; customerId?: number }) => Promise<IPCResponse<number>>;
+    create: (payload: { tableId: number; staffId?: number; covers?: number; note?: string; customerId?: number; type?: 'dine-in' | 'takeaway' | 'delivery' }) => Promise<IPCResponse<number>>;
     getOpen: () => Promise<IPCResponse<unknown>>;
     getByTable: (payload: { tableId: number }) => Promise<IPCResponse<(Order & { items: OrderItem[] }) | null>>;
     sendKOT: (payload: { tableId: number; items: CartItem[]; staffId?: number; covers?: number; note?: string; customerId?: number; type?: 'dine-in' | 'takeaway' | 'delivery' }) => Promise<IPCResponse<{ orderId: number; itemsToPrint: CartItem[] }>>;
@@ -262,6 +267,11 @@ export const api = (ipcApi ?? mockApi) as {
   settings: {
     get: () => Promise<IPCResponse<unknown>>;
     save: (payload: unknown) => Promise<IPCResponse<unknown>>;
+  };
+  system: {
+    isSetupComplete: () => Promise<IPCResponse<boolean>>;
+    completeSetup: (payload: { restaurantName: string; adminName: string; adminPin: string }) => Promise<IPCResponse<unknown>>;
+    factoryReset: () => Promise<IPCResponse<unknown>>;
   };
   expenses: {
     getAll: (payload?: { start?: string, end?: string }) => Promise<IPCResponse<Expense[]>>;

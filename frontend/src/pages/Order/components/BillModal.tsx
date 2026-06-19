@@ -1,5 +1,5 @@
 import { Button, Input, Select } from '../../../components/atoms';
-import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { api } from '../../../lib/ipc';
 import { CartItem, Customer } from '../../../types/models';
 import { useToast } from '../../../hooks/useToast';
@@ -28,10 +28,19 @@ const BillModal = forwardRef<BillModalHandle, Props>(({ orderId, cart, initialCu
   const [discount, setDiscount] = useState(0);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(initialCustomer ?? null);
   const [payments, setPayments] = useState<{ method: string; amount: number }[]>([]);
+  const [isGstEnabled, setIsGstEnabled] = useState(true);
+
+  useEffect(() => {
+    void api.settings.get().then(res => {
+      if (res.success && res.data && typeof (res.data as Record<string, unknown>).is_gst_enabled === 'boolean') {
+        setIsGstEnabled((res.data as Record<string, unknown>).is_gst_enabled as boolean);
+      }
+    });
+  }, []);
 
   const totalAfterDiscount = round2(Math.max(0, taxableTotal - discount));
-  const cgstTotal = round2(totalAfterDiscount * 0.025);
-  const sgstTotal = round2(totalAfterDiscount * 0.025);
+  const cgstTotal = isGstEnabled ? round2(totalAfterDiscount * 0.025) : 0;
+  const sgstTotal = isGstEnabled ? round2(totalAfterDiscount * 0.025) : 0;
   const finalTotal = round2(totalAfterDiscount + cgstTotal + sgstTotal);
 
   useEffect(() => {
@@ -98,13 +107,13 @@ const BillModal = forwardRef<BillModalHandle, Props>(({ orderId, cart, initialCu
         <div className="space-y-3 mb-6">
           {cart.map(item => {
             const base = round2(item.price * item.qty);
-            const c = round2(base * 0.025);
-            const s = round2(base * 0.025);
+            const c = isGstEnabled ? round2(base * 0.025) : 0;
+            const s = isGstEnabled ? round2(base * 0.025) : 0;
             return (
               <div key={item.id} className="flex justify-between text-sm">
                 <div>
                   <p className="font-medium">{item.name} x {item.qty}</p>
-                  <p className="text-xs text-gray-500">CGST: ₹{c.toFixed(2)} | SGST: ₹{s.toFixed(2)}</p>
+                  {isGstEnabled && <p className="text-xs text-gray-500">CGST: ₹{c.toFixed(2)} | SGST: ₹{s.toFixed(2)}</p>}
                 </div>
                 <p className="font-medium">₹{round2(base + c + s).toFixed(2)}</p>
               </div>
@@ -146,14 +155,18 @@ const BillModal = forwardRef<BillModalHandle, Props>(({ orderId, cart, initialCu
               ))}
             </div>
           </div>
-          <div className="flex justify-between text-gray-600">
-            <span>CGST (2.5%)</span>
-            <span>₹{cgstTotal.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-gray-600">
-            <span>SGST (2.5%)</span>
-            <span>₹{sgstTotal.toFixed(2)}</span>
-          </div>
+          {isGstEnabled && (
+            <>
+              <div className="flex justify-between text-gray-600">
+                <span>CGST (2.5%)</span>
+                <span>₹{cgstTotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-gray-600">
+                <span>SGST (2.5%)</span>
+                <span>₹{sgstTotal.toFixed(2)}</span>
+              </div>
+            </>
+          )}
           <div className="flex justify-between font-bold text-lg pt-2 border-t mt-2">
             <span>Grand Total</span>
             <span>₹{finalTotal.toFixed(2)}</span>

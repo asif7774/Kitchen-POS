@@ -26,7 +26,7 @@ export function calcLineItemTax(unitPrice: number, qty: number, cgstRate: number
   };
 }
 
-export function calcBillTotals(items: OrderItem[]) {
+export function calcBillTotals(items: OrderItem[], isGstEnabled: boolean = true) {
   let taxable_amount = 0;
   let cgst_amount = 0;
   let sgst_amount = 0;
@@ -34,7 +34,13 @@ export function calcBillTotals(items: OrderItem[]) {
   let total_amount = 0;
 
   for (const item of items) {
-    const tax = calcLineItemTax(item.unit_price, item.qty, item.cgst_rate, item.sgst_rate, item.discount ?? 0);
+    const tax = calcLineItemTax(
+      item.unit_price, 
+      item.qty, 
+      isGstEnabled ? item.cgst_rate : 0, 
+      isGstEnabled ? item.sgst_rate : 0, 
+      item.discount ?? 0
+    );
     taxable_amount += tax.taxableAmount;
     cgst_amount += tax.cgstAmount;
     sgst_amount += tax.sgstAmount;

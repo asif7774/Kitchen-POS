@@ -13,3 +13,10 @@ export function getDB(): Database.Database {
   }
   return dbInstance;
 }
+
+export function closeDB(): void {
+  if (dbInstance) {
+    dbInstance.close();
+    dbInstance = null;
+  }
+}

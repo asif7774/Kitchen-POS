@@ -73,54 +73,11 @@ const SettingsPage: React.FC = () => {
     }
   };
 
-  const [isExporting, setIsExporting] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
 
-  const handleExport = async () => {
-    setIsExporting(true);
-    try {
-      const res = await api.backup.export({});
-      if (res.success && res.data) {
-        showToast({ message: `Backup exported successfully to ${res.data}`, variant: 'success' });
-      } else if (res.error !== 'Export cancelled') {
-        showToast({ message: res.error ?? 'Failed to export backup', variant: 'error' });
-      }
-    } catch (err) {
-      console.error(err);
-      showToast({ message: 'Failed to export backup', variant: 'error' });
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const handleImport = async () => {
-    setIsImporting(true);
-    try {
-      const res = await api.backup.import({});
-      if (res.success) {
-        showToast({ message: 'Backup imported! App will restart now.', variant: 'success' });
-      } else if (res.error !== 'Import cancelled') {
-        showToast({ message: res.error ?? 'Failed to import backup', variant: 'error' });
-      }
-    } catch (err) {
-      console.error(err);
-      showToast({ message: 'Failed to import backup', variant: 'error' });
-    } finally {
-      setIsImporting(false);
-    }
-  };
 
   return (
     <div className="container-responsive p-6 max-w-2xl mx-auto relative">
-      {(isExporting || isImporting) && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4"></div>
-          <p className="text-lg font-medium text-gray-800">
-            {isExporting ? 'Exporting Backup...' : 'Importing Backup...'}
-          </p>
-          <p className="text-sm text-gray-500 mt-2">Please wait, do not close the application.</p>
-        </div>
-      )}
+
       <div className="space-y-8">
         <Card>
           <CardHeader>
@@ -153,15 +110,73 @@ const SettingsPage: React.FC = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Backup & Restore</CardTitle>
+            <CardTitle className="text-red-600">Danger Zone</CardTitle>
           </CardHeader>
-          <CardContent className="space-x-4">
-            <Button variant="secondary" onClick={() => { void handleExport(); }} disabled={isExporting || isImporting}>
-               {isExporting ? 'Exporting...' : 'Export Backup'}
-            </Button>
-            <Button variant="outline" className="text-red-500 border-red-500 hover:bg-red-50 disabled:opacity-50" onClick={() => { void handleImport(); }} disabled={isExporting || isImporting}>
-               {isImporting ? 'Importing...' : 'Import Backup'}
-            </Button>
+          <CardContent>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-gray-500 mb-2">Factory reset will wipe all data, including menus, sales, customers, and settings. This cannot be undone.</p>
+              <Button 
+                variant="danger" 
+                className="w-fit"
+                onClick={() => {
+                  let confirmText = '';
+                  showModal({
+                    title: 'Factory Reset',
+                    content: (
+                      <div className="space-y-4">
+                        <p className="text-sm text-gray-600">Please export your backup first using the quick actions button in the bottom right corner.</p>
+                        <p className="text-sm text-gray-600 font-bold">To confirm factory reset, type "reset" below:</p>
+                        <Input 
+                          placeholder="Type reset here"
+                          onChange={(e) => { confirmText = e.target.value; }}
+                          autoFocus
+                        />
+                      </div>
+                    ),
+                    actions: (
+                      <>
+                        <Button variant="secondary" onClick={hideModal}>Cancel</Button>
+                        <Button 
+                          variant="danger" 
+                          onClick={() => {
+                            if (confirmText.trim().toLowerCase() === 'reset') {
+                              hideModal();
+                              api.system.factoryReset().catch(console.error);
+                            } else {
+                              showToast({ message: 'Factory reset cancelled. You did not type "reset".', variant: 'warning' });
+                              hideModal();
+                            }
+                          }}
+                        >
+                          Confirm Reset
+                        </Button>
+                      </>
+                    )
+                  });
+                }}
+              >
+                Factory Reset
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Taxes & Billing</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Toggle
+              checked={settings.is_gst_enabled !== false}
+              onChange={(e) => { 
+                const is_gst_enabled = e.target.checked;
+                const newSettings = { ...settings, is_gst_enabled };
+                setSettings(newSettings);
+                void api.settings.save(newSettings);
+              }}
+              label="Enable GST / SGST"
+              description="Calculate and show CGST and SGST on bills"
+            />
           </CardContent>
         </Card>
 

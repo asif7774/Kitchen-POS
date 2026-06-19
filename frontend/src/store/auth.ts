@@ -6,10 +6,12 @@ import { Shift, Staff } from '../types/models';
 interface AuthState {
   staff: Staff | null;
   isAuthenticated: boolean;
+  isSetupComplete: boolean | null;
   activeShift: Shift | null;
   login: (pin: string) => Promise<boolean>;
   logout: () => void;
   fetchActiveShift: () => Promise<void>;
+  checkSetup: () => Promise<boolean>;
   openShift: (openingCash: number) => Promise<boolean>;
   closeShift: (closingCash: number, note?: string) => Promise<boolean>;
 }
@@ -19,6 +21,7 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       staff: null,
       isAuthenticated: false,
+      isSetupComplete: null,
       activeShift: null,
       login: async (pin: string) => {
         const res = await api.staff.login({ pin });
@@ -45,6 +48,12 @@ export const useAuthStore = create<AuthState>()(
         } else {
           set({ activeShift: null });
         }
+      },
+      checkSetup: async () => {
+        const res = await api.system.isSetupComplete();
+        const isComplete = !!(res.success && res.data);
+        set({ isSetupComplete: isComplete });
+        return isComplete;
       },
       openShift: async (openingCash: number) => {
         const staff = get().staff;
@@ -78,7 +87,8 @@ export const useAuthStore = create<AuthState>()(
       name: 'kitchen-pos-auth',
       partialize: (state) => ({ 
         staff: state.staff, 
-        isAuthenticated: state.isAuthenticated 
+        isAuthenticated: state.isAuthenticated,
+        isSetupComplete: state.isSetupComplete
       }),
     }
   )

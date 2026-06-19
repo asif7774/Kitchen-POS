@@ -11,10 +11,12 @@
   "dependencies": {
     "archiver": "^6.0.1",
     "better-sqlite3": "^9.4.3",
-    "electron-store": "^8.1.0"
+    "electron-store": "^8.1.0",
+    "extract-zip": "^2.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/archiver": "^8.0.0",
     "@types/better-sqlite3": "^7.6.8",
     "@types/node": "^20.0.0",
     "eslint": "^10.5.0",

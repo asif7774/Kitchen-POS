@@ -38,17 +38,17 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  const handleDigit = (digit: string) => {
+  const handleDigit = React.useCallback((digit: string) => {
     setPin((prev) => prev + digit);
     setError(false);
-  };
+  }, []);
 
-  const handleBackspace = () => {
+  const handleBackspace = React.useCallback(() => {
     setPin((prev) => prev.slice(0, -1));
     setError(false);
-  };
+  }, []);
 
-  const handleSubmit = async () => {
+  const handleSubmit = React.useCallback(async () => {
     const success = await login(pin);
     if (success) {
       navigate('/tables');
@@ -56,7 +56,28 @@ const LoginPage: React.FC = () => {
       setError(true);
       setPin('');
     }
-  };
+  }, [login, navigate, pin]);
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key >= '0' && e.key <= '9') {
+        if (pin.length < 4) {
+          handleDigit(e.key);
+        }
+      } else if (e.key === 'Backspace') {
+        handleBackspace();
+      } else if (e.key === 'Enter') {
+        if (pin.length > 0) {
+          void handleSubmit();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [pin, handleDigit, handleBackspace, handleSubmit]);
 
   return (
     <div className="flex h-screen w-full items-center justify-center bg-gray-50">

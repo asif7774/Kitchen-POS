@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from 'components/organisms/navigation/Sidebar';
 import Header from 'components/organisms/navigation/Header';
-import BusinessSessionFAB from 'components/organisms/business-session-fab';
 
 const SIDEBAR_W = 260;
 const COLLAPSED_W = 72;
@@ -78,8 +77,6 @@ const AppLayout: React.FC<Props> = ({ children }) => {
           {children}
         </div>
       </main>
-
-      <BusinessSessionFAB />
     </div>
   );
 };

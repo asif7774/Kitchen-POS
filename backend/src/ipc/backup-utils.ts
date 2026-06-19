@@ -10,7 +10,7 @@ export interface BackupReminderConfig {
   lastRemindedDate: string | null;
 }
 
-export const BACKUP_FILE_PATTERN = /^kitchen-pos-backup-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}\.db$/;
+export const BACKUP_FILE_PATTERN = /^kitchen-pos-backup-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}\.zip$/;
 
 export function formatLocalDate(date: Date): string {
   const y = date.getFullYear();

@@ -24,7 +24,8 @@ export function createBill(orderId: number, payments: PaymentPayload[], discount
 
   const result = db.transaction(() => {
     const items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(orderId) as OrderItem[];
-    const totals = calcBillTotals(items);
+    const isGstEnabled = store.get('is_gst_enabled', true) as boolean;
+    const totals = calcBillTotals(items, isGstEnabled);
 
     totals.discount_amount += discount;
     totals.total_amount = Math.round((totals.total_amount - discount) * 100) / 100;
