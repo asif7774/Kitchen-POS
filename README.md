@@ -1,6 +1,5 @@
 # Restaurant POS
-
-A modern, offline-first point-of-sale system for restaurants. Runs entirely on the local machine — no internet required, no monthly subscription, no cloud dependency.
+A modern, offline-first point-of-sale system for restaurants built with Electron, React, and SQLite. Features GST-compliant billing, direct USB thermal printing, and comprehensive table/order management — no internet required, no monthly subscription, no cloud dependency.
 
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-blue)
 ![Stack](https://img.shields.io/badge/stack-Electron%20%2B%20React%2019%20%2B%20SQLite-purple)
