@@ -56,4 +56,21 @@ export function registerStaffIPC() {
       return { success: false, error: e.message };
     }
   });
+
+  ipcMain.handle('staff:changePin', async (event, payload: { id: number, currentPin: string, newPin: string }) => {
+    try {
+      const db = getDB();
+      const user = db.prepare('SELECT pin FROM staff WHERE id = ?').get(payload.id) as { pin: string } | undefined;
+      if (!user) {
+        return { success: false, error: 'User not found' };
+      }
+      if (user.pin !== payload.currentPin) {
+        return { success: false, error: 'Current PIN is incorrect' };
+      }
+      db.prepare('UPDATE staff SET pin = ? WHERE id = ?').run(payload.newPin, payload.id);
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
+  });
 }

@@ -2,6 +2,7 @@ import { Button } from '../../../components/atoms';
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { SvgIcon } from '../../../components/atoms/svg-sprite-loader';
+import { api } from '../../../lib/ipc';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -37,10 +38,29 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   // Hover state — only meaningful on pointer (mouse/trackpad) devices
   const [isHovered, setIsHovered] = useState(false);
+  const [isKdsEnabled, setIsKdsEnabled] = useState(true);
+
+  React.useEffect(() => {
+    const fetchSettings = () => {
+      api.settings.get().then(res => {
+        if (res.success && res.data) {
+          setIsKdsEnabled((res.data as Record<string, unknown>).is_kds_enabled !== false);
+        }
+      }).catch(console.error);
+    };
+    fetchSettings();
+    window.addEventListener('settings-updated', fetchSettings);
+    return () => { window.removeEventListener('settings-updated', fetchSettings); };
+  }, []);
 
   // Labels visible when: mobile open, OR desktop not-collapsed, OR desktop collapsed but hovered
   const isEffectivelyExpanded =
     !isSidebarPermanent || !isCollapsed || (isPointerFine && isHovered);
+
+  const visibleNavItems = navItems.filter(item => {
+    if (item.name === 'KDS' && !isKdsEnabled) { return false; }
+    return true;
+  });
 
   return (
     <aside
@@ -89,7 +109,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* ── Nav Items ─────────────────────────────────────────── */}
       <nav className="flex-1 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
-        {navItems.map((item) => (
+        {visibleNavItems.map((item) => (
           <NavLink
             key={item.name}
             to={item.path}

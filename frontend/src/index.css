@@ -105,6 +105,12 @@
       transform: translateY(-10px);
     }
   }
+
+  @keyframes gradientBg {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
   
   /* Animation utilities */
   .animate-fade-in {
@@ -117,6 +123,11 @@
   
   .animate-bounce-gentle {
     animation: bounceGentle 2s infinite;
+  }
+
+  .animate-gradient-bg {
+    background-size: 200% 200%;
+    animation: gradientBg 15s ease infinite;
   }
   
   /* Focus utilities */

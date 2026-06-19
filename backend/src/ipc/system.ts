@@ -1,4 +1,4 @@
-import { ipcMain, app } from 'electron';
+import { ipcMain, app, dialog } from 'electron';
 import Store from 'electron-store';
 import { getDB, closeDB } from '../db';
 import * as path from 'path';
@@ -61,6 +61,59 @@ export function registerSystemIPC() {
       app.relaunch();
       app.exit(0);
 
+      return { success: true };
+    } catch (e) {
+      return { success: false, error: errMsg(e) };
+    }
+  });
+
+  ipcMain.handle('system:generateRecoveryCode', async () => {
+    try {
+      const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+      
+      const { canceled, filePath } = await dialog.showSaveDialog({
+        title: 'Save Recovery Code',
+        defaultPath: 'kitchen-pos-recovery-code.txt',
+        filters: [{ name: 'Text Files', extensions: ['txt'] }]
+      });
+
+      if (canceled || !filePath) {
+        return { success: false, error: 'Cancelled' };
+      }
+
+      const content = `KITCHEN-POS RECOVERY CODE\n-------------------------\nKeep this code safe. If you forget your PIN, you can use this code to reset the Admin PIN.\n\nRecovery Code: ${code}\n`;
+      fs.writeFileSync(filePath, content, 'utf-8');
+
+      store.set('recovery_code', code);
+
+      return { success: true };
+    } catch (e) {
+      return { success: false, error: errMsg(e) };
+    }
+  });
+
+  ipcMain.handle('system:verifyRecoveryCode', async (_, payload: { code: string }) => {
+    try {
+      const storedCode = store.get('recovery_code') as string | undefined;
+      if (storedCode && storedCode === payload.code.trim().toUpperCase()) {
+        return { success: true };
+      }
+      return { success: false, error: 'Invalid recovery code' };
+    } catch (e) {
+      return { success: false, error: errMsg(e) };
+    }
+  });
+
+  ipcMain.handle('system:resetAdminPin', async (_, payload: { newPin: string; code: string }) => {
+    try {
+      const storedCode = store.get('recovery_code') as string | undefined;
+      if (!storedCode || storedCode !== payload.code.trim().toUpperCase()) {
+        return { success: false, error: 'Invalid recovery code' };
+      }
+
+      const db = getDB();
+      db.prepare('UPDATE staff SET pin = ? WHERE role = "admin"').run(payload.newPin);
+      
       return { success: true };
     } catch (e) {
       return { success: false, error: errMsg(e) };

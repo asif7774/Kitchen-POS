@@ -3,6 +3,7 @@ export interface Table {
   name: string;
   capacity: number;
   section: string;
+  custom_name?: string | null;
   status?: 'available' | 'occupied' | 'bill_requested';
 }
 
@@ -39,12 +40,14 @@ export interface MenuItem {
 
 export interface CartItem {
   id: number;
+  orderItemId?: number;
   name: string;
   price: number;
   qty: number;
   note: string;
   status?: string;
   originalQty?: number;
+  kot_number?: number;
 }
 
 export interface Staff {
@@ -120,6 +123,7 @@ export interface OrderItem {
   kot_printed: number;
   note: string | null;
   preparation_status: 'pending' | 'preparing' | 'ready' | 'served';
+  kot_number?: number;
   prepared_at?: string | null;
   served_at?: string | null;
 }

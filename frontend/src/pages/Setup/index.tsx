@@ -26,14 +26,23 @@ const SetupPage: React.FC = () => {
     try {
       const res = await api.system.completeSetup({ restaurantName, adminName, adminPin });
       if (res.success) {
-        showToast({ message: 'Setup complete! Please login.', variant: 'success' });
-        await checkSetup();
-        navigate('/login', { replace: true });
+        showToast({ message: 'Setup completed successfully', variant: 'success' });
+        
+        // Generate recovery code
+        const codeRes = await api.system.generateRecoveryCode();
+        if (codeRes.success) {
+          showToast({ message: 'Recovery code saved successfully', variant: 'success' });
+        } else {
+          showToast({ message: 'Recovery code not saved. You can generate one later in Settings.', variant: 'warning' });
+        }
+
+        void checkSetup();
+        navigate('/login');
       } else {
-        showToast({ message: res.error ?? 'Failed to complete setup', variant: 'error' });
+        showToast({ message: res.error ?? 'Setup failed', variant: 'error' });
       }
-    } catch (error) {
-      console.error(error);
+    } catch (e) {
+      console.error(e);
       showToast({ message: 'An unexpected error occurred', variant: 'error' });
     } finally {
       setLoading(false);

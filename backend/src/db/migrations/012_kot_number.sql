@@ -1,0 +1,1 @@
+ALTER TABLE order_items ADD COLUMN kot_number INTEGER DEFAULT NULL;

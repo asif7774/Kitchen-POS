@@ -38,4 +38,14 @@ export function registerTablesIPC() {
       return { success: false, error: e.message };
     }
   });
+
+  ipcMain.handle('tables:updateCustomName', async (_, payload: { id: number; customName: string | null }) => {
+    try {
+      const db = getDB();
+      db.prepare('UPDATE tables SET custom_name = ? WHERE id = ?').run(payload.customName, payload.id);
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
+  });
 }

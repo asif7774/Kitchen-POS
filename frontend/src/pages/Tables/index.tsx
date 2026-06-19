@@ -110,7 +110,7 @@ const TablesPage: React.FC = () => {
           return (
             <div key={table.id} onClick={() => { handleTableClick(table.id); }}>
                 <TableStatusCard
-                  name={table.name}
+                  name={table.custom_name ? `${table.name} (${table.custom_name})` : table.name}
                   capacity={table.capacity}
                   status={getTableStatus(table.id)}
                   customerName={order?.customer_name}

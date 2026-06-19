@@ -126,54 +126,29 @@ export function registerOrdersIPC() {
           db.prepare(`UPDATE orders SET status = 'kot_sent', updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(orderId);
         }
 
-        const existingItems = db.prepare(`SELECT * FROM order_items WHERE order_id = ?`).all(orderId) as Array<{ id: number; menu_item_id: number; qty: number; preparation_status: string }>;
-        const existingItemMap = new Map(existingItems.map(item => [item.menu_item_id, item]));
+        // Find max kot_number for this order
+        const maxKotRow = db.prepare('SELECT MAX(kot_number) as max_kot FROM order_items WHERE order_id = ?').get(orderId) as { max_kot: number | null };
+        const nextKotNumber = (maxKotRow.max_kot ?? 0) + 1;
 
         const itemsToPrint: CartItemPayload[] = [];
         for (const item of payload.items) {
-          const existing = existingItemMap.get(item.id);
-          let qtyDelta = item.qty;
-
-          if (existing) {
-            qtyDelta = item.qty - existing.qty;
-            const newStatus = existing.preparation_status === 'served' || existing.preparation_status === 'ready'
-              ? 'pending'
-              : existing.preparation_status;
-            db.prepare(`UPDATE order_items SET qty = ?, note = ?, preparation_status = ? WHERE id = ?`)
-              .run(item.qty, item.note, newStatus, existing.id);
-            existingItemMap.delete(item.id);
-            if (qtyDelta > 0) { itemsToPrint.push({ ...item, qty: qtyDelta }); }
-          } else {
-            const menuDetails = db.prepare(`SELECT id, name, price, cgst_rate, sgst_rate, hsn_code FROM menu_items WHERE id = ?`).get(item.id) as MenuItemRow | undefined;
-            if (menuDetails) {
-              db.prepare(`
-                INSERT INTO order_items (order_id, menu_item_id, name, qty, unit_price, cgst_rate, sgst_rate, hsn_code, note, preparation_status)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
-              `).run(orderId, menuDetails.id, menuDetails.name, item.qty, menuDetails.price, menuDetails.cgst_rate, menuDetails.sgst_rate, menuDetails.hsn_code, item.note);
-              itemsToPrint.push({ ...item });
-            }
+          const menuDetails = db.prepare(`SELECT id, name, price, cgst_rate, sgst_rate, hsn_code FROM menu_items WHERE id = ?`).get(item.id) as MenuItemRow | undefined;
+          if (menuDetails) {
+            db.prepare(`
+              INSERT INTO order_items (order_id, menu_item_id, name, qty, unit_price, cgst_rate, sgst_rate, hsn_code, note, preparation_status, kot_number)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+            `).run(orderId, menuDetails.id, menuDetails.name, item.qty, menuDetails.price, menuDetails.cgst_rate, menuDetails.sgst_rate, menuDetails.hsn_code, item.note, nextKotNumber);
+            itemsToPrint.push({ ...item });
           }
 
-          if (isAutoDebitEnabled && qtyDelta !== 0) {
+          if (isAutoDebitEnabled && item.qty > 0) {
             const recipe = db.prepare('SELECT inventory_item_id, qty_used FROM menu_inventory_map WHERE menu_item_id = ?').all(item.id) as { inventory_item_id: number; qty_used: number }[];
             for (const r of recipe) {
-              const invDelta = -(qtyDelta * r.qty_used);
+              const invDelta = -(item.qty * r.qty_used);
               db.prepare('UPDATE inventory_items SET qty_in_stock = qty_in_stock + ? WHERE id = ?').run(invDelta, r.inventory_item_id);
-              db.prepare('INSERT INTO inventory_log (item_id, type, qty_change, note) VALUES (?, ?, ?, ?)').run(r.inventory_item_id, qtyDelta > 0 ? 'sale' : 'adjustment', invDelta, `Order #${orderId} KOT Update`);
+              db.prepare('INSERT INTO inventory_log (item_id, type, qty_change, note) VALUES (?, ?, ?, ?)').run(r.inventory_item_id, 'sale', invDelta, `Order #${orderId} KOT #${nextKotNumber}`);
             }
           }
-        }
-
-        for (const [, item] of existingItemMap) {
-          if (isAutoDebitEnabled) {
-            const recipe = db.prepare('SELECT inventory_item_id, qty_used FROM menu_inventory_map WHERE menu_item_id = ?').all(item.menu_item_id) as { inventory_item_id: number; qty_used: number }[];
-            for (const r of recipe) {
-              const invDelta = item.qty * r.qty_used;
-              db.prepare('UPDATE inventory_items SET qty_in_stock = qty_in_stock + ? WHERE id = ?').run(invDelta, r.inventory_item_id);
-              db.prepare('INSERT INTO inventory_log (item_id, type, qty_change, note) VALUES (?, ?, ?, ?)').run(r.inventory_item_id, 'adjustment', invDelta, `Order #${orderId} Item Removed`);
-            }
-          }
-          db.prepare('DELETE FROM order_items WHERE id = ?').run(item.id);
         }
 
         return { orderId, itemsToPrint };
@@ -211,10 +186,41 @@ export function registerOrdersIPC() {
         }
 
         db.prepare(`UPDATE orders SET status = 'cancelled', note = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(payload.note ?? '', order.id);
+        const orderRecord = db.prepare('SELECT table_id FROM orders WHERE id = ?').get(order.id) as { table_id: number };
+        if (orderRecord && orderRecord.table_id) {
+          db.prepare('UPDATE tables SET custom_name = NULL WHERE id = ?').run(orderRecord.table_id);
+        }
         return order.id;
       })();
 
       return { success: true, data: result };
+    } catch (e: unknown) {
+      return { success: false, error: errMsg(e) };
+    }
+  });
+
+  ipcMain.handle('orders:cancelOrderItem', async (_, payload: { orderId: number; orderItemId: number; note: string }) => {
+    try {
+      const db = getDB();
+      const isAutoDebitEnabled = store.get('inventory_auto_debit', true) as boolean;
+      
+      db.transaction(() => {
+        const item = db.prepare('SELECT menu_item_id, qty FROM order_items WHERE id = ? AND order_id = ?').get(payload.orderItemId, payload.orderId) as { menu_item_id: number; qty: number } | undefined;
+        if (!item) { throw new Error('Item not found in order'); }
+
+        if (isAutoDebitEnabled) {
+          const recipe = db.prepare('SELECT inventory_item_id, qty_used FROM menu_inventory_map WHERE menu_item_id = ?').all(item.menu_item_id) as { inventory_item_id: number; qty_used: number }[];
+          for (const r of recipe) {
+            const invDelta = item.qty * r.qty_used;
+            db.prepare('UPDATE inventory_items SET qty_in_stock = qty_in_stock + ? WHERE id = ?').run(invDelta, r.inventory_item_id);
+            db.prepare('INSERT INTO inventory_log (item_id, type, qty_change, note) VALUES (?, ?, ?, ?)').run(r.inventory_item_id, 'adjustment', invDelta, `Order #${payload.orderId} Item Voided: ${payload.note}`);
+          }
+        }
+
+        db.prepare('DELETE FROM order_items WHERE id = ?').run(payload.orderItemId);
+      })();
+
+      return { success: true };
     } catch (e: unknown) {
       return { success: false, error: errMsg(e) };
     }

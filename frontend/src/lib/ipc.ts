@@ -71,6 +71,7 @@ const mockApi = {
     }),
     upsert: () => Promise.resolve({ success: true }),
     delete: () => Promise.resolve({ success: true }),
+    updateCustomName: () => Promise.resolve({ success: true }),
   },
   billing: {
     createBill: () => Promise.resolve({ success: true }),
@@ -95,6 +96,7 @@ const mockApi = {
     getAll: () => Promise.resolve({ success: true, data: [] }),
     upsert: () => Promise.resolve({ success: true, data: { id: 2 } }),
     delete: () => Promise.resolve({ success: true }),
+    changePin: () => Promise.resolve({ success: true }),
   },
   shifts: (() => {
     let activeShift: Shift | null = null;
@@ -147,6 +149,9 @@ const mockApi = {
     isSetupComplete: () => Promise.resolve({ success: true, data: true }),
     completeSetup: (_payload: { restaurantName: string; adminName: string; adminPin: string }) => Promise.resolve({ success: true }),
     factoryReset: () => Promise.resolve({ success: true }),
+    generateRecoveryCode: () => Promise.resolve({ success: true }),
+    verifyRecoveryCode: () => Promise.resolve({ success: true }),
+    resetAdminPin: () => Promise.resolve({ success: true }),
   },
   expenses: {
     getAll: () => Promise.resolve({ success: true, data: [] }),
@@ -199,6 +204,7 @@ export const api = (ipcApi ?? mockApi) as {
     getByTable: (payload: { tableId: number }) => Promise<IPCResponse<(Order & { items: OrderItem[] }) | null>>;
     sendKOT: (payload: { tableId: number; items: CartItem[]; staffId?: number; covers?: number; note?: string; customerId?: number; type?: 'dine-in' | 'takeaway' | 'delivery' }) => Promise<IPCResponse<{ orderId: number; itemsToPrint: CartItem[] }>>;
     cancelOrder: (payload: { orderId: number; note?: string }) => Promise<IPCResponse<unknown>>;
+    cancelOrderItem: (payload: { orderId: number; orderItemId: number; note: string }) => Promise<IPCResponse<unknown>>;
     updateCustomer: (payload: { orderId: number; customerId: number }) => Promise<IPCResponse<unknown>>;
   };
   kds: {
@@ -224,6 +230,7 @@ export const api = (ipcApi ?? mockApi) as {
     getAll: () => Promise<IPCResponse<Table[]>>;
     upsert: (payload: Partial<Table>) => Promise<IPCResponse<Table>>;
     delete: (payload: { id: number }) => Promise<IPCResponse<unknown>>;
+    updateCustomName: (payload: { id: number; customName: string | null }) => Promise<IPCResponse<unknown>>;
   };
   billing: {
     createBill: (payload: unknown) => Promise<IPCResponse<unknown>>;
@@ -243,6 +250,7 @@ export const api = (ipcApi ?? mockApi) as {
     getAll: () => Promise<IPCResponse<Staff[]>>;
     upsert: (payload: Partial<Staff>) => Promise<IPCResponse<{ id: number }>>;
     delete: (payload: { id: number }) => Promise<IPCResponse<unknown>>;
+    changePin: (payload: { id: number, currentPin: string, newPin: string }) => Promise<IPCResponse<unknown>>;
   };
   shifts: {
     getActive: () => Promise<IPCResponse<Shift | null>>;
@@ -272,6 +280,9 @@ export const api = (ipcApi ?? mockApi) as {
     isSetupComplete: () => Promise<IPCResponse<boolean>>;
     completeSetup: (payload: { restaurantName: string; adminName: string; adminPin: string }) => Promise<IPCResponse<unknown>>;
     factoryReset: () => Promise<IPCResponse<unknown>>;
+    generateRecoveryCode: () => Promise<IPCResponse<unknown>>;
+    verifyRecoveryCode: (payload: { code: string }) => Promise<IPCResponse<unknown>>;
+    resetAdminPin: (payload: { newPin: string; code: string }) => Promise<IPCResponse<unknown>>;
   };
   expenses: {
     getAll: (payload?: { start?: string, end?: string }) => Promise<IPCResponse<Expense[]>>;

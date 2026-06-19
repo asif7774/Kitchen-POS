@@ -35,6 +35,7 @@ contextBridge.exposeInMainWorld('api', {
     getAll: () => ipcRenderer.invoke('tables:getAll'),
     upsert: (payload: any) => ipcRenderer.invoke('tables:upsert', payload),
     delete: (payload: any) => ipcRenderer.invoke('tables:delete', payload),
+    updateCustomName: (payload: any) => ipcRenderer.invoke('tables:updateCustomName', payload),
   },
   billing: {
     createBill: (payload: any) => ipcRenderer.invoke('billing:createBill', payload),
@@ -101,6 +102,14 @@ contextBridge.exposeInMainWorld('api', {
     getActive: () => ipcRenderer.invoke('businessSession:getActive'),
     start: (payload: { staffId: number; notes?: string }) => ipcRenderer.invoke('businessSession:start', payload),
     close: (payload: { sessionId: number; staffId: number; notes?: string }) => ipcRenderer.invoke('businessSession:close', payload),
+  },
+  system: {
+    isSetupComplete: () => ipcRenderer.invoke('system:isSetupComplete'),
+    completeSetup: (payload: any) => ipcRenderer.invoke('system:completeSetup', payload),
+    factoryReset: () => ipcRenderer.invoke('system:factoryReset'),
+    generateRecoveryCode: () => ipcRenderer.invoke('system:generateRecoveryCode'),
+    verifyRecoveryCode: (payload: any) => ipcRenderer.invoke('system:verifyRecoveryCode', payload),
+    resetAdminPin: (payload: any) => ipcRenderer.invoke('system:resetAdminPin', payload),
   },
   onBackupReminder: (callback: () => void) => {
     ipcRenderer.on('backup:reminderDue', () => { callback(); });

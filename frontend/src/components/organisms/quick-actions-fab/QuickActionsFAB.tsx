@@ -6,8 +6,11 @@ import { useModal } from '../../../hooks/useModal';
 import { SvgIcon } from '../../atoms/svg-sprite-loader';
 import Button from '../../atoms/button/button';
 import { api } from '../../../lib/ipc';
+import { useLocation } from 'react-router-dom';
 
 const QuickActionsFAB: React.FC = () => {
+  const location = useLocation();
+  const isLoginScreen = location.pathname === '/' || location.pathname === '/login';
   const { activeSession, startSession, closeSession } = useBusinessSession();
   const staff = useAuthStore(state => state.staff);
   const { showToast } = useToast();
@@ -168,29 +171,31 @@ const QuickActionsFAB: React.FC = () => {
             )}
           </div>
           
-          <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
-            <span className="font-semibold text-xs text-gray-600 uppercase tracking-wider block mb-2">Data & Backups</span>
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1 text-xs" 
-                onClick={() => { handleExport().catch(console.error); }} 
-                disabled={isExporting || isImporting}
-              >
-                {isExporting ? 'Exporting...' : 'Export'}
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1 text-xs text-blue-600 border-blue-200 hover:bg-blue-50" 
-                onClick={() => { handleImport(); }} 
-                disabled={isExporting || isImporting}
-              >
-                {isImporting ? 'Importing...' : 'Import'}
-              </Button>
+          {isLoginScreen && (
+            <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
+              <span className="font-semibold text-xs text-gray-600 uppercase tracking-wider block mb-2">Data & Backups</span>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1 text-xs" 
+                  onClick={() => { handleExport().catch(console.error); }} 
+                  disabled={isExporting || isImporting}
+                >
+                  {isExporting ? 'Exporting...' : 'Export'}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1 text-xs text-blue-600 border-blue-200 hover:bg-blue-50" 
+                  onClick={() => { handleImport(); }} 
+                  disabled={isExporting || isImporting}
+                >
+                  {isImporting ? 'Importing...' : 'Import'}
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 

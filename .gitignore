@@ -69,3 +69,6 @@ backend/playwright-video/
 
 /dist-electron
 /dist-electron/*
+.ds-sync
+ds-bundle/
+.design-sync/*
