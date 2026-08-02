@@ -49,12 +49,10 @@ const PreferencesCard: React.FC = () => {
         <CardHeader>
           <CardTitle>Inventory Settings</CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center justify-between">
-          <div>
-            <p className="font-medium text-gray-700">Auto-Debit Inventory on KOT</p>
-            <p className="text-sm text-gray-500">Automatically deduct ingredients from stock when an order is sent to the kitchen.</p>
-          </div>
+        <CardContent>
           <Toggle
+            label="Auto-Debit Inventory on KOT"
+            description="Automatically deduct ingredients from stock when an order is sent to the kitchen."
             checked={settings.inventory_auto_debit !== false}
             onChange={(e) => {
               void (async () => {
@@ -117,6 +115,24 @@ const PreferencesCard: React.FC = () => {
             }}
             label="Enable KDS"
             description="Show the Kitchen Display System in the sidebar"
+          />
+          <Toggle
+            checked={settings.is_shift_tracking_enabled !== false}
+            onChange={(e) => { 
+              const is_shift_tracking_enabled = e.target.checked;
+              const newSettings = { ...settings, is_shift_tracking_enabled };
+              setSettings(newSettings);
+              void api.settings.save(newSettings).then(res => {
+                if (res.success) {
+                  showToast({ message: `Shift Tracking ${is_shift_tracking_enabled ? 'enabled' : 'disabled'}`, variant: 'success' });
+                  window.dispatchEvent(new Event('settings-updated'));
+                } else {
+                  showToast({ message: 'Failed to update Shift settings', variant: 'error' });
+                }
+              });
+            }}
+            label="Enable Shift Register"
+            description="Require an open shift to take orders and track till balances"
           />
         </CardContent>
       </Card>

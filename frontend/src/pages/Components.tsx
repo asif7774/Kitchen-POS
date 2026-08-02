@@ -1,4 +1,19 @@
-import { Button, Input, Select, Textarea, Autosearch, Stepper } from 'components/atoms';
+import {
+  Button,
+  Input,
+  Select,
+  Textarea,
+  Autosearch,
+  Stepper,
+  Toggle,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+  BackButton,
+  Logos,
+} from "components/atoms";
 import React from "react";
 import LazyImage from "components/atoms/lazy-image";
 import FeatureCard from "../components/organisms/feature-card/feature-card";
@@ -46,7 +61,7 @@ const Components: React.FC = () => {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-12">
+    <div className="p-8 mx-auto space-y-12">
       <div>
         <h1 className="text-3xl font-bold mb-2 text-gray-900">Components</h1>
         <p className="text-gray-600">
@@ -425,8 +440,16 @@ const Components: React.FC = () => {
             </h3>
             <Input label="Standard Input" placeholder="Enter some text..." />
             <Input label="With Default Value" defaultValue="Pre-filled text" />
-            <Input label="Error State" error="This field is required" placeholder="Error input" />
-            <Input label="Disabled Input" disabled placeholder="Cannot type here" />
+            <Input
+              label="Error State"
+              error="This field is required"
+              placeholder="Error input"
+            />
+            <Input
+              label="Disabled Input"
+              disabled
+              placeholder="Cannot type here"
+            />
           </div>
 
           <div className="space-y-4">
@@ -450,7 +473,7 @@ const Components: React.FC = () => {
               onChange={() => {}}
               onSelectOption={() => {}}
             />
-            
+
             <Autosearch
               label="Autosearch Error State"
               placeholder="Search..."
@@ -492,9 +515,22 @@ const Components: React.FC = () => {
             <h3 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">
               Textareas
             </h3>
-            <Textarea label="Standard Textarea" placeholder="Write a message..." rows={3} />
-            <Textarea label="Error State" error="Message cannot be empty" rows={3} />
-            <Textarea label="Disabled Textarea" disabled placeholder="Not allowed" rows={3} />
+            <Textarea
+              label="Standard Textarea"
+              placeholder="Write a message..."
+              rows={3}
+            />
+            <Textarea
+              label="Error State"
+              error="Message cannot be empty"
+              rows={3}
+            />
+            <Textarea
+              label="Disabled Textarea"
+              disabled
+              placeholder="Not allowed"
+              rows={3}
+            />
           </div>
 
           <div className="space-y-4">
@@ -502,20 +538,64 @@ const Components: React.FC = () => {
               Stepper (Number Input)
             </h3>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Standard Stepper</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Standard Stepper
+              </label>
               <Stepper defaultValue={1} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Triple Digit Width (100)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Triple Digit Width (100)
+              </label>
               <Stepper defaultValue={100} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Disabled Stepper</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Disabled Stepper
+              </label>
               <Stepper value={5} disabled onChange={() => {}} />
             </div>
           </div>
         </div>
       </section>
+      <section>
+        <h2 className="text-2xl font-semibold mb-6 border-b pb-2">Toggle (Switch)</h2>
+        <div className="space-y-4">
+          <Toggle label="Standard Toggle" />
+          <Toggle label="Toggle with Description" description="This toggle includes a helpful description below the label." />
+          <Toggle label="Disabled Toggle" disabled />
+          <Toggle label="Disabled Checked" disabled defaultChecked />
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-semibold mb-6 border-b pb-2">Base Card</h2>
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle>Example Card Title</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-gray-600">This is the content inside the base card component. It supports header, content, and footer sections.</p>
+          </CardContent>
+          <CardFooter className="flex justify-end gap-2">
+            <Button variant="ghost">Cancel</Button>
+            <Button variant="primary">Submit</Button>
+          </CardFooter>
+        </Card>
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-semibold mb-6 border-b pb-2">Back Button</h2>
+        <BackButton to="#" label="Go Back to Previous Page" />
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-semibold mb-6 border-b pb-2">Logos</h2>
+        <div className="flex flex-wrap items-center gap-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+          <Logos.Vite className="h-16 w-16" />
+        </div>
+      </section>
+
     </div>
   );
 };

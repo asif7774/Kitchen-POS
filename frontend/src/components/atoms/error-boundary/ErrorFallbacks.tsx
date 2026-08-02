@@ -32,7 +32,7 @@ export const AppErrorFallback = ({ error, resetErrorBoundary }: ErrorFallbackPro
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <button
           onClick={resetErrorBoundary}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 font-medium"
+          className="px-6 py-3 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 font-medium"
         >
           Try Again
         </button>
@@ -70,7 +70,7 @@ export const PageErrorFallback = ({ error, resetErrorBoundary }: ErrorFallbackPr
       )}
       <button
         onClick={resetErrorBoundary}
-        className="px-5 py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 font-medium"
+        className="px-5 py-2.5 bg-emerald-500 text-white rounded-md hover:bg-emerald-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 font-medium"
       >
         Reload Page
       </button>

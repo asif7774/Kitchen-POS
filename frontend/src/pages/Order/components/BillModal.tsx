@@ -217,7 +217,7 @@ const BillModal = forwardRef<BillModalHandle, Props>(({ orderId, cart, initialCu
           <Button
             variant="secondary"
             onClick={() => { setPayments(prev => [...prev, { method: 'card', amount: 0 }]); }}
-            className="w-full py-2 border-dashed border-2 bg-transparent text-blue-600 hover:bg-blue-50"
+            className="w-full py-2 border-dashed border-2 bg-transparent text-emerald-500 hover:bg-emerald-50"
           >
             + Split Payment
           </Button>

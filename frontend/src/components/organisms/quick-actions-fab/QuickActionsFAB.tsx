@@ -187,7 +187,7 @@ const QuickActionsFAB: React.FC = () => {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex-1 text-xs text-blue-600 border-blue-200 hover:bg-blue-50" 
+                  className="flex-1 text-xs text-emerald-500 border-blue-200 hover:bg-emerald-50" 
                   onClick={() => { handleImport(); }} 
                   disabled={isExporting || isImporting}
                 >

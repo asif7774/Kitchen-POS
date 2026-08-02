@@ -38,14 +38,14 @@ const TablesPage: React.FC = () => {
     
     // Polling to keep tables synced across windows
     const intervalId = setInterval(() => {
-      void fetchOpenOrders();
+      void loadData();
     }, 5000);
 
     return () => { 
       mounted = false; 
       clearInterval(intervalId);
     };
-  }, [fetchOpenOrders]);
+  }, [fetchOpenOrders, loadData]);
 
   const { setHeader } = useHeader();
   const handleAddTable = React.useCallback(() => {
@@ -61,10 +61,25 @@ const TablesPage: React.FC = () => {
     });
   }, [showModal, hideModal, loadData]);
 
+  const getTableStatus = useCallback((tableId: number) => {
+    const order = activeOrders.find(o => o.table_id === tableId);
+    if (!order) {return 'available';}
+    if (order.status === 'billed') {return 'bill_requested';}
+    return 'occupied';
+  }, [activeOrders]);
+
   useEffect(() => {
-    setHeader('Table Management', <Button variant="primary" icon="plus" onClick={handleAddTable}>Add Table</Button>);
-    return () => { setHeader(null, null); };
-  }, [setHeader, handleAddTable]);
+    const occupiedCount = tables.filter(t => {
+      const status = getTableStatus(t.id);
+      return status === 'occupied' || status === 'bill_requested';
+    }).length;
+    setHeader(
+      'Table Management', 
+      <Button variant="primary" icon="plus" onClick={handleAddTable}>Add Table</Button>,
+      `${tables.length} Tables Total • ${occupiedCount} Occupied`
+    );
+    return () => { setHeader(null, null, null); };
+  }, [setHeader, handleAddTable, tables, getTableStatus]);
 
   const handleTableClick = (id: number) => {
     selectTable(id);
@@ -84,20 +99,31 @@ const TablesPage: React.FC = () => {
     });
   };
 
-  const handleDelete = async (id: number) => {
-    const res = await api.tables.delete({ id });
-    if (res.success) {
-      void loadData();
-    } else {
-      console.error('Failed to delete table');
-    }
-  };
-
-  const getTableStatus = (tableId: number) => {
-    const order = activeOrders.find(o => o.table_id === tableId);
-    if (!order) {return 'available';}
-    if (order.status === 'billed') {return 'bill_requested';}
-    return 'occupied';
+  const handleDelete = (table: Table) => {
+    showModal({
+      title: 'Delete Table',
+      content: (
+        <div className="p-4">
+          <p className="text-gray-700">Are you sure you want to delete <strong>{table.name}</strong>?</p>
+          <p className="text-sm text-red-600 mt-2 font-medium">This action cannot be undone.</p>
+        </div>
+      ),
+      actions: (
+        <>
+          <Button variant="outline" onClick={hideModal}>Cancel</Button>
+          <Button variant="danger" onClick={() => {
+            void api.tables.delete({ id: table.id }).then(res => {
+              if (res.success) {
+                void loadData();
+                hideModal();
+              } else {
+                console.error('Failed to delete table');
+              }
+            });
+          }}>Delete</Button>
+        </>
+      )
+    });
   };
 
   return (
@@ -105,7 +131,7 @@ const TablesPage: React.FC = () => {
       <div className="container-responsive p-6">
 
       <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-        {tables.map(table => {
+        {tables.filter(t => t.id !== 0).map(table => {
           const order = activeOrders.find(o => o.table_id === table.id);
           return (
             <div key={table.id} onClick={() => { handleTableClick(table.id); }}>
@@ -116,7 +142,7 @@ const TablesPage: React.FC = () => {
                   customerName={order?.customer_name}
                   createdAt={order?.created_at}
                   onEdit={() => { handleEdit(table); }}
-                  onDelete={() => { void handleDelete(table.id); }}
+                  onDelete={() => { handleDelete(table); }}
                 />
             </div>
           );

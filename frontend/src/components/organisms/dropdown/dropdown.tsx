@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, ReactElement } from "react";
 import { createPortal } from "react-dom";
+import { SvgIcon } from "../../atoms/svg-sprite-loader";
 
 function mergeRefs<T>(...refs: (React.Ref<T> | undefined)[]) {
   return (value: T | null) => {
@@ -18,6 +19,7 @@ export interface DropdownItem {
   label: React.ReactNode;
   onClick: () => void;
   danger?: boolean;
+  icon?: string;
 }
 
 export interface DropdownProps {
@@ -25,6 +27,7 @@ export interface DropdownProps {
   children: ReactElement<React.HTMLProps<HTMLElement>>;
   className?: string;
   align?: "left" | "right";
+  fullWidth?: boolean;
 }
 
 export const Dropdown: React.FC<DropdownProps> = ({
@@ -32,9 +35,10 @@ export const Dropdown: React.FC<DropdownProps> = ({
   children,
   className = "",
   align = "left",
+  fullWidth = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [coords, setCoords] = useState({ top: 0, left: 0 });
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
   const [openUpwards, setOpenUpwards] = useState(false);
   const triggerRef = useRef<HTMLElement | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -63,7 +67,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
     let left = triggerRect.left + scrollX;
     let isUpwards = false;
 
-    if (align === "right") {
+    if (align === "right" && !fullWidth) {
       left = triggerRect.right + scrollX - dropdownRect.width;
     }
 
@@ -74,9 +78,9 @@ export const Dropdown: React.FC<DropdownProps> = ({
       isUpwards = true;
     }
 
-    setCoords({ top, left });
+    setCoords({ top, left, width: triggerRect.width });
     setOpenUpwards(isUpwards);
-  }, [align]);
+  }, [align, fullWidth]);
 
   useEffect(() => {
     if (isOpen) {
@@ -175,6 +179,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
               left: `${coords.left}px`,
               opacity: coords.top === 0 && coords.left === 0 ? 0 : 1, // Hide until positioned
               transformOrigin: openUpwards ? "bottom" : "top",
+              ...(fullWidth ? { width: `${coords.width}px`, minWidth: 'auto' } : {}),
             }}
           >
             {items.map((item, index) => (
@@ -186,7 +191,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
                 role="menuitem"
                 tabIndex={0}
                 className={`
-                w-full text-left px-4 py-3 text-sm font-medium transition-colors outline-none focus-visible:bg-blue-50 focus-visible:text-blue-700
+                w-full text-left flex items-center gap-2.5 px-4 py-3 text-sm font-medium transition-colors outline-none cursor-pointer focus-visible:bg-emerald-50 focus-visible:text-emerald-600
                 ${
                   item.danger
                     ? "text-red-600 hover:bg-red-50 focus-visible:bg-red-50 focus-visible:text-red-700"
@@ -203,7 +208,10 @@ export const Dropdown: React.FC<DropdownProps> = ({
                   handleKeyDown(e, index);
                 }}
               >
-                {item.label}
+                {item.icon && (
+                  <SvgIcon name={item.icon} width="16" height="16" aria-hidden={true} className="shrink-0" />
+                )}
+                <span className="truncate">{item.label}</span>
               </button>
             ))}
           </div>,

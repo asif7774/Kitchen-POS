@@ -1,7 +1,8 @@
-import { Input, Textarea } from '../../../components/atoms';
 import React, { useEffect, useState } from 'react';
+import { Input, Textarea } from '../../../components/atoms';
 import { useAuthStore } from '../../../store/auth';
 import { api } from '../../../lib/ipc';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/molecules/Table';
 
 import { useToast } from '../../../hooks/useToast';
 
@@ -126,36 +127,36 @@ const CloseShiftModal: React.FC<Props> = ({ onSuccess }) => {
 
           {totals && (
             <div className="border border-gray-150 rounded-lg overflow-hidden">
-              <table className="w-full text-left border-collapse text-sm">
-                <thead>
-                  <tr className="bg-gray-50 border-b text-gray-500 font-bold">
-                    <th className="py-2.5 px-3">Payment Method</th>
-                    <th className="py-2.5 px-3 text-right">Amount</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y text-gray-700">
-                  <tr>
-                    <td className="py-2 px-3">Cash Sales</td>
-                    <td className="py-2 px-3 text-right font-mono">₹{totals.cash.toFixed(2)}</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 px-3">Card Sales</td>
-                    <td className="py-2 px-3 text-right font-mono">₹{totals.card.toFixed(2)}</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 px-3">UPI Sales</td>
-                    <td className="py-2 px-3 text-right font-mono">₹{totals.upi.toFixed(2)}</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 px-3">Complimentary</td>
-                    <td className="py-2 px-3 text-right font-mono">₹{totals.complimentary.toFixed(2)}</td>
-                  </tr>
-                  <tr className="bg-gray-50/50 font-bold">
-                    <td className="py-2.5 px-3 text-gray-800">Total Non-Cash</td>
-                    <td className="py-2.5 px-3 text-right text-gray-800 font-mono">₹{totalNonCash.toFixed(2)}</td>
-                  </tr>
-                </tbody>
-              </table>
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50 border-b text-gray-500 font-bold">
+                    <TableHead>Payment Method</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>Cash Sales</TableCell>
+                    <TableCell className="text-right font-mono">₹{totals.cash.toFixed(2)}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Card Sales</TableCell>
+                    <TableCell className="text-right font-mono">₹{totals.card.toFixed(2)}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>UPI Sales</TableCell>
+                    <TableCell className="text-right font-mono">₹{totals.upi.toFixed(2)}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Complimentary</TableCell>
+                    <TableCell className="text-right font-mono">₹{totals.complimentary.toFixed(2)}</TableCell>
+                  </TableRow>
+                  <TableRow className="bg-gray-50/50 font-bold hover:bg-gray-50/50">
+                    <TableCell className="text-gray-800">Total Non-Cash</TableCell>
+                    <TableCell className="text-right text-gray-800 font-mono">₹{totalNonCash.toFixed(2)}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
             </div>
           )}
 

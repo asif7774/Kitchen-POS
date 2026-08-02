@@ -8,6 +8,34 @@ import CloseShiftModal from './CloseShiftModal';
 const ShiftRegisterCard: React.FC = () => {
   const activeShift = useAuthStore(state => state.activeShift);
   const { showModal, hideModal } = useModal();
+  const [isEnabled, setIsEnabled] = React.useState(true);
+
+  React.useEffect(() => {
+    // We can't easily import api at top level if not already imported. Wait, api is imported!
+    void import('../../../lib/ipc').then(m => {
+      void m.api.settings.get().then(res => {
+        if (res.success && res.data) {
+          setIsEnabled((res.data as Record<string, unknown>).is_shift_tracking_enabled !== false);
+        }
+      });
+    });
+    
+    const handleSettingsUpdate = () => {
+      void import('../../../lib/ipc').then(m => {
+        void m.api.settings.get().then(res => {
+          if (res.success && res.data) {
+            setIsEnabled((res.data as Record<string, unknown>).is_shift_tracking_enabled !== false);
+          }
+        });
+      });
+    };
+    window.addEventListener('settings-updated', handleSettingsUpdate);
+    return () => { window.removeEventListener('settings-updated', handleSettingsUpdate); };
+  }, []);
+
+  if (!isEnabled) {
+    return null;
+  }
 
   return (
     <Card>

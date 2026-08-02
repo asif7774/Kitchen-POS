@@ -7,6 +7,7 @@ import { StockAdjustmentModal } from './components/StockAdjustmentModal';
 import { Card } from '../../components/atoms/card';
 import { useModal } from '../../hooks/useModal';
 import { useHeader } from '../../contexts/HeaderContext';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/molecules/Table';
 
 export default function InventoryPage() {
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -145,39 +146,39 @@ export default function InventoryPage() {
   return (
     <div className="container-responsive p-6 mx-auto h-full flex flex-col">
       <Card>
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-500">
-              <th className="py-3 px-4">Item Name</th>
-              <th className="py-3 px-4 text-right">In Stock</th>
-              <th className="py-3 px-4 text-right">Cost/Unit</th>
-              <th className="py-3 px-4 text-center">Status</th>
-              <th className="py-3 px-4 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Item Name</TableHead>
+              <TableHead className="text-right">In Stock</TableHead>
+              <TableHead className="text-right">Cost/Unit</TableHead>
+              <TableHead className="text-center">Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {filteredItems.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="py-8 text-center text-gray-500">
+              <TableRow>
+                <TableCell colSpan={5} className="text-center text-gray-500 py-8">
                   No inventory items found matching your search.
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : (
               filteredItems.map(item => {
                 const isLowStock = item.qty_in_stock <= item.low_stock_alert_at;
                 return (
-                  <tr key={item.id} className="hover:bg-gray-50 transition-colors group">
-                    <td className="py-3 px-4 font-medium text-gray-900">{item.name}</td>
-                    <td className="py-3 px-4 text-right">
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium text-gray-900">{item.name}</TableCell>
+                    <TableCell className="text-right">
                       <span className={`font-semibold ${isLowStock ? 'text-red-600' : 'text-gray-900'}`}>
                         {parseFloat(item.qty_in_stock.toFixed(2))}
                       </span>
                       <span className="text-gray-500 text-sm ml-1">{item.unit}</span>
-                    </td>
-                    <td className="py-3 px-4 text-right text-gray-600">
+                    </TableCell>
+                    <TableCell className="text-right text-gray-600">
                       ₹{item.cost_per_unit.toFixed(2)}
-                    </td>
-                    <td className="py-3 px-4 text-center">
+                    </TableCell>
+                    <TableCell className="text-center">
                       {isLowStock ? (
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
                           Low Stock
@@ -187,9 +188,9 @@ export default function InventoryPage() {
                           Healthy
                         </span>
                       )}
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
                         <Button
                           onClick={() => { handleAdjust(item); }}
                           variant="secondary"
@@ -205,13 +206,13 @@ export default function InventoryPage() {
                           Edit Details
                         </Button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 );
               })
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </Card>
 
 

@@ -60,7 +60,7 @@ const CategoryList: React.FC<Props> = ({ categories, selectedCategoryId, onSelec
             onClick={() => { onSelect(cat.id); }}
             className={`p-3 rounded-lg cursor-pointer flex justify-between items-center transition-colors ${
               selectedCategoryId === cat.id 
-                ? 'bg-blue-50 border-blue-200 border text-blue-800' 
+                ? 'bg-emerald-50 border-blue-200 border text-emerald-800' 
                 : 'hover:bg-gray-100 border border-transparent'
             }`}
           >
@@ -73,7 +73,7 @@ const CategoryList: React.FC<Props> = ({ categories, selectedCategoryId, onSelec
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-8 w-8 text-gray-500 hover:text-blue-600"
+                className="h-8 w-8 text-gray-500 hover:text-emerald-500"
                 onClick={(e) => { e.stopPropagation(); onEdit(cat); }}
               >
                 ✎

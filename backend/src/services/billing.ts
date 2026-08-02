@@ -47,8 +47,8 @@ export function createBill(orderId: number, payments: PaymentPayload[], discount
 
     db.prepare('UPDATE orders SET status = ?, customer_id = ? WHERE id = ?').run('billed', customerId ?? null, orderId);
 
-    const orderRecord = db.prepare('SELECT table_id FROM orders WHERE id = ?').get(orderId) as { table_id: number };
-    if (orderRecord && orderRecord.table_id) {
+    const orderRecord = db.prepare('SELECT table_id FROM orders WHERE id = ?').get(orderId) as { table_id: number } | undefined;
+    if (orderRecord?.table_id) {
       db.prepare('UPDATE tables SET custom_name = NULL WHERE id = ?').run(orderRecord.table_id);
     }
 

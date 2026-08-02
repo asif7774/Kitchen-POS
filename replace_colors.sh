@@ -1,0 +1,2 @@
+#!/bin/bash
+find frontend/src -type f -name "*.tsx" -o -name "*.ts" -o -name "*.css" | xargs sed -i '' -e 's/bg-blue-600/bg-emerald-500/g' -e 's/bg-blue-700/bg-emerald-600/g' -e 's/text-blue-600/text-emerald-500/g' -e 's/text-blue-700/text-emerald-600/g' -e 's/border-blue-600/border-emerald-500/g' -e 's/ring-blue-500/ring-emerald-500/g' -e 's/bg-blue-50/bg-emerald-50/g' -e 's/text-blue-500/text-emerald-500/g' -e 's/bg-blue-100/bg-emerald-100/g' -e 's/text-blue-800/text-emerald-800/g' -e 's/bg-blue-500/bg-emerald-500/g'

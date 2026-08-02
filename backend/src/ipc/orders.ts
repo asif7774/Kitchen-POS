@@ -48,7 +48,7 @@ export function registerOrdersIPC() {
       const db = getDB();
       const businessDate = getActiveBusinessDate(db);
       const info = db.prepare(
-        'INSERT INTO orders (table_id, staff_id, covers, note, customer_id, type, status, business_date) VALUES (?, ?, ?, ?, ?, ?, "open", ?)'
+        `INSERT INTO orders (table_id, staff_id, covers, note, customer_id, type, status, business_date) VALUES (?, ?, ?, ?, ?, ?, 'open', ?)`
       ).run(payload.tableId, payload.staffId ?? null, payload.covers ?? 1, payload.note ?? '', payload.customerId ?? null, payload.type ?? 'dine-in', businessDate);
       return { success: true, data: info.lastInsertRowid };
     } catch (e: unknown) {
@@ -56,7 +56,7 @@ export function registerOrdersIPC() {
     }
   });
 
-  ipcMain.handle('orders:updateCustomer', async (_, payload: { orderId: number; customerId: number }) => {
+  ipcMain.handle('orders:updateCustomer', async (_, payload: { orderId: number; customerId: number | null }) => {
     try {
       const db = getDB();
       db.prepare('UPDATE orders SET customer_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(payload.customerId, payload.orderId);
@@ -186,8 +186,8 @@ export function registerOrdersIPC() {
         }
 
         db.prepare(`UPDATE orders SET status = 'cancelled', note = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(payload.note ?? '', order.id);
-        const orderRecord = db.prepare('SELECT table_id FROM orders WHERE id = ?').get(order.id) as { table_id: number };
-        if (orderRecord && orderRecord.table_id) {
+        const orderRecord = db.prepare('SELECT table_id FROM orders WHERE id = ?').get(order.id) as { table_id: number } | undefined;
+        if (orderRecord?.table_id) {
           db.prepare('UPDATE tables SET custom_name = NULL WHERE id = ?').run(orderRecord.table_id);
         }
         return order.id;

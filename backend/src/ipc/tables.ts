@@ -29,10 +29,10 @@ export function registerTablesIPC() {
     }
   });
 
-  ipcMain.handle('tables:delete', async (_, id: number) => {
+  ipcMain.handle('tables:delete', async (_, payload: { id: number }) => {
     try {
       const db = getDB();
-      db.prepare('DELETE FROM tables WHERE id = ?').run(id);
+      db.prepare('DELETE FROM tables WHERE id = ?').run(payload.id);
       return { success: true };
     } catch (e: any) {
       return { success: false, error: e.message };

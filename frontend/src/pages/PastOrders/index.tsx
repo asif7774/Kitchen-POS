@@ -3,6 +3,9 @@ import { Button } from '../../components/atoms';
 import { api } from '../../lib/ipc';
 import { PastOrderData, PastOrderStats } from '../../types/models';
 import { useHeader } from '../../contexts/HeaderContext';
+import { KPICard } from '../../components/molecules/KPICard';
+import { SvgIcon } from '../../components/atoms/svg-sprite-loader';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/molecules/Table';
 
 type FilterType = 'daily' | 'weekly' | 'monthly' | 'yearly';
 
@@ -45,6 +48,10 @@ const PastOrdersPage: React.FC = () => {
 
   const { setHeader } = useHeader();
   useEffect(() => {
+    const subtitle = stats
+      ? `${stats.totalOrders} Orders Total • Total Revenue: ₹${Math.round(stats.totalRevenue)}`
+      : undefined;
+
     setHeader(
       'Past Orders',
       <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
@@ -55,151 +62,169 @@ const PastOrdersPage: React.FC = () => {
             variant="ghost"
             onClick={() => { 
               if (filter !== f) {
-                setFilter(f);
                 setCurrentPage(1);
+                setFilter(f);
               }
             }}
             className={`capitalize ${
-              filter === f ? 'bg-white shadow text-blue-600 hover:bg-white hover:text-blue-600' : 'text-gray-600 hover:text-gray-900 hover:bg-transparent'
+              filter === f ? 'bg-white shadow text-emerald-500 hover:bg-white hover:text-emerald-500' : 'text-gray-600 hover:text-gray-900 hover:bg-transparent'
             }`}
           >
             {f}
           </Button>
         ))}
-      </div>
+      </div>,
+      subtitle
     );
-    return () => { setHeader(null, null); };
-  }, [filter, setHeader]);
+    return () => { setHeader(null, null, null); };
+  }, [filter, setHeader, stats]);
 
   return (
     <div className="container-responsive p-6">
 
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white p-4 rounded border shadow-sm flex flex-col">
-            <span className="text-sm font-medium text-gray-500 mb-1">Total Revenue</span>
-            <span className="text-2xl font-bold text-gray-900">₹{stats.totalRevenue.toFixed(2)}</span>
-          </div>
-          <div className="bg-white p-4 rounded border shadow-sm flex flex-col">
-            <span className="text-sm font-medium text-gray-500 mb-1">Total Orders</span>
-            <span className="text-2xl font-bold text-gray-900">{stats.totalOrders}</span>
-          </div>
-          <div className="bg-white p-4 rounded border shadow-sm flex flex-col">
-            <span className="text-sm font-medium text-gray-500 mb-1">Average Order Value</span>
-            <span className="text-2xl font-bold text-gray-900">₹{stats.averageOrderValue.toFixed(2)}</span>
-          </div>
+          <KPICard 
+            title="Total Revenue" 
+            value={`₹${Math.round(stats.totalRevenue)}`} 
+            icon={<SvgIcon name="indian-rupee" width={24} height={24} />}
+            colorTheme="blue"
+          />
+          <KPICard 
+            title="Total Orders" 
+            value={stats.totalOrders} 
+            icon={<SvgIcon name="cart" width={24} height={24} />}
+            colorTheme="green"
+          />
+          <KPICard 
+            title="Average Order Value" 
+            value={`₹${Math.round(stats.averageOrderValue)}`} 
+            icon={<SvgIcon name="trend-up" width={24} height={24} />}
+            colorTheme="purple"
+          />
         </div>
       )}
 
       <div className="bg-white border rounded shadow-sm overflow-hidden flex-1 flex flex-col">
-        <div className="overflow-x-auto flex-1">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50 sticky top-0 z-10">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Business Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Occupied Time</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {(() => {
-                if (loading) {
-                  return (
-                    <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center text-gray-500">Loading...</td>
-                    </tr>
-                  );
-                }
-                if (orders.length === 0) {
-                  return (
-                    <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center text-gray-500">No orders found for this period.</td>
-                    </tr>
-                  );
-                }
-                return orders.map((order) => (
-                  <React.Fragment key={order.id}>
-                    <tr className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(`${order.date}Z`).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
-                        {order.business_date ?? '—'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{order.customerName}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {(() => {
-                          const type = order.type ?? 'dine-in';
-                          const typeStyles: Record<string, string> = {
-                            takeaway: 'bg-orange-100 text-orange-800',
-                            delivery: 'bg-purple-100 text-purple-800',
-                            'dine-in': 'bg-green-100 text-green-800',
-                          };
-                          const style = typeStyles[type] ?? typeStyles['dine-in'];
-                          return (
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${style}`}>
-                              {type.toUpperCase()}
-                            </span>
-                          );
-                        })()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">
-                        ₹{order.amount.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-mono text-gray-500">
-                        {formatMsToTime(order.occupiedTimeMs)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => { setExpandedRow(expandedRow === order.id ? null : order.id); }}
-                        >
-                          {expandedRow === order.id ? 'Hide' : 'View'}
-                        </Button>
-                      </td>
-                    </tr>
-                    {expandedRow === order.id && (
-                      <tr className="bg-blue-50/50">
-                        <td colSpan={7} className="px-6 py-4">
-                          <div className="flex justify-between items-start max-w-sm">
-                            <div className="text-sm text-gray-700 space-y-1 flex-1">
-                              <h4 className="font-bold mb-2">Order Items:</h4>
-                              {order.items.map((item, idx) => (
-                                <div key={idx} className="flex justify-between border-b border-blue-100 last:border-0 pb-1 last:pb-0 mr-4">
-                                  <span>{item.name}</span>
-                                  <span className="font-medium">x{item.qty}</span>
-                                </div>
-                              ))}
-                            </div>
-                            <div className="pt-2">
-                              <Button 
-                                variant="secondary" 
-                                size="sm" 
-                                icon="printer" 
-                                onClick={() => { 
-                                  api.reports.printPastBill({ orderId: order.id }).catch(console.error); 
-                                }}
-                              >
-                                Print Bill
-                              </Button>
-                            </div>
+        <Table className="h-full border-0 shadow-none sm:rounded-none">
+          <TableHeader className="sticky top-0 z-10">
+            <TableRow>
+              <TableHead>Business Date</TableHead>
+              <TableHead>Date &amp; Time</TableHead>
+              <TableHead>Customer</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+              <TableHead className="text-center">Occupied Time</TableHead>
+              <TableHead className="text-center">Details</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {(() => {
+              if (loading) {
+                return (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center text-gray-500 py-12">Loading...</TableCell>
+                  </TableRow>
+                );
+              }
+              if (orders.length === 0) {
+                return (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center text-gray-500 py-12">No orders found for this period.</TableCell>
+                  </TableRow>
+                );
+              }
+              return orders.map((order) => (
+                <React.Fragment key={order.id}>
+                  <TableRow>
+                    <TableCell className="text-gray-500 font-mono">
+                      {order.business_date 
+                        ? new Date(`${order.business_date}T12:00:00Z`).toLocaleDateString(undefined, {
+                            year: 'numeric',
+                            month: 'numeric',
+                            day: 'numeric'
+                          })
+                        : '—'}
+                    </TableCell>
+                    <TableCell className="text-gray-500 font-mono">
+                      {new Date(`${order.date}Z`).toLocaleString(undefined, {
+                        year: 'numeric',
+                        month: 'numeric',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm font-medium text-gray-900">{order.customerName}</div>
+                    </TableCell>
+                    <TableCell>
+                      {(() => {
+                        const type = order.type ?? 'dine-in';
+                        const typeStyles: Record<string, string> = {
+                          takeaway: 'bg-orange-100 text-orange-800',
+                          delivery: 'bg-purple-100 text-purple-800',
+                          'dine-in': 'bg-green-100 text-green-800',
+                        };
+                        const style = typeStyles[type] ?? typeStyles['dine-in'];
+                        return (
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${style}`}>
+                            {type.toUpperCase()}
+                          </span>
+                        );
+                      })()}
+                    </TableCell>
+                    <TableCell className="text-right font-bold text-gray-900">
+                      ₹{Math.round(order.amount)}
+                    </TableCell>
+                    <TableCell className="text-center font-mono text-gray-500">
+                      {formatMsToTime(order.occupiedTimeMs)}
+                    </TableCell>
+                    <TableCell className="text-center font-medium">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => { setExpandedRow(expandedRow === order.id ? null : order.id); }}
+                      >
+                        {expandedRow === order.id ? 'Hide' : 'View'}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                  {expandedRow === order.id && (
+                    <TableRow className="bg-emerald-50/50 hover:bg-emerald-50/50">
+                      <TableCell colSpan={7}>
+                        <div className="flex justify-between items-start max-w-sm">
+                          <div className="text-sm text-gray-700 space-y-1 flex-1">
+                            <h4 className="font-bold mb-2">Order Items:</h4>
+                            {order.items.map((item, idx) => (
+                              <div key={idx} className="flex justify-between border-b border-blue-100 last:border-0 pb-1 last:pb-0 mr-4">
+                                <span>{item.name}</span>
+                                <span className="font-medium">x{item.qty}</span>
+                              </div>
+                            ))}
                           </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ));
-              })()}
-            </tbody>
-          </table>
-        </div>
+                          <div className="pt-2">
+                            <Button 
+                              variant="primary" 
+                              size="sm" 
+                              icon="printer" 
+                              onClick={() => { 
+                                api.reports.printPastBill({ orderId: order.id }).catch(console.error); 
+                              }}
+                            >
+                              Print Bill
+                            </Button>
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </React.Fragment>
+              ));
+            })()}
+          </TableBody>
+        </Table>
         
         {/* Pagination Controls */}
         {totalPages > 1 && (

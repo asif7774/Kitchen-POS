@@ -1,16 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-export interface BackupReminderConfig {
-  enabled: boolean;
-  frequency: 'daily' | 'weekly' | 'monthly';
-  time: string;
-  dayOfWeek: number;
-  dayOfMonth: number;
-  lastRemindedDate: string | null;
-}
+import { BackupReminderConfig } from '../types/backup';
 
-export const BACKUP_FILE_PATTERN = /^kitchen-pos-backup-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}\.zip$/;
+export const BACKUP_FILE_PATTERN = /^.*-POS-backup-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}\.zip$/;
 
 export function formatLocalDate(date: Date): string {
   const y = date.getFullYear();

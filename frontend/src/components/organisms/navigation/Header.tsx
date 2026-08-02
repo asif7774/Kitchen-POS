@@ -16,7 +16,9 @@ const getPageName = (pathname: string) => {
   if (pathname.startsWith('/tables')) { return 'Table Management'; }
   if (pathname.startsWith('/settings')) { return 'Settings'; }
   if (pathname.startsWith('/reports')) { return 'Reports'; }
-  if (pathname.startsWith('/order')) { return 'Order Terminal'; }
+  if (pathname.startsWith('/order')) {
+    return pathname === '/order/0' ? 'Take Away' : 'Table Order';
+  }
   if (pathname.startsWith('/expenses')) { return 'Expenses'; }
   if (pathname.startsWith('/kds')) { return 'Kitchen Display System'; }
   if (pathname.startsWith('/components')) { return 'Components'; }
@@ -25,7 +27,7 @@ const getPageName = (pathname: string) => {
 
 const Header: React.FC<HeaderProps> = ({ isSidebarPermanent, onOpenMobileDrawer }) => {
   const location = useLocation();
-  const { title, action } = useHeader();
+  const { title, subtitle, action } = useHeader();
   const pageName = title ?? getPageName(location.pathname);
 
   return (
@@ -38,7 +40,7 @@ const Header: React.FC<HeaderProps> = ({ isSidebarPermanent, onOpenMobileDrawer 
           size="icon"
           onClick={onOpenMobileDrawer}
           aria-label="Open navigation"
-          className="mr-3 text-gray-600 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="mr-3 text-gray-600 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
         >
           <SvgIcon name="menu" width="24" height="24" />
         </Button>
@@ -50,7 +52,12 @@ const Header: React.FC<HeaderProps> = ({ isSidebarPermanent, onOpenMobileDrawer 
           {!isSidebarPermanent && (
             <span className="font-bold text-xl text-gray-800 hidden sm:block mr-2 border-r pr-3 border-gray-300">Kitchen POS</span>
           )}
-          <h1 className="text-xl font-bold text-gray-900">{pageName}</h1>
+          <div className="flex flex-col justify-center h-full">
+            <h1 className="text-xl font-bold text-gray-900 leading-tight">{pageName}</h1>
+            {subtitle && (
+              <p className="text-xs font-medium text-gray-500 mt-0.5 leading-none">{subtitle}</p>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center space-x-4">

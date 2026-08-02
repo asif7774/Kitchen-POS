@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../../components/atoms/card';
-import { Button, Input } from '../../../components/atoms';
+import { Button, Input, SvgIcon } from '../../../components/atoms';
 import { useAuthStore } from '../../../store/auth';
 import { useToast } from '../../../hooks/useToast';
 import { api } from '../../../lib/ipc';
@@ -10,6 +10,8 @@ const SecurityCard: React.FC = () => {
   const { showToast } = useToast();
   const [currentPin, setCurrentPin] = useState('');
   const [newPin, setNewPin] = useState('');
+  const [showCurrentPin, setShowCurrentPin] = useState(false);
+  const [showNewPin, setShowNewPin] = useState(false);
 
   if (!staff) {
     return null;
@@ -24,8 +26,30 @@ const SecurityCard: React.FC = () => {
         <div className="space-y-3">
           <h3 className="text-sm font-semibold text-gray-800">Change My PIN</h3>
           <div className="grid grid-cols-2 gap-4 max-w-sm">
-            <Input type="password" placeholder="Current PIN" value={currentPin} onChange={(e) => { setCurrentPin(e.target.value); }} />
-            <Input type="password" placeholder="New PIN (4 digits)" value={newPin} onChange={(e) => { setNewPin(e.target.value); }} />
+            <Input 
+              type={showCurrentPin ? "text" : "password"} 
+              maxLength={4} 
+              placeholder="Current PIN" 
+              value={currentPin} 
+              onChange={(e) => { setCurrentPin(e.target.value); }}
+              rightElement={
+                <button type="button" onClick={() => { setShowCurrentPin(!showCurrentPin); }} className="text-gray-400 hover:text-gray-600 focus:outline-none">
+                  <SvgIcon name={showCurrentPin ? "eye-off" : "eye"} width="16" height="16" />
+                </button>
+              }
+            />
+            <Input 
+              type={showNewPin ? "text" : "password"} 
+              maxLength={4} 
+              placeholder="New PIN (4 digits)" 
+              value={newPin} 
+              onChange={(e) => { setNewPin(e.target.value); }}
+              rightElement={
+                <button type="button" onClick={() => { setShowNewPin(!showNewPin); }} className="text-gray-400 hover:text-gray-600 focus:outline-none">
+                  <SvgIcon name={showNewPin ? "eye-off" : "eye"} width="16" height="16" />
+                </button>
+              }
+            />
           </div>
           <Button 
             variant="primary" 

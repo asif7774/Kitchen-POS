@@ -6,10 +6,11 @@ import { Card } from '../../components/atoms/card';
 import StaffModal from './components/StaffModal';
 import { useModal } from '../../hooks/useModal';
 import { useHeader } from '../../contexts/HeaderContext';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/molecules/Table';
 
 const roleColors: Record<string, string> = {
   admin: 'bg-purple-100 text-purple-800',
-  manager: 'bg-blue-100 text-blue-800',
+  manager: 'bg-emerald-100 text-emerald-800',
   cashier: 'bg-green-100 text-green-800',
   waiter: 'bg-yellow-100 text-yellow-800',
   chef: 'bg-orange-100 text-orange-800',
@@ -138,56 +139,54 @@ const StaffPage: React.FC = () => {
 
   return (
     <div className="container-responsive p-6 mx-auto h-full flex flex-col">
-      <Card className="flex-1 border-gray-100">
-        <div className="overflow-x-auto flex-1">
-          <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-gray-50 border-b border-gray-100 sticky top-0 z-10">
-              <tr>
-                <th className="px-6 py-4 font-semibold text-gray-600">Name</th>
-                <th className="px-6 py-4 font-semibold text-gray-600">Role</th>
-                <th className="px-6 py-4 font-semibold text-gray-600 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 overflow-y-auto">
-              {filteredStaff.length === 0 ? (
-                <tr>
-                  <td colSpan={3} className="px-6 py-8 text-center text-gray-500">
-                    No staff found matching your search.
-                  </td>
-                </tr>
-              ) : (
-                filteredStaff.map((staff) => (
-                  <tr key={staff.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-gray-800 font-medium">{staff.name}</td>
-                    <td className="px-6 py-4 text-gray-800">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${roleColors[staff.role] || 'bg-gray-100 text-gray-800'}`}>
-                        {staff.role.charAt(0).toUpperCase() + staff.role.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 mr-2"
-                        onClick={() => { openEditModal(staff); }}
-                      >
-                        Edit
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => { handleDelete(staff.id); }}
-                      >
-                        Delete
-                      </Button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+      <Card className="flex-1 border-gray-100 p-0">
+        <Table className="h-full border-0 shadow-none sm:rounded-none">
+          <TableHeader className="sticky top-0 z-10">
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody className="overflow-y-auto">
+            {filteredStaff.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={3} className="text-center text-gray-500 py-8">
+                  No staff found matching your search.
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredStaff.map((staff) => (
+                <TableRow key={staff.id}>
+                  <TableCell className="text-gray-800 font-medium">{staff.name}</TableCell>
+                  <TableCell className="text-gray-800">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${roleColors[staff.role] || 'bg-gray-100 text-gray-800'}`}>
+                      {staff.role.charAt(0).toUpperCase() + staff.role.slice(1)}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-emerald-500 hover:text-emerald-800 hover:bg-emerald-50 mr-2"
+                      onClick={() => { openEditModal(staff); }}
+                    >
+                      Edit
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      onClick={() => { handleDelete(staff.id); }}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </Card>
     </div>
   );

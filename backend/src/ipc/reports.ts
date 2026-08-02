@@ -26,12 +26,14 @@ interface TrendRow {
   revenue_sum: number;
 }
 
+import { getDateConditions, calcTrend } from './utils/date-utils';
+
 function formatHour(hourStr: string): string {
   const hour = parseInt(hourStr, 10);
   if (hour === 0) {return '12 AM';}
   if (hour === 12) {return '12 PM';}
   if (hour > 12) {return `${hour - 12} PM`;}
-  return `${hour} PM`; // Default fallback, but PM for afternoon hours
+  return `${hour} AM`; 
 }
 
 export function registerReportsIPC() {
@@ -40,36 +42,24 @@ export function registerReportsIPC() {
       const db = getDB();
       const filter = payload.filter;
 
-      let dateCondition = '';
-      let trendGroupFormat = '';
+      let { curr: dateCondition, prev: prevDateCondition, format: trendGroupFormat } = getDateConditions(filter);
+      
       const params: any[] = [];
+      const prevParams: any[] = [];
 
-      switch (filter) {
-        case 'daily':
-        case 'today':
-          dateCondition = "date(created_at, 'localtime') = date('now', 'localtime')";
-          trendGroupFormat = "%H"; // Group by hour
-          break;
-        case 'weekly':
-          dateCondition = "date(created_at, 'localtime') >= date('now', '-6 days', 'localtime')";
-          trendGroupFormat = "%Y-%m-%d"; // Group by day
-          break;
-        case 'monthly':
-          dateCondition = "strftime('%Y-%m', created_at, 'localtime') = strftime('%Y-%m', 'now', 'localtime')";
-          trendGroupFormat = "%Y-%m-%d";
-          break;
-        case 'yearly':
-          dateCondition = "strftime('%Y', created_at, 'localtime') = strftime('%Y', 'now', 'localtime')";
-          trendGroupFormat = "%Y-%m"; // Group by month
-          break;
-        case 'custom':
-          dateCondition = "date(created_at, 'localtime') >= date(?) AND date(created_at, 'localtime') <= date(?)";
-          params.push(payload.start, payload.end);
-          trendGroupFormat = "%Y-%m-%d"; // Group by day
-          break;
-        default:
-          dateCondition = "date(created_at, 'localtime') = date('now', 'localtime')";
-          trendGroupFormat = "%H";
+      if (filter === 'custom') {
+        dateCondition = "date(created_at, 'localtime') >= date(?) AND date(created_at, 'localtime') <= date(?)";
+        params.push(payload.start, payload.end);
+        
+        // For custom, prev is not strictly defined, we can just use 0 or try to calculate the duration
+        // For simplicity, let's just use the same length of period shifted backward
+        const start = new Date(payload.start as string);
+        const end = new Date(payload.end as string);
+        const diffTime = Math.abs(end.getTime() - start.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        prevDateCondition = "date(created_at, 'localtime') >= date(?, '-' || ? || ' days') AND date(created_at, 'localtime') < date(?)";
+        prevParams.push(payload.start, diffDays + 1, payload.start);
+        trendGroupFormat = "%Y-%m-%d";
       }
       
       // 1. Get aggregate totals
@@ -83,6 +73,16 @@ export function registerReportsIPC() {
         WHERE ${dateCondition}
       `).get(...params) as AggregateRow | undefined;
 
+      const prevAggregates = db.prepare(`
+        SELECT 
+          COUNT(id) AS total_orders,
+          COALESCE(SUM(total_amount), 0) AS total_revenue,
+          COALESCE(SUM(cgst_amount), 0) AS total_cgst,
+          COALESCE(SUM(sgst_amount), 0) AS total_sgst
+        FROM bills
+        WHERE ${prevDateCondition}
+      `).get(...prevParams) as AggregateRow | undefined;
+
       // 2. Get trend breakdown
       const trendRaw = db.prepare(`
         SELECT 
@@ -95,12 +95,50 @@ export function registerReportsIPC() {
         ORDER BY label ASC
       `).all(...params) as TrendRow[];
 
+      const prevTrendRaw = db.prepare(`
+        SELECT 
+          strftime('${trendGroupFormat}', created_at, 'localtime') AS label,
+          COUNT(id) AS orders_count,
+          COALESCE(SUM(total_amount), 0) AS revenue_sum
+        FROM bills
+        WHERE ${prevDateCondition}
+        GROUP BY label
+        ORDER BY label ASC
+      `).all(...prevParams) as TrendRow[];
+
       const trendData = trendRaw.map(row => ({
         hour: trendGroupFormat === '%H' ? formatHour(row.label) : row.label,
         orders: row.orders_count,
         revenue: row.revenue_sum
       }));
 
+      // Calculate peak hourly revenue trends
+      const currPeakRev = trendRaw.length > 0 ? Math.max(...trendRaw.map(t => t.revenue_sum)) : 0;
+      const prevPeakRev = prevTrendRaw.length > 0 ? Math.max(...prevTrendRaw.map(t => t.revenue_sum)) : 0;
+      const peakHourlyRevenueTrend = calcTrend(currPeakRev, prevPeakRev);
+
+      const currTotalOrders = aggregates?.total_orders ?? 0;
+      const currTotalRevenue = aggregates?.total_revenue ?? 0;
+      const currTotalCGST = aggregates?.total_cgst ?? 0;
+      const currTotalSGST = aggregates?.total_sgst ?? 0;
+      const currAOV = currTotalOrders > 0 ? currTotalRevenue / currTotalOrders : 0;
+
+      const prevTotalOrders = prevAggregates?.total_orders ?? 0;
+      const prevTotalRevenue = prevAggregates?.total_revenue ?? 0;
+      const prevTotalCGST = prevAggregates?.total_cgst ?? 0;
+      const prevTotalSGST = prevAggregates?.total_sgst ?? 0;
+      const prevAOV = prevTotalOrders > 0 ? prevTotalRevenue / prevTotalOrders : 0;
+
+      const trends = {
+        totalOrders: calcTrend(currTotalOrders, prevTotalOrders),
+        totalRevenue: calcTrend(currTotalRevenue, prevTotalRevenue),
+        totalCGST: calcTrend(currTotalCGST, prevTotalCGST),
+        totalSGST: calcTrend(currTotalSGST, prevTotalSGST),
+        averageOrderValue: calcTrend(currAOV, prevAOV),
+        peakHourlyRevenue: peakHourlyRevenueTrend
+      };
+
+      // 3. Get payment methods breakdown
       return {
         success: true,
         data: {
@@ -109,7 +147,8 @@ export function registerReportsIPC() {
           totalRevenue: aggregates?.total_revenue ?? 0,
           totalCGST: aggregates?.total_cgst ?? 0,
           totalSGST: aggregates?.total_sgst ?? 0,
-          hourlyData: trendData
+          hourlyData: trendData,
+          trends
         }
       };
     } catch (e: unknown) {

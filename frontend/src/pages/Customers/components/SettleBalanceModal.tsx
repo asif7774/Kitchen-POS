@@ -44,8 +44,8 @@ const SettleBalanceModal: React.FC<Props> = ({ customer, onSuccess }) => {
 
   return (
     <form id="settle-balance-form" onSubmit={(e) => { void handleSubmit(e); }} className="space-y-4">
-      <div className="bg-blue-50 p-4 rounded-md border border-blue-100 mb-4">
-        <p className="text-sm text-blue-800">
+      <div className="bg-emerald-50 p-4 rounded-md border border-blue-100 mb-4">
+        <p className="text-sm text-emerald-800">
           Current Outstanding Balance: <strong className="text-lg text-red-600">₹{customer.outstanding_balance.toFixed(2)}</strong>
         </p>
       </div>
@@ -76,7 +76,7 @@ const SettleBalanceModal: React.FC<Props> = ({ customer, onSuccess }) => {
               onClick={() => { setMethod(m); }}
               className={`flex-1 py-2 px-4 rounded border capitalize font-medium transition-colors ${
                 method === m 
-                  ? 'bg-blue-50 border-blue-500 text-blue-700' 
+                  ? 'bg-emerald-50 border-blue-500 text-emerald-600' 
                   : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
               }`}
             >

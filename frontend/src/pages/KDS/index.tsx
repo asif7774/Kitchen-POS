@@ -160,10 +160,10 @@ export default function KDSPage() {
               let cardHeaderBg = 'bg-gray-900 border-gray-850';
               let badgeColor = 'bg-gray-800 text-gray-400';
               
-              if (wait.mins >= 20) {
+              if (wait.mins >= 30) {
                 cardHeaderBg = 'bg-red-950/80 border-red-900/50 animate-pulse';
                 badgeColor = 'bg-red-500 text-white font-bold animate-ping';
-              } else if (wait.mins >= 10) {
+              } else if (wait.mins >= 15) {
                 cardHeaderBg = 'bg-amber-950/75 border-amber-900/50';
                 badgeColor = 'bg-amber-500 text-black font-semibold';
               }

@@ -34,8 +34,10 @@ export function useBackupSettings() {
         showToast({ message: `Auto-Backup ${patch.enabled ? 'enabled' : 'disabled'}`, variant: 'success' });
       } else if ('frequency' in patch) {
         showToast({ message: `Auto-Backup frequency set to ${patch.frequency}`, variant: 'success' });
-      } else if ('path' in patch) {
+      } else if (patch.path) {
         showToast({ message: `Auto-Backup path updated`, variant: 'success' });
+      } else {
+        showToast({ message: `Auto-Backup settings saved`, variant: 'success' });
       }
     } catch {
       showToast({ message: 'Failed to save auto-backup settings', variant: 'error' });
@@ -49,8 +51,10 @@ export function useBackupSettings() {
       await api.backup.setAutoBackupConfig({ backupReminder: patch });
       if ('enabled' in patch) {
         showToast({ message: `Backup Reminder ${patch.enabled ? 'enabled' : 'disabled'}`, variant: 'success' });
-      } else if ('frequency' in patch) {
+      } else if (patch.frequency) {
         showToast({ message: `Backup Reminder frequency set to ${patch.frequency}`, variant: 'success' });
+      } else {
+        showToast({ message: 'Backup Reminder settings saved', variant: 'success' });
       }
     } catch {
       showToast({ message: 'Failed to save reminder settings', variant: 'error' });

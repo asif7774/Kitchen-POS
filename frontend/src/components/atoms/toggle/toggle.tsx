@@ -1,26 +1,30 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef } from "react";
 
-export interface ToggleProps extends Omit<React.ComponentProps<"input">, "type" | "className"> {
+export interface ToggleProps extends Omit<
+  React.ComponentProps<"input">,
+  "type" | "className"
+> {
   label?: string;
   description?: string;
   containerClassName?: string;
 }
 
 const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
-  (
-    {
-      label,
-      description,
-      containerClassName = "",
-      disabled,
-      ...rest
-    },
-    ref
-  ) => {
+  ({ label, description, containerClassName = "", disabled, ...rest }, ref) => {
     return (
-      <label className={`relative inline-flex ${description ? "items-start" : "items-center"} gap-3 ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"} ${containerClassName}`}>
-        <div className={`relative block h-8 w-14 shrink-0 rounded-full bg-gray-300 transition-colors [-webkit-tap-highlight-color:transparent] has-[:checked]:bg-blue-600 ${description ? "mt-1" : ""}`}>
-          <input type="checkbox" className="peer sr-only" disabled={disabled} ref={ref} {...rest} />
+      <label
+        className={`relative inline-flex ${description ? "items-start" : "items-center"} gap-3 ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"} ${containerClassName}`}
+      >
+        <div
+          className={`relative block h-8 w-14 shrink-0 rounded-full bg-gray-300 transition-colors [-webkit-tap-highlight-color:transparent] has-[:checked]:bg-brand-gradient ${description ? "mt-1" : ""}`}
+        >
+          <input
+            type="checkbox"
+            className="peer sr-only"
+            disabled={disabled}
+            ref={ref}
+            {...rest}
+          />
           <span className="absolute inset-y-0 start-0 m-1 size-6 rounded-full bg-white transition-[inset-inline-start] peer-checked:start-6 shadow-sm"></span>
         </div>
         {(label ?? description) && (
@@ -39,8 +43,8 @@ const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
         )}
       </label>
     );
-  }
+  },
 );
 
-Toggle.displayName = 'Toggle';
+Toggle.displayName = "Toggle";
 export default Toggle;

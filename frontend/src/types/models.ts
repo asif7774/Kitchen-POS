@@ -187,6 +187,7 @@ export interface Customer {
   total_visits: number;
   credit_limit: number;
   outstanding_balance: number;
+  total_spend?: number;
   created_at: string;
 }
 
@@ -195,6 +196,9 @@ export interface CustomerHistory {
   date: string;
   billNumber: string;
   totalAmount: number;
+  outstandingAmount: number;
+  type: string | null;
+  occupiedTimeMs: number;
   items: { name: string; qty: number }[];
 }
 

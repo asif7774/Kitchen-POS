@@ -14,7 +14,7 @@ export interface KPICardProps {
 }
 
 const themeMap = {
-  blue: { bg: 'bg-blue-50', icon: 'text-blue-600', stroke: '#3b82f6', fill: '#dbeafe' },
+  blue: { bg: 'bg-emerald-50', icon: 'text-emerald-500', stroke: '#3b82f6', fill: '#dbeafe' },
   green: { bg: 'bg-green-50', icon: 'text-green-600', stroke: '#10b981', fill: '#d1fae5' },
   purple: { bg: 'bg-purple-50', icon: 'text-purple-600', stroke: '#8b5cf6', fill: '#ede9fe' },
   orange: { bg: 'bg-orange-50', icon: 'text-orange-600', stroke: '#f97316', fill: '#ffedd5' }
@@ -29,8 +29,8 @@ export const KPICard: React.FC<KPICardProps> = ({
   sparklineData,
   colorTheme = 'blue'
 }) => {
-  const isPositive = trend && trend > 0;
-  const isNegative = trend && trend < 0;
+  const isPositive = trend !== null && trend !== undefined && trend > 0;
+  const isNegative = trend !== null && trend !== undefined && trend < 0;
   
   const formattedData = sparklineData?.map((val, i) => ({ index: i, value: val })) ?? [];
   const theme = themeMap[colorTheme];
@@ -44,7 +44,7 @@ export const KPICard: React.FC<KPICardProps> = ({
       <CardContent className="p-5 relative z-10">
         <div className="flex justify-between items-start mb-4">
           <div>
-            <p className="text-gray-500 text-sm font-bold uppercase tracking-wider">{title}</p>
+            <p className="text-gray-500 text-sm font-bold uppercase tracking-wider truncate">{title}</p>
             <div className="text-2xl font-bold text-gray-900 mb-1">{value}</div>
           </div>
           <div className={`p-3 rounded-full ${theme.bg} ${theme.icon} flex items-center justify-center`}>

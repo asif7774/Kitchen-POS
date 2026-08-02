@@ -15,6 +15,7 @@ const mockApi = {
     getByTable: () => Promise.resolve({ success: true, data: null }),
     sendKOT: () => Promise.resolve({ success: true, data: 1 }),
     cancelOrder: () => Promise.resolve({ success: true }),
+    cancelOrderItem: () => Promise.resolve({ success: true }),
   },
   kds: {
     getActiveTickets: () => Promise.resolve({ success: true, data: [] }),
@@ -122,7 +123,10 @@ const mockApi = {
         totalRevenue: 0,
         totalCGST: 0,
         totalSGST: 0,
-        hourlyData: []
+        hourlyData: [],
+        paymentMethods: [],
+        recentOrders: [],
+        trends: { totalOrders: 0, totalRevenue: 0, totalCGST: 0, totalSGST: 0, averageOrderValue: 0, peakHourlyRevenue: 0 }
       } 
     }),
     gst: () => Promise.resolve({ success: true, data: {} }),
@@ -169,7 +173,7 @@ const mockApi = {
     getHistory: () => Promise.resolve({ success: true, data: [] }),
   },
   dashboard: {
-    getMetrics: () => Promise.resolve({ success: true, data: { metrics: { totalSales: 0, totalOrders: 0, averageOrderValue: 0, totalCustomers: 0, outstandingBalances: 0 }, trendData: [], topItemsData: [] } }),
+    getMetrics: () => Promise.resolve({ success: true, data: { metrics: { totalSales: 0, totalOrders: 0, averageOrderValue: 0, totalCustomers: 0, outstandingBalances: 0 }, trends: { totalSales: 0, totalOrders: 0, averageOrderValue: 0, totalCustomers: 0, outstandingBalances: 0 }, trendData: [], topItemsData: [] } }),
   },
   businessSession: (() => {
     let session: BusinessSession | null = null;
@@ -190,10 +194,10 @@ const mockApi = {
     };
   })(),
   onBackupReminder: (_callback: () => void) => {
-    // mock: no-op
+    return () => {};
   },
   onMenuScheduleTriggered: (_callback: (data: { menuId: number; menuName: string; action: 'enabled' | 'disabled' }) => void) => {
-    // mock implementation does nothing
+    return () => {};
   }
 };
 
@@ -205,7 +209,7 @@ export const api = (ipcApi ?? mockApi) as {
     sendKOT: (payload: { tableId: number; items: CartItem[]; staffId?: number; covers?: number; note?: string; customerId?: number; type?: 'dine-in' | 'takeaway' | 'delivery' }) => Promise<IPCResponse<{ orderId: number; itemsToPrint: CartItem[] }>>;
     cancelOrder: (payload: { orderId: number; note?: string }) => Promise<IPCResponse<unknown>>;
     cancelOrderItem: (payload: { orderId: number; orderItemId: number; note: string }) => Promise<IPCResponse<unknown>>;
-    updateCustomer: (payload: { orderId: number; customerId: number }) => Promise<IPCResponse<unknown>>;
+    updateCustomer: (payload: { orderId: number; customerId: number | null }) => Promise<IPCResponse<unknown>>;
   };
   kds: {
     getActiveTickets: () => Promise<IPCResponse<KDSTicket[]>>;
@@ -259,7 +263,24 @@ export const api = (ipcApi ?? mockApi) as {
     getTotals: (payload: { openedAt: string }) => Promise<IPCResponse<{ cash: number; card: number; upi: number; complimentary: number }>>;
   };
   reports: {
-    daily: (payload: unknown) => Promise<IPCResponse<unknown>>;
+    daily: (payload: unknown) => Promise<IPCResponse<{
+      date: string;
+      totalOrders: number;
+      totalRevenue: number;
+      totalCGST: number;
+      totalSGST: number;
+      hourlyData: { hour: string; orders: number; revenue: number }[];
+      paymentMethods: { method: string; total: number }[];
+      recentOrders: import('../types/models').Order[];
+      trends: {
+        totalOrders: number;
+        totalRevenue: number;
+        totalCGST: number;
+        totalSGST: number;
+        averageOrderValue: number;
+        peakHourlyRevenue: number;
+      };
+    }>>;
     gst: (payload: unknown) => Promise<IPCResponse<unknown>>;
     getPastOrders: (payload: { filter: 'daily' | 'weekly' | 'monthly' | 'yearly'; page: number; limit: number }) => Promise<IPCResponse<{ stats: import('../types/models').PastOrderStats; orders: import('../types/models').PastOrderData[]; totalPages: number; currentPage: number }>>;
     printPastBill: (payload: { orderId: number }) => Promise<IPCResponse<unknown>>;
@@ -308,7 +329,14 @@ export const api = (ipcApi ?? mockApi) as {
         totalCustomers: number;
         outstandingBalances: number;
       };
-      trendData: { label: string; sales: number }[];
+      trends: {
+        totalSales: number | null;
+        totalOrders: number | null;
+        averageOrderValue: number | null;
+        totalCustomers: number | null;
+        outstandingBalances: number | null;
+      };
+      trendData: { label: string; sales: number; orders: number; customers: number }[];
       topItemsData: { name: string; quantity: number }[];
     }>>;
   };
@@ -317,6 +345,6 @@ export const api = (ipcApi ?? mockApi) as {
     start: (payload: { staffId: number; notes?: string }) => Promise<IPCResponse<BusinessSession>>;
     close: (payload: { sessionId: number; staffId: number; notes?: string }) => Promise<IPCResponse<unknown>>;
   };
-  onBackupReminder: (callback: () => void) => void;
-  onMenuScheduleTriggered: (callback: (data: { menuId: number; menuName: string; action: 'enabled' | 'disabled' }) => void) => void;
+  onBackupReminder: (callback: () => void) => () => void;
+  onMenuScheduleTriggered: (callback: (data: { menuId: number; menuName: string; action: 'enabled' | 'disabled' }) => void) => () => void;
 };

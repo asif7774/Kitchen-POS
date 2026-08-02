@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Loading Restaurant POS...</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-app-region: drag;
+    }
+    .logo {
+      width: 96px;
+      height: 96px;
+      margin-bottom: 24px;
+      border-radius: 20%;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(59, 130, 246, 0.1);
+      border-radius: 50%;
+      border-top-color: #3b82f6; /* Blue 500 */
+      animation: spin 1s ease-in-out infinite;
+      margin-bottom: 24px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1f2937; /* Gray 800 */
+      margin: 0;
+      letter-spacing: -0.025em;
+    }
+    p {
+      font-size: 0.875rem;
+      color: #6b7280; /* Gray 500 */
+      margin-top: 8px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <img src="icon.png" alt="Logo" class="logo" />
+  <div class="spinner"></div>
+  <h1>Kitchen POS</h1>
+  <p>Starting up system...</p>
+</body>
+</html>

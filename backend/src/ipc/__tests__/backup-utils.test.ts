@@ -7,14 +7,14 @@ import {
   checkShouldFireReminder,
   formatLocalDate,
   BACKUP_FILE_PATTERN,
-  type BackupReminderConfig,
 } from '../backup-utils';
+import { BackupReminderConfig } from '../../types/backup';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 function backupName(ts: string): string {
-  // e.g. "2024-01-15T10-30-00" → "kitchen-pos-backup-2024-01-15T10-30-00.db"
-  return `kitchen-pos-backup-${ts}.db`;
+  // e.g. "2024-01-15-10-30" → "Kitchen-POS-backup-2024-01-15-10-30.zip"
+  return `Kitchen-POS-backup-${ts}.zip`;
 }
 
 function makeBackupFile(dir: string, ts: string, mtimeOffset = 0): string {
@@ -57,8 +57,8 @@ describe('pruneOldBackups', () => {
   });
 
   it('keeps all files when count is under the limit', () => {
-    makeBackupFile(tmpDir, '2024-01-01T10-00-00');
-    makeBackupFile(tmpDir, '2024-01-02T10-00-00');
+    makeBackupFile(tmpDir, '2024-01-01-10-00');
+    makeBackupFile(tmpDir, '2024-01-02-10-00');
 
     pruneOldBackups(tmpDir, 7);
 
@@ -67,7 +67,7 @@ describe('pruneOldBackups', () => {
 
   it('keeps exactly keepCount files when count equals the limit', () => {
     for (let i = 1; i <= 7; i++) {
-      makeBackupFile(tmpDir, `2024-01-${String(i).padStart(2, '0')}T10-00-00`, i * 1000);
+      makeBackupFile(tmpDir, `2024-01-${String(i).padStart(2, '0')}-10-00`, i * 1000);
     }
 
     pruneOldBackups(tmpDir, 7);
@@ -78,7 +78,7 @@ describe('pruneOldBackups', () => {
   it('deletes the oldest files when over the limit', () => {
     // 10 files, oldest first by mtime offset (higher offset = older)
     for (let i = 1; i <= 10; i++) {
-      makeBackupFile(tmpDir, `2024-01-${String(i).padStart(2, '0')}T10-00-00`, (11 - i) * 1000);
+      makeBackupFile(tmpDir, `2024-01-${String(i).padStart(2, '0')}-10-00`, (11 - i) * 1000);
     }
 
     pruneOldBackups(tmpDir, 7);
@@ -86,14 +86,14 @@ describe('pruneOldBackups', () => {
     const remaining = listBackups(tmpDir);
     expect(remaining).toHaveLength(7);
     // Newest 7 by mtime should survive (days 4–10, since day 1 is oldest)
-    expect(remaining).toContain(backupName('2024-01-10T10-00-00'));
-    expect(remaining).not.toContain(backupName('2024-01-01T10-00-00'));
-    expect(remaining).not.toContain(backupName('2024-01-02T10-00-00'));
-    expect(remaining).not.toContain(backupName('2024-01-03T10-00-00'));
+    expect(remaining).toContain(backupName('2024-01-10-10-00'));
+    expect(remaining).not.toContain(backupName('2024-01-01-10-00'));
+    expect(remaining).not.toContain(backupName('2024-01-02-10-00'));
+    expect(remaining).not.toContain(backupName('2024-01-03-10-00'));
   });
 
   it('does not delete files that do not match the backup pattern', () => {
-    makeBackupFile(tmpDir, '2024-01-01T10-00-00');
+    makeBackupFile(tmpDir, '2024-01-01-10-00');
     // Unrelated files — not matching pattern
     fs.writeFileSync(path.join(tmpDir, 'other.db'), '');
     fs.writeFileSync(path.join(tmpDir, 'notes.txt'), '');
@@ -114,9 +114,9 @@ describe('pruneOldBackups', () => {
   });
 
   it('deletes no files when keepCount is larger than file count', () => {
-    makeBackupFile(tmpDir, '2024-01-01T10-00-00');
-    makeBackupFile(tmpDir, '2024-01-02T10-00-00');
-    makeBackupFile(tmpDir, '2024-01-03T10-00-00');
+    makeBackupFile(tmpDir, '2024-01-01-10-00');
+    makeBackupFile(tmpDir, '2024-01-02-10-00');
+    makeBackupFile(tmpDir, '2024-01-03-10-00');
 
     pruneOldBackups(tmpDir, 100);
 

@@ -11,7 +11,7 @@ const variantStyles = {
   success: "bg-green-50 border-green-200 text-green-800",
   error: "bg-red-50 border-red-200 text-red-800",
   warning: "bg-yellow-50 border-yellow-200 text-yellow-800",
-  info: "bg-blue-50 border-blue-200 text-blue-800",
+  info: "bg-emerald-50 border-blue-200 text-emerald-800",
 };
 
 const iconNames = {
@@ -25,7 +25,7 @@ const iconColors = {
   success: "text-green-500",
   error: "text-red-500",
   warning: "text-yellow-500",
-  info: "text-blue-500",
+  info: "text-emerald-500",
 };
 
 export const Toast: React.FC<ToastProps> = ({ toast }) => {
@@ -53,7 +53,7 @@ export const Toast: React.FC<ToastProps> = ({ toast }) => {
 
   return (
     <div
-      className={`pointer-events-auto flex w-full max-w-sm rounded-lg shadow-lg border p-4 transition-all duration-300 transform ${
+      className={`pointer-events-auto flex w-full max-w-sm rounded-lg shadow-lg border p-4 transition-all duration-300 transform z-[9999] ${
         isClosing
           ? "opacity-0 translate-x-full scale-95"
           : "opacity-100 translate-x-0 scale-100"
