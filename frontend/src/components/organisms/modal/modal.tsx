@@ -12,71 +12,55 @@ const sizeClasses = {
   md: "max-w-md",
   lg: "max-w-lg",
   xl: "max-w-xl",
+  "2xl": "max-w-2xl",
+  "3xl": "max-w-3xl",
+  "4xl": "max-w-4xl",
+  "5xl": "max-w-5xl",
   full: "max-w-full m-4",
 };
 
 export const Modal: React.FC<ModalProps> = ({ modal }) => {
   const { hideModal } = useModal();
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const dialog = dialogRef.current;
-    if (dialog && !dialog.open) {
-      dialog.showModal();
-    }
-
-    // Add event listener for close event (when user hits Esc or custom logic triggers close)
-    const handleClose = () => {
-      hideModal();
-    };
-
-    if (dialog) {
-      dialog.addEventListener("close", handleClose);
-      if (
-        !(
-          "closedBy" in
-          (HTMLDialogElement.prototype as unknown as Record<string, unknown>)
-        )
-      ) {
-        dialog.addEventListener("click", (event) => {
-          if (event.target !== dialog) {
-            return;
-          }
-          const rect = dialog.getBoundingClientRect();
-          const isDialogContent =
-            rect.top <= event.clientY &&
-            event.clientY <= rect.top + rect.height &&
-            rect.left <= event.clientX &&
-            event.clientX <= rect.left + rect.width;
-          if (isDialogContent) {
-            return;
-          }
-          dialog.close();
-        });
-      }
-    }
-
-    return () => {
-      if (dialog) {
-        dialog.removeEventListener("close", handleClose);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        hideModal();
       }
     };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [hideModal]);
 
-  const handleManualClose = () => {
-    if (dialogRef.current) {
-      dialogRef.current.close();
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget && !modal.hideCloseButton) {
+      hideModal();
     }
   };
 
+  const handleManualClose = () => {
+    hideModal();
+  };
+
   return (
-    <dialog
-      ref={dialogRef}
-      {...{ closedby: "any" }}
+    <div
       aria-labelledby={modal.title ? "modal-title" : undefined}
-      className={`m-auto fixed inset-0 backdrop:bg-black/50 backdrop:backdrop-blur-sm p-0 rounded-xl shadow-2xl bg-white w-full ${sizeClasses[modal.size ?? "md"]} outline-none transition-all`}
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
     >
-      <div className="flex flex-col max-h-[90vh]">
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={handleBackdropClick}
+      />
+      
+      {/* Modal Dialog */}
+      <div
+        ref={contentRef}
+        className={`relative flex flex-col bg-white rounded-xl shadow-2xl w-full ${sizeClasses[modal.size ?? "md"]} max-h-[90vh] outline-none`}
+      >
         {/* Header */}
         {(Boolean(modal.title) || !modal.hideCloseButton) && (
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
@@ -113,11 +97,11 @@ export const Modal: React.FC<ModalProps> = ({ modal }) => {
 
         {/* Actions/Footer */}
         {modal.actions && (
-          <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-end space-x-3 rounded-b-xl">
+          <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-end space-x-3 rounded-b-xl shrink-0">
             {modal.actions}
           </div>
         )}
       </div>
-    </dialog>
+    </div>
   );
 };

@@ -37,7 +37,7 @@ const StaffModal: React.FC<Omit<StaffModalProps, 'onClose'>> = ({ onSave, initia
   };
 
   return (
-    <form id="staff-form" onSubmit={handleSubmit} className="space-y-4">
+    <form id="staff-form" onSubmit={handleSubmit} className="space-y-4 pb-48">
       <Input 
         label="Name"
         value={name}

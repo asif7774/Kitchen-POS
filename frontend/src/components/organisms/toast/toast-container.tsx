@@ -9,7 +9,7 @@ export const ToastContainer: React.FC = () => {
   return (
     <div
       aria-live="polite"
-      className="fixed inset-0 flex px-4 py-6 pointer-events-none sm:p-6 sm:items-start z-[9999] justify-end"
+      className="fixed inset-0 flex px-4 py-6 pointer-events-none sm:p-6 sm:items-start z-[99999] justify-end"
     >
       <div className="w-full flex flex-col items-end space-y-4">
         {toasts.map((toast) => (

@@ -5,6 +5,7 @@ import { Staff } from '../../types/models';
 import { Card } from '../../components/atoms/card';
 import StaffModal from './components/StaffModal';
 import { useModal } from '../../hooks/useModal';
+import { useToast } from '../../hooks/useToast';
 import { useHeader } from '../../contexts/HeaderContext';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/molecules/Table';
 
@@ -21,6 +22,7 @@ const StaffPage: React.FC = () => {
   const [staffList, setStaffList] = useState<Staff[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const { showModal, hideModal } = useModal();
+  const { showToast } = useToast();
 
   const fetchStaff = useCallback(() => {
     void api.staff.getAll().then(res => {
@@ -39,10 +41,12 @@ const StaffPage: React.FC = () => {
     if (res.success) {
       hideModal();
       fetchStaff();
+      showToast({ message: 'Staff saved successfully', variant: 'success' });
     } else {
       console.error('Failed to save staff:', res.error);
+      showToast({ message: res.error ?? 'Failed to save staff', variant: 'error' });
     }
-  }, [hideModal, fetchStaff]);
+  }, [hideModal, fetchStaff, showToast]);
 
   const handleDelete = (id: number) => {
     showModal({

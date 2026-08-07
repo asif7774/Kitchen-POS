@@ -4,6 +4,7 @@ import SecurityCard from './components/SecurityCard';
 import PreferencesCard from './components/PreferencesCard';
 import SystemCard from './components/SystemCard';
 import ShiftRegisterCard from './components/ShiftRegisterCard';
+import DangerZoneCard from './components/DangerZoneCard';
 
 const SettingsPage: React.FC = () => {
   return (
@@ -14,6 +15,7 @@ const SettingsPage: React.FC = () => {
         <SecurityCard />
         <PreferencesCard />
         <ShiftRegisterCard />
+        <DangerZoneCard />
       </div>
     </div>
   );

@@ -65,6 +65,20 @@ const QuickActionsFAB: React.FC = () => {
   const handleClose = async () => {
     if (!activeSession || !staff) { return; }
     setLoading(true);
+
+    try {
+      const openOrdersRes = await api.orders.getOpen();
+      // Ensure data is treated as an array and check its length safely
+      const openOrders = openOrdersRes.data as unknown[];
+      if (openOrdersRes.success && Array.isArray(openOrders) && openOrders.length > 0) {
+        setLoading(false);
+        showToast({ message: 'Cannot close business day while there are open orders or occupied tables.', variant: 'warning' });
+        return;
+      }
+    } catch (e) {
+      console.error('Failed to check open orders', e);
+    }
+
     const { ok, error } = await closeSession(activeSession.id, staff.id);
     setLoading(false);
     if (ok) {

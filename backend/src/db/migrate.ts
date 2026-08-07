@@ -29,6 +29,8 @@ export function runMigrations() {
   const getApplied = db.prepare('SELECT filename FROM _migrations').all() as { filename: string }[];
   const appliedFiles = new Set(getApplied.map(r => r.filename));
 
+  db.pragma('foreign_keys = OFF');
+
   for (const file of files) {
     if (!appliedFiles.has(file)) {
       const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
@@ -39,4 +41,6 @@ export function runMigrations() {
       console.log(`Applied migration: ${file}`);
     }
   }
+
+  db.pragma('foreign_keys = ON');
 }

@@ -89,13 +89,13 @@ export async function printKOT(items: KOTPrintItem[], tableName: string, orderNo
       <style>
         @page { margin: 0; }
         body { 
-          font-family: 'Courier New', monospace; font-size: 14px; font-weight: bold; color: black; line-height: 1.3; 
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; font-weight: bold; color: black; line-height: 1.3; 
           margin: 0; padding: 20px; background: #e5e7eb; display: flex; justify-content: center; min-height: 100vh; box-sizing: border-box; 
         }
         .receipt { width: 300px; background: #fff; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         @media print {
           body { padding: 0; background: #fff; display: block; min-height: auto; }
-          .receipt { width: 100%; padding: 0; box-shadow: none; margin: 0; max-width: none; }
+          .receipt { width: 100%; padding: 0 10px; box-shadow: none; margin: 0; max-width: none; box-sizing: border-box; }
         }
         .text-center { text-align: center; }
         .fw-bold { font-weight: bold; }
@@ -132,13 +132,13 @@ export async function printBill(bill: BillPrintPayload, orderItems: BillItemPrin
         <style>
           @page { margin: 0; }
           body { 
-            font-family: 'Courier New', monospace; font-size: 13px; font-weight: bold; color: black; line-height: 1.3; 
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 13px; font-weight: bold; color: black; line-height: 1.3; 
             margin: 0; padding: 20px; background: #e5e7eb; display: flex; justify-content: center; min-height: 100vh; box-sizing: border-box; 
           }
           .receipt { width: 300px; background: #fff; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
           @media print {
             body { padding: 0; background: #fff; display: block; min-height: auto; }
-            .receipt { width: 100%; padding: 0; box-shadow: none; margin: 0; max-width: none; }
+            .receipt { width: 100%; padding: 0 10px; box-shadow: none; margin: 0; max-width: none; box-sizing: border-box; }
           }
           .text-center { text-align: center; }
           .text-right { text-align: right; }
@@ -156,7 +156,7 @@ export async function printBill(bill: BillPrintPayload, orderItems: BillItemPrin
       <div class="receipt">
         <div class="text-center fw-bold fs-large">${settings.outlet_name ?? 'Restaurant POS'}</div>
         ${settings.address ? `<div class="text-center">${settings.address}</div>` : ''}
-        <div class="text-center">GSTIN: ${settings.gstin ?? 'N/A'}</div>
+        ${settings.gstin?.trim() ? `<div class="text-center">GSTIN: ${settings.gstin}</div>` : ''}
         <div class="divider"></div>
         <div>Bill: ${bill.bill_number}</div>
         <div>Date: ${bill.date ? new Date(`${bill.date}Z`).toLocaleString() : new Date().toLocaleString()}</div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../../components/atoms/card';
-import { Toggle } from '../../../components/atoms';
+import { Toggle, Button } from '../../../components/atoms';
 import { useToast } from '../../../hooks/useToast';
 import { api } from '../../../lib/ipc';
 
@@ -9,6 +9,19 @@ const PreferencesCard: React.FC = () => {
   const [settings, setSettings] = useState<Record<string, unknown>>({});
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    // Dark mode and notifications are local state for now, but we save other settings
+    const res = await api.settings.save(settings);
+    setIsSaving(false);
+    if (res.success) {
+      showToast({ message: 'General settings saved successfully', variant: 'success' });
+    } else {
+      showToast({ message: 'Failed to save settings', variant: 'error' });
+    }
+  };
 
   useEffect(() => {
     void api.settings.get().then(res => {
@@ -20,36 +33,14 @@ const PreferencesCard: React.FC = () => {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle>Taxes & Billing</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Toggle
-            checked={settings.is_gst_enabled !== false}
-            onChange={(e) => { 
-              const is_gst_enabled = e.target.checked;
-              const newSettings = { ...settings, is_gst_enabled };
-              setSettings(newSettings);
-              void api.settings.save(newSettings).then((res) => {
-                if (res.success) {
-                  showToast({ message: `GST / SGST ${is_gst_enabled ? 'enabled' : 'disabled'}`, variant: 'success' });
-                } else {
-                  showToast({ message: 'Failed to update GST settings', variant: 'error' });
-                }
-              });
-            }}
-            label="Enable GST / SGST"
-            description="Calculate and show CGST and SGST on bills"
-          />
-        </CardContent>
-      </Card>
+
+
 
       <Card>
         <CardHeader>
-          <CardTitle>Inventory Settings</CardTitle>
+          <CardTitle>General Settings</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <Toggle
             label="Auto-Debit Inventory on KOT"
             description="Automatically deduct ingredients from stock when an order is sent to the kitchen."
@@ -72,14 +63,6 @@ const PreferencesCard: React.FC = () => {
               })();
             }}
           />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>General Settings</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
           <Toggle
             checked={notificationsEnabled}
             onChange={(e) => { 
@@ -134,6 +117,11 @@ const PreferencesCard: React.FC = () => {
             label="Enable Shift Register"
             description="Require an open shift to take orders and track till balances"
           />
+          <div className="pt-2 border-t border-gray-100">
+            <Button variant="primary" onClick={() => { void handleSave(); }} disabled={isSaving}>
+              {isSaving ? 'Saving...' : 'Save Settings'}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </>

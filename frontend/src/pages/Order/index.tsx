@@ -281,7 +281,7 @@ const OrderPage: React.FC = () => {
                   }}
                 />
               ),
-              size: "xl",
+              size: "5xl",
               actions: (
                 <>
                   <Button variant="outline" onClick={hideModal}>

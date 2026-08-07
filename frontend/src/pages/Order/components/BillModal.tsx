@@ -30,10 +30,16 @@ const BillModal = forwardRef<BillModalHandle, Props>(({ orderId, cart, initialCu
   const [payments, setPayments] = useState<{ method: string; amount: number }[]>([]);
   const [isGstEnabled, setIsGstEnabled] = useState(true);
 
+  const [settings, setSettings] = useState<Record<string, unknown>>({});
+
   useEffect(() => {
     void api.settings.get().then(res => {
-      if (res.success && res.data && typeof (res.data as Record<string, unknown>).is_gst_enabled === 'boolean') {
-        setIsGstEnabled((res.data as Record<string, unknown>).is_gst_enabled as boolean);
+      if (res.success && res.data) {
+        const data = res.data as Record<string, unknown>;
+        setSettings(data);
+        if (typeof data.is_gst_enabled === 'boolean') {
+          setIsGstEnabled(data.is_gst_enabled);
+        }
       }
     });
   }, []);
@@ -78,7 +84,7 @@ const BillModal = forwardRef<BillModalHandle, Props>(({ orderId, cart, initialCu
       if (res.success) {
         if (shouldPrint) {
           const mappedItems = cart.map(i => ({ name: i.name, qty: i.qty, unit_price: i.price }));
-          const printRes = await api.print.bill({ bill: res.data, orderItems: mappedItems, settings: {} });
+          const printRes = await api.print.bill({ bill: res.data, orderItems: mappedItems, settings });
           if (!printRes.success) {
             showToast({ message: `Failed to print bill: ${printRes.error}`, variant: 'error' });
           }
@@ -103,6 +109,9 @@ const BillModal = forwardRef<BillModalHandle, Props>(({ orderId, cart, initialCu
     <div className="flex-1 overflow-auto p-6 flex flex-col md:flex-row gap-8">
       {/* Left Side - Itemized Breakdown */}
       <div className="flex-1">
+        {settings.outlet_name && (
+          <h2 className="text-xl font-bold text-gray-800 text-center mb-4">{String(settings.outlet_name)}</h2>
+        )}
         <h3 className="font-bold text-gray-700 border-b pb-2 mb-4">Itemised Breakdown</h3>
         <div className="space-y-3 mb-6">
           {cart.map(item => {
@@ -175,7 +184,7 @@ const BillModal = forwardRef<BillModalHandle, Props>(({ orderId, cart, initialCu
       </div>
 
       {/* Right Side - Payment Split */}
-      <div className="w-full md:w-64 bg-gray-50 p-4 rounded border flex flex-col h-[calc(100vh-12rem)] overflow-y-auto">
+      <div className="w-full md:w-96 bg-gray-50 p-4 rounded border flex flex-col h-[calc(100vh-12rem)] overflow-y-auto">
         <div className="mb-6 relative">
           <h3 className="font-bold text-gray-700 mb-2 border-b pb-2">Customer</h3>
           <CustomerSelect selectedCustomer={selectedCustomer} onSelect={setSelectedCustomer} />
@@ -184,11 +193,8 @@ const BillModal = forwardRef<BillModalHandle, Props>(({ orderId, cart, initialCu
         <h3 className="font-bold text-gray-700 border-b pb-2 mb-4">Payments</h3>
         <div className="space-y-3">
           {payments.map((p, i) => (
-            <div key={i} className="flex flex-col gap-2 relative border p-2 rounded bg-white">
-              {payments.length > 1 && (
-                <Button size="icon" variant="ghost" onClick={() => { setPayments(prev => prev.filter((_, idx) => idx !== i)); }} className="absolute top-1 right-1 text-red-500 h-6 w-6">✕</Button>
-              )}
-              <div className="flex gap-2">
+            <div key={i} className="flex flex-col gap-2 border p-2 rounded bg-white">
+              <div className="flex gap-2 items-start">
                 <div className="flex-1">
                   <Select value={p.method} onChange={(e) => { handlePaymentChange(i, 'method', e.target.value); }}>
                     <option value="cash">Cash</option>
@@ -211,6 +217,9 @@ const BillModal = forwardRef<BillModalHandle, Props>(({ orderId, cart, initialCu
                     <p className="text-[10px] text-gray-500 mt-1 leading-tight">Use a negative number to log an advance/change due.</p>
                   )}
                 </div>
+                {payments.length > 1 && (
+                  <Button size="icon" variant="ghost" onClick={() => { setPayments(prev => prev.filter((_, idx) => idx !== i)); }} className="text-red-500 h-10 w-8 shrink-0">✕</Button>
+                )}
               </div>
             </div>
           ))}
