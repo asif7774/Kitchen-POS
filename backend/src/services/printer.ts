@@ -30,6 +30,10 @@ interface OutletSettings {
 
 const hiddenWindows = new Set<BrowserWindow>();
 
+function esc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 async function printHtml(htmlContent: string): Promise<void> {
   return new Promise((resolve, _reject) => {
     const win = new BrowserWindow({
@@ -62,7 +66,7 @@ async function printHtml(htmlContent: string): Promise<void> {
         silent: false, 
         printBackground: true,
         color: false,
-        margins: { marginType: 'printableArea' } 
+        margins: { marginType: 'none' }
       }, (success, errorType) => {
         clearTimeout(timeout);
         if (!success) {
@@ -108,11 +112,11 @@ export async function printKOT(items: KOTPrintItem[], tableName: string, orderNo
     <body>
       <div class="receipt">
         <div class="text-center fw-bold fs-large">*** KOT ***</div>
-        <div class="text-center fs-large mt-2">Table: ${tableName}</div>
+        <div class="text-center fs-large mt-2">Table: ${esc(tableName)}</div>
         <div class="text-center mt-2">Date: ${new Date().toLocaleString()}</div>
         <div class="divider"></div>
-        ${items.map(i => `<div class="item"><span>${i.qty} x ${i.name}</span></div>`).join('')}
-        ${orderNote ? `<div class="divider"></div><div class="note">Note: ${orderNote}</div>` : ''}
+        ${items.map(i => `<div class="item"><span>${i.qty} x ${esc(i.name)}</span></div>`).join('')}
+        ${orderNote ? `<div class="divider"></div><div class="note">Note: ${esc(orderNote)}</div>` : ''}
         <div class="divider"></div>
         <div class="text-center">End of KOT</div>
       </div>
@@ -138,33 +142,33 @@ export async function printBill(bill: BillPrintPayload, orderItems: BillItemPrin
           .receipt { width: 300px; background: #fff; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
           @media print {
             body { padding: 0; background: #fff; display: block; min-height: auto; }
-            .receipt { width: 100%; padding: 0 10px; box-shadow: none; margin: 0; max-width: none; box-sizing: border-box; }
+            .receipt { width: 100%; padding: 0 6mm; box-shadow: none; margin: 0; max-width: none; box-sizing: border-box; }
           }
           .text-center { text-align: center; }
           .text-right { text-align: right; }
           .fw-bold { font-weight: bold; }
           .fs-large { font-size: 18px; }
           .divider { border-bottom: 2px dashed #000; margin: 10px 0; }
-          .item { display: flex; justify-content: space-between; margin-bottom: 4px; }
-          .item-name { flex: 1; padding-right: 10px; }
-          .item-qty { width: 40px; text-align: left; }
-          .item-total { width: 80px; text-align: right; }
+          .item { display: flex; justify-content: space-between; gap: 6px; margin-bottom: 4px; }
+          .item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+          .item-qty { flex-shrink: 0; white-space: nowrap; }
+          .item-total { flex-shrink: 0; white-space: nowrap; text-align: right; }
           .summary-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
         </style>
       </head>
     <body>
       <div class="receipt">
-        <div class="text-center fw-bold fs-large">${settings.outlet_name ?? 'Restaurant POS'}</div>
-        ${settings.address ? `<div class="text-center">${settings.address}</div>` : ''}
-        ${settings.gstin?.trim() ? `<div class="text-center">GSTIN: ${settings.gstin}</div>` : ''}
+        <div class="text-center fw-bold fs-large">${esc(settings.outlet_name ?? 'Restaurant POS')}</div>
+        ${settings.address ? `<div class="text-center">${esc(settings.address)}</div>` : ''}
+        ${settings.gstin?.trim() ? `<div class="text-center">GSTIN: ${esc(settings.gstin)}</div>` : ''}
         <div class="divider"></div>
-        <div>Bill: ${bill.bill_number}</div>
-        <div>Date: ${bill.date ? new Date(`${bill.date}Z`).toLocaleString() : new Date().toLocaleString()}</div>
+        <div>Bill: ${esc(bill.bill_number)}</div>
+        <div>Date: ${bill.date ? new Date(`${bill.date}Z`).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) : new Date().toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}</div>
         <div class="divider"></div>
-        
+
         ${orderItems.map(i => `
           <div class="item">
-            <span class="item-name">${i.name}</span>
+            <span class="item-name">${esc(i.name)}</span>
             <span class="item-qty">${i.qty}x</span>
             <span class="item-total">₹${(i.qty * i.unit_price).toFixed(2)}</span>
           </div>

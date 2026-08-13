@@ -141,6 +141,7 @@ const TablesPage: React.FC = () => {
                   status={getTableStatus(table.id)}
                   customerName={order?.customer_name}
                   createdAt={order?.created_at}
+                  runningTotal={order?.running_total}
                   onEdit={() => { handleEdit(table); }}
                   onDelete={() => { handleDelete(table); }}
                 />

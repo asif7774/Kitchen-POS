@@ -94,6 +94,9 @@ export function useOrderManager(tableIdStr: string | undefined) {
 
       setSentKOTs(sent);
       setUnsentItems([]);
+    } else {
+      // No active order — clear any stale custom_name left from a previous failed billing
+      void api.tables.updateCustomName({ id: tableId, customName: null });
     }
   }, [tableId]);
 

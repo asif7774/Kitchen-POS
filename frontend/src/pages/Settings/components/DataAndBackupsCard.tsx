@@ -5,6 +5,7 @@ import { useBackupSettings, DAY_NAMES } from '../hooks/useBackupSettings';
 import { useModal } from '../../../hooks/useModal';
 import { useToast } from '../../../hooks/useToast';
 import { api } from '../../../lib/ipc';
+import { formatDateTime } from '../../../utils/formatDate';
 
 const DataAndBackupsCard: React.FC = () => {
   const {
@@ -138,7 +139,7 @@ const DataAndBackupsCard: React.FC = () => {
               </div>
               {autoBackup.lastBackupAt && (
                 <p className="text-xs text-gray-500">
-                  Last backup: {new Date(autoBackup.lastBackupAt).toLocaleString()}
+                  Last backup: {formatDateTime(autoBackup.lastBackupAt)}
                 </p>
               )}
             </div>

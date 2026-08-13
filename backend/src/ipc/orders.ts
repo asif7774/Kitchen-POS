@@ -70,7 +70,8 @@ export function registerOrdersIPC() {
     try {
       const db = getDB();
       const orders = db.prepare(`
-        SELECT o.*, c.name as customer_name
+        SELECT o.*, c.name as customer_name,
+          (SELECT COALESCE(SUM(qty * unit_price), 0) FROM order_items WHERE order_id = o.id) as running_total
         FROM orders o
         LEFT JOIN customers c ON o.customer_id = c.id
         WHERE o.status != 'billed' AND o.status != 'cancelled'
@@ -132,6 +133,16 @@ export function registerOrdersIPC() {
 
         const itemsToPrint: CartItemPayload[] = [];
         for (const item of payload.items) {
+          if (item.id <= 0) {
+            // Open-order item: no menu_items record, use name/price from payload directly
+            db.prepare(`
+              INSERT INTO order_items (order_id, menu_item_id, name, qty, unit_price, cgst_rate, sgst_rate, hsn_code, note, preparation_status, kot_number)
+              VALUES (?, NULL, ?, ?, ?, 0, 0, NULL, ?, 'pending', ?)
+            `).run(orderId, item.name, item.qty, item.price, item.note, nextKotNumber);
+            itemsToPrint.push({ ...item });
+            continue;
+          }
+
           const menuDetails = db.prepare(`SELECT id, name, price, cgst_rate, sgst_rate, hsn_code FROM menu_items WHERE id = ?`).get(item.id) as MenuItemRow | undefined;
           if (menuDetails) {
             db.prepare(`

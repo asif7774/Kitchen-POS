@@ -130,6 +130,17 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
   return null;
 };
 
+type TrendPoint = { label: string; sales: number; orders: number; customers: number };
+
+function fillHourlyGaps(data: TrendPoint[]): TrendPoint[] {
+  if (data.length === 0 || !/^\d{2}$/.test(data[0].label)) { return data; }
+  const byHour = new Map(data.map(d => [d.label, d]));
+  return Array.from({ length: 24 }, (_, i) => {
+    const h = i.toString().padStart(2, '0');
+    return byHour.get(h) ?? { label: h, sales: 0, orders: 0, customers: 0 };
+  });
+}
+
 const DashboardPage: React.FC = () => {
   const [filter, setFilter] = useState<FilterType>("today");
   const [metrics, setMetrics] = useState({
@@ -190,7 +201,7 @@ const DashboardPage: React.FC = () => {
         if (active && res.success && res.data) {
           setMetrics(res.data.metrics);
           setTrends(res.data.trends);
-          setTrendData(res.data.trendData);
+          setTrendData(fillHourlyGaps(res.data.trendData));
           setTopItemsData(
             (res.data as Record<string, unknown>).topItemsData as {
               name: string;

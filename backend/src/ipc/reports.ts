@@ -164,15 +164,18 @@ export function registerReportsIPC() {
   ipcMain.handle('reports:getPastOrders', async (_, payload: { filter: 'daily' | 'weekly' | 'monthly' | 'yearly'; page: number; limit: number }) => {
     try {
       const db = getDB();
-      let modifiers = "";
-      
-      switch (payload.filter) {
-        case 'daily': modifiers = "'localtime', 'start of day'"; break;
-        case 'weekly': modifiers = "'localtime', '-6 days', 'start of day'"; break;
-        case 'monthly': modifiers = "'localtime', 'start of month'"; break;
-        case 'yearly': modifiers = "'localtime', 'start of year'"; break;
-      }
-      
+
+      const activeBizRow = db.prepare(
+        "SELECT business_date FROM business_sessions WHERE status = 'open' LIMIT 1"
+      ).get() as { business_date: string } | undefined;
+      const activeBizDate = activeBizRow?.business_date ?? null;
+
+      // Map 'daily' → 'today' so getDateConditions uses the hourly format (format is irrelevant here)
+      const filterKey = payload.filter === 'daily' ? 'today' : payload.filter;
+      const { curr: rawCondition } = getDateConditions(filterKey, activeBizDate);
+      // Prefix business_date with the orders table alias
+      const dateCondition = rawCondition.replace(/\bbusiness_date\b/g, 'o.business_date');
+
       const { page, limit } = payload;
       const offset = (page - 1) * limit;
 
@@ -180,7 +183,7 @@ export function registerReportsIPC() {
         SELECT COUNT(DISTINCT o.id) as count
         FROM orders o
         JOIN bills b ON o.id = b.order_id
-        WHERE o.status = 'billed' AND datetime(o.created_at, 'localtime') >= datetime('now', ${modifiers})
+        WHERE o.status = 'billed' AND ${dateCondition}
       `).get() as { count: number };
       const totalOrdersCount = totalCountRow.count;
       const totalPages = Math.ceil(totalOrdersCount / limit);
@@ -197,19 +200,19 @@ export function registerReportsIPC() {
         FROM orders o
         JOIN bills b ON o.id = b.order_id
         LEFT JOIN customers c ON o.customer_id = c.id
-        WHERE o.status = 'billed' AND datetime(o.created_at, 'localtime') >= datetime('now', ${modifiers})
+        WHERE o.status = 'billed' AND ${dateCondition}
         GROUP BY o.id
         ORDER BY o.created_at DESC
         LIMIT ? OFFSET ?
       `).all(limit, offset) as OrderRow[];
 
       const aggregates = db.prepare(`
-        SELECT 
+        SELECT
           COUNT(DISTINCT b.id) AS total_orders,
           COALESCE(SUM(b.total_amount), 0) AS total_revenue
         FROM bills b
         JOIN orders o ON o.id = b.order_id
-        WHERE datetime(o.created_at, 'localtime') >= datetime('now', ${modifiers})
+        WHERE ${dateCondition}
       `).get() as { total_orders: number, total_revenue: number };
 
       const average_order_value = aggregates.total_orders > 0 

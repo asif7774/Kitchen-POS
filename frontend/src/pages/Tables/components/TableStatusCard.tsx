@@ -7,6 +7,7 @@ interface Props {
   status: "available" | "occupied" | "bill_requested";
   customerName?: string | null;
   createdAt?: string | null;
+  runningTotal?: number;
   onEdit?: () => void;
   onDelete?: () => void;
 }
@@ -17,6 +18,7 @@ const TableStatusCard: React.FC<Props> = ({
   status,
   customerName,
   createdAt,
+  runningTotal,
   onEdit,
   onDelete,
 }) => {
@@ -120,8 +122,13 @@ const TableStatusCard: React.FC<Props> = ({
               {name}
             </h3>
             {status !== "available" && (
-              <p className="text-sm font-bold text-gray-700/80 mb-2 truncate pr-2">
+              <p className="text-sm font-bold text-gray-700/80 mb-1 truncate pr-2">
                 {customerName ?? "Dine-in"}
+              </p>
+            )}
+            {status !== "available" && typeof runningTotal === "number" && runningTotal > 0 && (
+              <p className="text-sm font-black text-emerald-600 mb-2">
+                ₹{runningTotal.toFixed(2)}
               </p>
             )}
             <div className="flex items-center text-xs font-bold text-gray-500/80 gap-1.5 bg-black/5 w-max px-2 py-1 rounded-lg">

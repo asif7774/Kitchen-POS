@@ -22,7 +22,7 @@ const LoginPage: React.FC = () => {
         <div className="text-center">
           <div className="w-20 h-20 bg-white rounded-2xl shadow-xl shadow-emerald-500/10 border border-emerald-100 mx-auto mb-6 flex items-center justify-center overflow-hidden">
             <img
-              src="/icon.png"
+              src="./icon.png"
               alt="Kitchen POS Logo"
               className="w-full h-full object-contain"
             />

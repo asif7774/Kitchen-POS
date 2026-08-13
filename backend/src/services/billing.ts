@@ -10,19 +10,23 @@ interface PaymentPayload {
   reference?: string;
 }
 
-export function getNextBillNumber(): string {
-  const lastNumber = store.get('last_bill_number', 0) as number;
-  const year = new Date().getFullYear();
-  return `INV-${year}-${(lastNumber + 1).toString().padStart(4, '0')}`;
-}
-
 export function createBill(orderId: number, payments: PaymentPayload[], discount: number, customerId?: number) {
   const db = getDB();
 
-  // Read bill number and settings before entering the transaction (no file I/O inside SQLite tx)
-  const billNumber = getNextBillNumber();
-
   const result = db.transaction(() => {
+    // Guard: prevent double-billing if the user submits twice
+    const orderStatus = db.prepare('SELECT status FROM orders WHERE id = ?').get(orderId) as { status: string } | undefined;
+    if (!orderStatus) { throw new Error('Order not found.'); }
+    if (orderStatus.status === 'billed') { throw new Error('This order has already been billed.'); }
+
+    // Generate bill number atomically inside the transaction so concurrent calls
+    // never see the same counter value (SQLite serializes writes).
+    const year = new Date().getFullYear();
+    const maxRow = db.prepare(
+      `SELECT COALESCE(MAX(CAST(REPLACE(bill_number, 'INV-${year}-', '') AS INTEGER)), 0) as max_num FROM bills WHERE bill_number LIKE 'INV-${year}-%'`
+    ).get() as { max_num: number };
+    const billNumber = `INV-${year}-${(maxRow.max_num + 1).toString().padStart(4, '0')}`;
+
     const items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(orderId) as OrderItem[];
     const isGstEnabled = store.get('is_gst_enabled', true) as boolean;
     const totals = calcBillTotals(items, isGstEnabled);
@@ -62,10 +66,6 @@ export function createBill(orderId: number, payments: PaymentPayload[], discount
       total_amount: totals.total_amount,
     };
   })();
-
-  // Persist incremented counter after the DB transaction succeeds
-  const lastNumber = store.get('last_bill_number', 0) as number;
-  store.set('last_bill_number', lastNumber + 1);
 
   return result;
 }

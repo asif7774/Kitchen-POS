@@ -87,6 +87,7 @@ export interface Order {
   type: 'dine-in' | 'takeaway' | 'delivery';
   created_at: string;
   updated_at: string;
+  running_total?: number;
 }
 
 export interface PastOrderData {

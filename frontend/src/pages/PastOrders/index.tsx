@@ -3,6 +3,7 @@ import { Button } from '../../components/atoms';
 import { api } from '../../lib/ipc';
 import { PastOrderData, PastOrderStats } from '../../types/models';
 import { useHeader } from '../../contexts/HeaderContext';
+import { formatDate, formatDateTime } from '../../utils/formatDate';
 import { KPICard } from '../../components/molecules/KPICard';
 import { SvgIcon } from '../../components/atoms/svg-sprite-loader';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/molecules/Table';
@@ -138,23 +139,10 @@ const PastOrdersPage: React.FC = () => {
                 <React.Fragment key={order.id}>
                   <TableRow>
                     <TableCell className="text-gray-500 font-mono">
-                      {order.business_date 
-                        ? new Date(`${order.business_date}T12:00:00Z`).toLocaleDateString(undefined, {
-                            year: 'numeric',
-                            month: 'numeric',
-                            day: 'numeric'
-                          })
-                        : '—'}
+                      {formatDate(order.business_date)}
                     </TableCell>
                     <TableCell className="text-gray-500 font-mono">
-                      {new Date(`${order.date}Z`).toLocaleString(undefined, {
-                        year: 'numeric',
-                        month: 'numeric',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
-                      })}
+                      {formatDateTime(order.date)}
                     </TableCell>
                     <TableCell>
                       <div className="text-sm font-medium text-gray-900">{order.customerName}</div>

@@ -31,7 +31,7 @@ const Header: React.FC<HeaderProps> = ({ isSidebarPermanent, onOpenMobileDrawer 
   const pageName = title ?? getPageName(location.pathname);
 
   return (
-    <header className="h-[72px] flex items-center px-4 bg-white border-b border-gray-200 shrink-0 shadow-sm z-10 sticky top-0">
+    <header className="h-[72px] flex items-center px-4 bg-white border-b border-gray-200 shrink-0 shadow-sm z-20 sticky top-0">
 
       {/* Hamburger — only when sidebar is NOT permanently visible */}
       {!isSidebarPermanent && (

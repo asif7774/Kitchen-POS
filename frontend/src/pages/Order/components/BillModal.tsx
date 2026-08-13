@@ -17,6 +17,8 @@ export interface BillModalHandle {
   print: () => void;
 }
 
+const GST_RATE = 0.025; // 2.5% CGST + 2.5% SGST = 5% total GST
+
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
@@ -45,8 +47,8 @@ const BillModal = forwardRef<BillModalHandle, Props>(({ orderId, cart, initialCu
   }, []);
 
   const totalAfterDiscount = round2(Math.max(0, taxableTotal - discount));
-  const cgstTotal = isGstEnabled ? round2(totalAfterDiscount * 0.025) : 0;
-  const sgstTotal = isGstEnabled ? round2(totalAfterDiscount * 0.025) : 0;
+  const cgstTotal = isGstEnabled ? round2(totalAfterDiscount * GST_RATE) : 0;
+  const sgstTotal = isGstEnabled ? round2(totalAfterDiscount * GST_RATE) : 0;
   const finalTotal = round2(totalAfterDiscount + cgstTotal + sgstTotal);
 
   useEffect(() => {
@@ -109,15 +111,15 @@ const BillModal = forwardRef<BillModalHandle, Props>(({ orderId, cart, initialCu
     <div className="flex-1 overflow-auto p-6 flex flex-col md:flex-row gap-8">
       {/* Left Side - Itemized Breakdown */}
       <div className="flex-1">
-        {settings.outlet_name && (
-          <h2 className="text-xl font-bold text-gray-800 text-center mb-4">{String(settings.outlet_name)}</h2>
+        {typeof settings.outlet_name === 'string' && settings.outlet_name && (
+          <h2 className="text-xl font-bold text-gray-800 text-center mb-4">{settings.outlet_name}</h2>
         )}
         <h3 className="font-bold text-gray-700 border-b pb-2 mb-4">Itemised Breakdown</h3>
         <div className="space-y-3 mb-6">
           {cart.map(item => {
             const base = round2(item.price * item.qty);
-            const c = isGstEnabled ? round2(base * 0.025) : 0;
-            const s = isGstEnabled ? round2(base * 0.025) : 0;
+            const c = isGstEnabled ? base * GST_RATE : 0;
+            const s = isGstEnabled ? base * GST_RATE : 0;
             return (
               <div key={item.id} className="flex justify-between text-sm">
                 <div>
@@ -167,11 +169,11 @@ const BillModal = forwardRef<BillModalHandle, Props>(({ orderId, cart, initialCu
           {isGstEnabled && (
             <>
               <div className="flex justify-between text-gray-600">
-                <span>CGST (2.5%)</span>
+                <span>CGST ({GST_RATE * 100}%)</span>
                 <span>₹{cgstTotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
-                <span>SGST (2.5%)</span>
+                <span>SGST ({GST_RATE * 100}%)</span>
                 <span>₹{sgstTotal.toFixed(2)}</span>
               </div>
             </>

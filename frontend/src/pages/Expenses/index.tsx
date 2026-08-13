@@ -2,6 +2,7 @@ import { Button, Input } from '../../components/atoms';
 import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../../lib/ipc';
 import { Expense } from '../../types/models';
+import { useBusinessSession } from '../../contexts/BusinessSessionContext';
 import { Card } from '../../components/atoms/card';
 import { useAuthStore } from '../../store/auth';
 import ExpenseModal from './components/ExpenseModal';
@@ -22,45 +23,54 @@ const ExpensesPage: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [filter, setFilter] = useState<FilterType>("daily");
   const [showDatePicker, setShowDatePicker] = useState(false);
-  
+  const { activeSession } = useBusinessSession();
+
   const formatLocal = (d: Date) => {
     const offset = d.getTimezoneOffset() * 60000;
     return new Date(d.getTime() - offset).toISOString().split('T')[0];
   };
 
+  // Custom date range — only used when filter === "custom"
   const [startDate, setStartDate] = useState(formatLocal(new Date()));
   const [endDate, setEndDate] = useState(formatLocal(new Date()));
-  
+
   const { showModal, hideModal } = useModal();
   const { showToast } = useToast();
   const staff = useAuthStore(state => state.staff);
 
   const handleFilterChange = useCallback((newFilter: FilterType) => {
     setFilter(newFilter);
-    if (newFilter !== "custom") {
-      const end = new Date();
-      const start = new Date();
-
-      if (newFilter === "weekly") {
-        start.setDate(start.getDate() - 6);
-      } else if (newFilter === "monthly") {
-        start.setMonth(start.getMonth() - 1);
-      } else if (newFilter === "yearly") {
-        start.setFullYear(start.getFullYear() - 1);
-      }
-
-      setStartDate(formatLocal(start));
-      setEndDate(formatLocal(end));
-    }
   }, []);
 
   const fetchExpenses = useCallback(() => {
-    void api.expenses.getAll({ start: startDate, end: endDate }).then(res => {
+    let start = startDate;
+    let end = endDate;
+
+    if (filter !== 'custom') {
+      const todayStr = activeSession?.business_date ?? formatLocal(new Date());
+      end = todayStr;
+      start = todayStr;
+      if (filter === 'weekly') {
+        const d = new Date(`${todayStr}T12:00:00Z`);
+        d.setUTCDate(d.getUTCDate() - 6);
+        start = d.toISOString().slice(0, 10);
+      } else if (filter === 'monthly') {
+        const d = new Date(`${todayStr}T12:00:00Z`);
+        d.setUTCMonth(d.getUTCMonth() - 1);
+        start = d.toISOString().slice(0, 10);
+      } else if (filter === 'yearly') {
+        const d = new Date(`${todayStr}T12:00:00Z`);
+        d.setUTCFullYear(d.getUTCFullYear() - 1);
+        start = d.toISOString().slice(0, 10);
+      }
+    }
+
+    void api.expenses.getAll({ start, end }).then(res => {
       if (res.success && res.data) {
         setExpenses(res.data);
       }
     });
-  }, [startDate, endDate]);
+  }, [startDate, endDate, filter, activeSession]);
 
   useEffect(() => {
     fetchExpenses();

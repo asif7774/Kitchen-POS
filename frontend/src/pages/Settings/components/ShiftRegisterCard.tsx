@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../../components/at
 import { Button } from '../../../components/atoms';
 import { useAuthStore } from '../../../store/auth';
 import { useModal } from '../../../hooks/useModal';
+import { formatDateTime } from '../../../utils/formatDate';
 import CloseShiftModal from './CloseShiftModal';
 
 const ShiftRegisterCard: React.FC = () => {
@@ -47,7 +48,7 @@ const ShiftRegisterCard: React.FC = () => {
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
               Register is currently <strong>Open</strong> since{' '}
-              <strong>{new Date(activeShift.opened_at).toLocaleString()}</strong>.
+              <strong>{formatDateTime(activeShift.opened_at)}</strong>.
             </p>
             <Button variant="danger" onClick={() => { 
               showModal({

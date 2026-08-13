@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Customer, CustomerHistory } from "../../types/models";
 import { api } from "../../lib/ipc";
 import { BackButton, Button } from "../../components/atoms";
+import { formatDateTime } from "../../utils/formatDate";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/molecules/Table';
 import { useHeader } from "../../contexts/HeaderContext";
 
@@ -167,14 +168,7 @@ const CustomerHistoryPage: React.FC = () => {
                           {visit.billNumber}
                         </TableCell>
                         <TableCell className="text-gray-500 font-mono">
-                          {new Date(visit.date).toLocaleString(undefined, {
-                            year: 'numeric',
-                            month: 'numeric',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: true
-                          })}
+                          {formatDateTime(visit.date)}
                         </TableCell>
                         <TableCell>
                           {(() => {
