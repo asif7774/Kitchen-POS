@@ -96,10 +96,10 @@ export const Tabs: React.FC<TabsProps> = ({
               }}
               className={`
                 px-4 py-3 text-base font-medium transition-colors duration-200 ease-in-out cursor-pointer whitespace-nowrap
-                border-b-2 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset rounded-t-lg
+                border-b-2 outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-inset rounded-t-lg
                 ${
                   isActive
-                    ? "border-blue-600 text-blue-600 bg-blue-50/50"
+                    ? "border-emerald-500 text-emerald-500 bg-emerald-50/50"
                     : "border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300 hover:bg-gray-50"
                 }
               `}
@@ -122,7 +122,7 @@ export const Tabs: React.FC<TabsProps> = ({
               aria-labelledby={`tab-${tab.id}`}
               tabIndex={0}
               className={`
-                w-full outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
+                w-full outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2
                 ${isActive ? "animate-fade-in block" : "hidden"}
               `}
               hidden={!isActive}

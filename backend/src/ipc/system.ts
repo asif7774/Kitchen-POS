@@ -23,7 +23,7 @@ export function registerSystemIPC() {
   ipcMain.handle('system:completeSetup', async (_, payload: { restaurantName: string; adminName: string; adminPin: string }) => {
     try {
       const db = getDB();
-      db.prepare('UPDATE staff SET name = ?, pin = ? WHERE role = "admin"').run(payload.adminName, payload.adminPin);
+      db.prepare("UPDATE staff SET name = ?, pin = ? WHERE role = 'admin'").run(payload.adminName, payload.adminPin);
       
       store.set('outlet_name', payload.restaurantName);
       store.set('is_setup_complete', true);
@@ -112,7 +112,7 @@ export function registerSystemIPC() {
       }
 
       const db = getDB();
-      db.prepare('UPDATE staff SET pin = ? WHERE role = "admin"').run(payload.newPin);
+      db.prepare("UPDATE staff SET pin = ? WHERE role = 'admin'").run(payload.newPin);
       
       return { success: true };
     } catch (e) {

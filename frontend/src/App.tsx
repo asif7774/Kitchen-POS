@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/auth';
+import { api } from './lib/ipc';
 
 import LoginPage from './pages/Login';
 import DashboardPage from './pages/Dashboard';
@@ -15,6 +16,7 @@ import StaffPage from './pages/Staff';
 import KDSPage from './pages/KDS';
 import CustomersPage from './pages/Customers';
 import CustomerDetailPage from './pages/CustomerDetail';
+import CustomerHistoryPage from './pages/CustomerHistory';
 import ComponentsPage from './pages/Components';
 import PastOrdersPage from './pages/PastOrders';
 import OpenShiftModal from './components/organisms/modal/OpenShiftModal';
@@ -25,6 +27,42 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isSetupComplete = useAuthStore((state) => state.isSetupComplete);
   const activeShift = useAuthStore((state) => state.activeShift);
+  const fetchActiveShift = useAuthStore((state) => state.fetchActiveShift);
+  const [isChecking, setIsChecking] = React.useState(isAuthenticated);
+
+  const [isShiftTrackingEnabled, setIsShiftTrackingEnabled] = React.useState(true);
+
+  React.useEffect(() => {
+    let active = true;
+    if (isAuthenticated) {
+      Promise.all([
+        fetchActiveShift(),
+        api.settings.get()
+      ]).then(([_, settingsRes]) => {
+        if (active) {
+          if (settingsRes.success && settingsRes.data) {
+            setIsShiftTrackingEnabled((settingsRes.data as Record<string, unknown>).is_shift_tracking_enabled !== false);
+          }
+          setIsChecking(false);
+        }
+      }).catch(() => {
+        if (active) { setIsChecking(false); }
+      });
+    } else {
+      setTimeout(() => { 
+        if (active) { setIsChecking(false); } 
+      }, 0);
+    }
+    return () => { active = false; };
+  }, [isAuthenticated, fetchActiveShift]);
+
+  if (isChecking) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
 
   if (isSetupComplete === false) {
     return <Navigate to="/setup" replace />;
@@ -34,7 +72,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (!activeShift) {
+  if (isShiftTrackingEnabled && !activeShift) {
     return <OpenShiftModal />;
   }
 
@@ -121,6 +159,14 @@ const App: React.FC = () => {
         element={
           <ProtectedRoute>
             <CustomerDetailPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/customers/:id/history" 
+        element={
+          <ProtectedRoute>
+            <CustomerHistoryPage />
           </ProtectedRoute>
         } 
       />

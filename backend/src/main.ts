@@ -22,14 +22,36 @@ import { registerBusinessSessionIPC } from './ipc/business-session';
 import { registerSystemIPC } from './ipc/system';
 
 let mainWindow: BrowserWindow | null = null;
+let splashWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 
 async function createWindow() {
+  splashWindow = new BrowserWindow({
+    width: 500,
+    height: 350,
+    frame: false,
+    alwaysOnTop: true,
+    resizable: false,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true
+    }
+  });
+
+  const isDev = !app.isPackaged && process.env.NODE_ENV !== 'production';
+
+  if (isDev) {
+    void splashWindow.loadURL('http://localhost:5205/splash.html');
+  } else {
+    void splashWindow.loadFile(path.join(__dirname, '../../frontend/dist/splash.html'));
+  }
+
   mainWindow = new BrowserWindow({
-    width: 1200,
+    width: 1366,
     height: 800,
-    minWidth: 1024,
+    minWidth: 1366,
     minHeight: 768,
+    show: false,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -37,14 +59,20 @@ async function createWindow() {
     },
   });
 
-  const isDev = !app.isPackaged && process.env.NODE_ENV !== 'production';
-
   if (isDev) {
     process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
     void mainWindow.loadURL('http://localhost:5205');
   } else {
     void mainWindow.loadFile(path.join(__dirname, '../../frontend/dist/index.html'));
   }
+
+  mainWindow.once('ready-to-show', () => {
+    if (splashWindow) {
+      splashWindow.close();
+      splashWindow = null;
+    }
+    mainWindow?.show();
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;

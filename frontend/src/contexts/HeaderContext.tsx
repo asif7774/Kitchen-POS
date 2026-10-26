@@ -2,23 +2,26 @@ import React, { createContext, useContext, useState, ReactNode, useCallback } fr
 
 interface HeaderContextType {
   title: string | null;
+  subtitle: ReactNode | null;
   action: ReactNode | null;
-  setHeader: (title: string | null, action: ReactNode | null) => void;
+  setHeader: (title: string | null, action: ReactNode | null, subtitle?: ReactNode | null) => void;
 }
 
 const HeaderContext = createContext<HeaderContextType | undefined>(undefined);
 
 export const HeaderProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [title, setTitle] = useState<string | null>(null);
+  const [subtitle, setSubtitle] = useState<ReactNode | null>(null);
   const [action, setAction] = useState<ReactNode | null>(null);
 
-  const setHeader = useCallback((newTitle: string | null, newAction: ReactNode | null) => {
+  const setHeader = useCallback((newTitle: string | null, newAction: ReactNode | null, newSubtitle?: ReactNode | null) => {
     setTitle(newTitle);
     setAction(newAction);
+    setSubtitle(newSubtitle ?? null);
   }, []);
 
   return (
-    <HeaderContext.Provider value={{ title, action, setHeader }}>
+    <HeaderContext.Provider value={{ title, subtitle, action, setHeader }}>
       {children}
     </HeaderContext.Provider>
   );

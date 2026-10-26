@@ -20,17 +20,15 @@ export interface ButtonProps extends ComponentProps<"button"> {
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary:
-    "bg-blue-600 text-white hover:bg-blue-700 border border-transparent shadow-sm",
+  primary: "bg-brand-gradient text-white hover:opacity-90 border-transparent",
   secondary:
-    "bg-indigo-100 text-indigo-800 hover:bg-indigo-200 border border-transparent",
+    "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-transparent",
   outline:
-    "bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50",
+    "bg-transparent text-emerald-500 border border-emerald-500 hover:bg-emerald-50",
   ghost:
     "bg-transparent text-gray-700 hover:bg-gray-100 border border-transparent",
-  danger:
-    "bg-red-600 text-white hover:bg-red-700 border border-transparent shadow-sm",
-  link: "bg-transparent text-blue-600 hover:underline border-transparent shadow-none",
+  danger: "bg-red-600 text-white hover:bg-red-700 border border-transparent",
+  link: "bg-transparent text-brand-gradient hover:underline border-transparent shadow-none",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -57,7 +55,16 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed";
+      "inline-flex items-center justify-center font-medium rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed";
+
+    const heightAdjustMap: Record<ButtonSize, string> = {
+      sm: "min-h-[30px]",
+      md: "min-h-[42px]",
+      lg: "min-h-[54px]",
+      icon: "min-h-[42px]",
+    };
+    const heightAdjust = variant !== "link" ? heightAdjustMap[size] : "";
+
     // Default loader icon
     const LoadingIcon = () => (
       <SvgIcon
@@ -82,7 +89,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const blockClass = block ? "w-full" : "";
 
     const combinedClassName =
-      `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${blockClass} ${iconSpacing} ${className}`.replace(/\s+/g, " ").trim();
+      `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${heightAdjust} ${blockClass} ${iconSpacing} ${className}`
+        .replace(/\s+/g, " ")
+        .trim();
 
     return (
       <button

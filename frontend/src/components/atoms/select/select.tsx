@@ -206,7 +206,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           {/* Custom Dropdown Trigger */}
           <button
             type="button"
-            className={`flex w-full items-center justify-between rounded-md border bg-white px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+            className={`flex w-full items-center justify-between rounded-md border bg-white px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
               error ? "border-red-300 ring-red-500" : "border-gray-300"
             } ${
               disabled
@@ -258,7 +258,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                 <input
                   ref={searchInputRef}
                   type="text"
-                  className="w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-1.5 text-sm focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
+                  className="w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-1.5 text-sm focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
                   placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => {
@@ -291,7 +291,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                         aria-selected={isSelected}
                         className={`relative cursor-pointer select-none py-2 pl-3 pr-9 transition-colors ${
                           isHighlighted
-                            ? "bg-blue-600 text-white"
+                            ? "bg-emerald-500 text-white"
                             : "text-gray-900 hover:bg-gray-100"
                         }`}
                         onClick={() => {
@@ -311,7 +311,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                         {isSelected && (
                           <span
                             className={`absolute inset-y-0 right-0 flex items-center pr-4 ${
-                              isHighlighted ? "text-white" : "text-blue-600"
+                              isHighlighted ? "text-white" : "text-emerald-500"
                             }`}
                           >
                             <svg

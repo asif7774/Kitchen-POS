@@ -87,6 +87,7 @@ export interface Order {
   type: 'dine-in' | 'takeaway' | 'delivery';
   created_at: string;
   updated_at: string;
+  running_total?: number;
 }
 
 export interface PastOrderData {
@@ -187,6 +188,7 @@ export interface Customer {
   total_visits: number;
   credit_limit: number;
   outstanding_balance: number;
+  total_spend?: number;
   created_at: string;
 }
 
@@ -195,6 +197,9 @@ export interface CustomerHistory {
   date: string;
   billNumber: string;
   totalAmount: number;
+  outstandingAmount: number;
+  type: string | null;
+  occupiedTimeMs: number;
   items: { name: string; qty: number }[];
 }
 

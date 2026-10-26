@@ -42,7 +42,7 @@ export default function OpenShiftModal() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-fade-in border border-gray-200">
-        <div className="bg-blue-600 px-6 py-5 text-white text-center">
+        <div className="bg-emerald-500 px-6 py-5 text-white text-center">
           <h2 className="text-2xl font-bold">Open Shift Register</h2>
           <p className="text-blue-100 text-sm mt-1">Initialize the cash drawer float to start billing</p>
         </div>

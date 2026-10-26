@@ -34,7 +34,14 @@ export function registerCustomersIPC() {
   ipcMain.handle('customers:getAll', async () => {
     try {
       const db = getDB();
-      const customers = db.prepare('SELECT * FROM customers ORDER BY name ASC').all();
+      const customers = db.prepare(`
+        SELECT c.*, COALESCE(SUM(b.total_amount), 0) as total_spend
+        FROM customers c
+        LEFT JOIN orders o ON c.id = o.customer_id
+        LEFT JOIN bills b ON o.id = b.order_id
+        GROUP BY c.id
+        ORDER BY c.name ASC
+      `).all();
       return { success: true, data: customers };
     } catch (e: unknown) {
       return { success: false, error: errMsg(e) };
@@ -138,20 +145,25 @@ export function registerCustomersIPC() {
     try {
       const db = getDB();
       const bills = db.prepare(`
-        SELECT b.id as bill_id, b.bill_number, b.total_amount, o.id as order_id, o.created_at
+        SELECT b.id as bill_id, b.bill_number, b.total_amount, b.created_at as bill_time, o.id as order_id, o.created_at as order_time, o.type,
+               (SELECT COALESCE(SUM(amount), 0) FROM payments WHERE order_id = o.id AND method = 'unpaid') as outstanding_amount
         FROM bills b
         JOIN orders o ON b.order_id = o.id
         WHERE o.customer_id = ?
         ORDER BY o.created_at DESC
-      `).all(customerId) as BillRow[];
+      `).all(customerId) as any[];
 
       const history = bills.map(b => {
         const items = db.prepare('SELECT name, qty FROM order_items WHERE order_id = ?').all(b.order_id) as OrderItemRow[];
+        const occupiedMs = new Date(b.bill_time).getTime() - new Date(b.order_time).getTime();
         return {
           orderId: b.order_id,
-          date: b.created_at,
+          date: b.order_time,
           billNumber: b.bill_number,
           totalAmount: b.total_amount,
+          outstandingAmount: b.outstanding_amount,
+          type: b.type,
+          occupiedTimeMs: occupiedMs > 0 ? occupiedMs : 0,
           items,
         };
       });

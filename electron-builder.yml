@@ -11,15 +11,35 @@ extraResources:
   - from: backend/src/db/migrations
     to: migrations
 win:
-  target: nsis
-  icon: assets/icon.ico
+  target: 
+    - target: nsis
+      arch:
+        - x64
+  icon: assets/icon.png
 mac:
   target: dmg
-  icon: assets/icon.icns
+  icon: assets/icon.png
+dmg:
+  title: "Install Restaurant POS"
+  background: assets/dmg-background.png
+  window:
+    width: 540
+    height: 380
+  contents:
+    - x: 130
+      y: 220
+      type: file
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
+  installerIcon: assets/icon.ico
+  installerHeader: assets/header.bmp
+  installerSidebar: assets/sidebar.bmp
 publish:
   provider: github
-  owner: REPLACE_WITH_GITHUB_USERNAME
-  repo: restaurant-pos
+  owner: asif7774
+  repo: Kitchen-POS

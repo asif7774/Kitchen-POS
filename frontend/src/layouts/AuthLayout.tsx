@@ -15,7 +15,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-500"></div>
       </div>
     );
   }
@@ -28,7 +28,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Navigation */}
           <div className="lg:w-64 flex-shrink-0">

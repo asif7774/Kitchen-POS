@@ -64,6 +64,19 @@ Reward repeat customers and encourage return visits.
 
 ---
 
+## v1.6 — Advanced Table Management
+**Target:** Q2 2027
+
+Optimize the dining room experience with comprehensive table and seating controls.
+
+- **Interactive Floor Plans**: Visual status indicators and easy layout reconfigurations
+- **Waitlist & Table Assignment**: Automate seating and track wait times with text updates
+- **Real-Time Table Status**: Track exact stages of service (seating, ordering, paying)
+- **Tableside Ordering**: Handheld POS support for taking orders and payments at the table
+- **Diner Profiles**: Link allergies, preferences, and past orders directly to the table
+
+---
+
 ## Under Consideration (not yet scheduled)
 
 These features have been requested but are not yet committed to a release:

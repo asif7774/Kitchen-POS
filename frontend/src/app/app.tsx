@@ -20,23 +20,25 @@ const GlobalListeners = () => {
   const { showToast } = useToast();
 
   React.useEffect(() => {
-    api.onMenuScheduleTriggered((data: { menuId: number; menuName: string; action: 'enabled' | 'disabled' }) => {
+    const unsubscribe = api.onMenuScheduleTriggered((data: { menuId: number; menuName: string; action: 'enabled' | 'disabled' }) => {
       showToast({
         message: `Scheduled Menu: ${data.menuName} has been automatically ${data.action}.`,
         variant: 'info',
         duration: 0 // persistent
       });
     });
+    return unsubscribe;
   }, [showToast]);
 
   React.useEffect(() => {
-    api.onBackupReminder(() => {
+    const unsubscribe = api.onBackupReminder(() => {
       showToast({
         message: 'Reminder: Back up your data to prevent loss.',
         variant: 'info',
         duration: 0 // persistent until dismissed
       });
     });
+    return unsubscribe;
   }, [showToast]);
 
   return null;
@@ -45,7 +47,7 @@ const GlobalListeners = () => {
 // Lazy load pages for POS App
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-500"></div>
   </div>
 );
 

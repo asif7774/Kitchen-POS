@@ -51,7 +51,7 @@ const FeatureCard = memo(
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 font-semibold hover:text-blue-700 hover:underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-sm"
+                className="text-emerald-500 font-semibold hover:text-emerald-600 hover:underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-sm"
               >
                 Visit documentation<span className="sr-only"> for {title}</span>{" "}
                 →

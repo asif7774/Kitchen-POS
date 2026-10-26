@@ -33,7 +33,7 @@ const Header: React.FC = () => {
       className="bg-white shadow-sm border-b border-gray-200"
       role="banner"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="shrink-0">
@@ -46,7 +46,7 @@ const Header: React.FC = () => {
                 name="logo"
                 width="32"
                 height="32"
-                className="text-blue-600"
+                className="text-emerald-500"
                 aria-hidden={true}
               />
               <span className="ml-2 text-xl font-bold text-gray-900">
@@ -66,10 +66,10 @@ const Header: React.FC = () => {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 flex items-center ${
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 flex items-center ${
                   isActive(item.href)
-                    ? "text-blue-600 bg-blue-50"
-                    : "text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+                    ? "text-emerald-500 bg-emerald-50"
+                    : "text-gray-700 hover:text-emerald-500 hover:bg-gray-50"
                 }`}
                 aria-current={isActive(item.href) ? "page" : undefined}
               >
@@ -103,7 +103,7 @@ const Header: React.FC = () => {
                 </div>
                 <button
                   onClick={logout}
-                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-md"
+                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 rounded-md"
                   title="Logout"
                   aria-label="Logout from Vital"
                 >
@@ -124,7 +124,7 @@ const Header: React.FC = () => {
               onClick={() => {
                 setIsMobileMenuOpen(!isMobileMenuOpen);
               }}
-              className="p-2 text-gray-400 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-md"
+              className="p-2 text-gray-400 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 rounded-md"
               aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={isMobileMenuOpen}
               aria-controls="mobile-menu"
@@ -162,8 +162,8 @@ const Header: React.FC = () => {
                   to={item.href}
                   className={`px-3 py-2 rounded-md text-base font-medium flex items-center ${
                     isActive(item.href)
-                      ? "text-blue-600 bg-blue-50"
-                      : "text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+                      ? "text-emerald-500 bg-emerald-50"
+                      : "text-gray-700 hover:text-emerald-500 hover:bg-gray-50"
                   }`}
                   onClick={() => {
                     setIsMobileMenuOpen(false);
@@ -199,7 +199,7 @@ const Header: React.FC = () => {
                       logout();
                       setIsMobileMenuOpen(false);
                     }}
-                    className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-blue-600 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-md"
+                    className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-emerald-500 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 rounded-md"
                     aria-label="Logout from Vital"
                   >
                     Logout

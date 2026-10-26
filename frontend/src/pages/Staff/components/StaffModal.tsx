@@ -61,7 +61,7 @@ const StaffModal: React.FC<Omit<StaffModalProps, 'onClose'>> = ({ onSave, initia
         label={initialData ? "New PIN (Leave blank to keep current)" : "PIN (4 digits)"}
         type="password"
         value={pin}
-        onChange={e => { setPin(e.target.value); }}
+        onChange={e => { setPin(e.target.value.replace(/\D/g, '')); }}
         placeholder="e.g. 1234"
         required={!initialData}
         maxLength={4}

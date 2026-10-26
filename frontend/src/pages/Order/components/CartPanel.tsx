@@ -1,5 +1,6 @@
 import { Button, Input, Stepper } from '../../../components/atoms';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { api } from '../../../lib/ipc';
 import { SvgIcon } from '../../../components/atoms/svg-sprite-loader';
 
 import { CartItem } from '../../../types/models';
@@ -17,7 +18,18 @@ interface Props {
 
 const CartPanel: React.FC<Props> = ({ unsentItems, sentKOTs, onUpdateQty, onUpdateNote, onCancelItem, onSendKOT, onGenerateBill, onVoidOrder }) => {
   const [expandedKOTs, setExpandedKOTs] = useState<number[]>([]);
+  const [isKdsEnabled, setIsKdsEnabled] = useState(true);
   
+  useEffect(() => {
+    let active = true;
+    void api.settings.get().then(res => {
+      if (active && res.success && res.data) {
+        setIsKdsEnabled((res.data as Record<string, unknown>).is_kds_enabled !== false);
+      }
+    });
+    return () => { active = false; };
+  }, []);
+
   const toggleKOT = (num: number) => {
     setExpandedKOTs(prev => prev.includes(num) ? prev.filter(n => n !== num) : [...prev, num]);
   };
@@ -48,7 +60,7 @@ const CartPanel: React.FC<Props> = ({ unsentItems, sentKOTs, onUpdateQty, onUpda
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-sm text-gray-800">{item.qty}x {item.name}</span>
-                        {item.status && <span className="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded uppercase font-bold">{item.status}</span>}
+                        {isKdsEnabled && item.status && <span className="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded uppercase font-bold">{item.status}</span>}
                       </div>
                       {item.note && <p className="text-xs text-gray-500 mt-0.5">{item.note}</p>}
                     </div>
@@ -77,7 +89,7 @@ const CartPanel: React.FC<Props> = ({ unsentItems, sentKOTs, onUpdateQty, onUpda
             <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">Unsent Items</h3>
             <div className="space-y-2">
               {unsentItems.map(item => (
-                <div key={item.id} className="border border-blue-100 rounded p-3 bg-blue-50 relative">
+                <div key={item.id} className="border border-blue-100 rounded p-3 bg-emerald-50 relative">
                   <div className="flex justify-between items-start mb-2">
                     <h4 className="font-medium text-blue-900 pr-8">{item.name}</h4>
                     <p className="font-bold text-blue-900 shrink-0">₹{(item.price * item.qty).toFixed(2)}</p>
@@ -141,7 +153,7 @@ const CartPanel: React.FC<Props> = ({ unsentItems, sentKOTs, onUpdateQty, onUpda
             variant="primary"
             block
             onClick={onGenerateBill}
-            disabled={sentKOTs.length === 0}
+            disabled={sentKOTs.length === 0 && unsentItems.length === 0}
           >
             Generate Bill
           </Button>

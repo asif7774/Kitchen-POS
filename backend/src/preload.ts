@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('api', {
     getByTable: (payload: any) => ipcRenderer.invoke('orders:getByTable', payload),
     sendKOT: (payload: any) => ipcRenderer.invoke('orders:sendKOT', payload),
     cancelOrder: (payload: any) => ipcRenderer.invoke('orders:cancelOrder', payload),
+    cancelOrderItem: (payload: any) => ipcRenderer.invoke('orders:cancelOrderItem', payload),
     updateCustomer: (payload: any) => ipcRenderer.invoke('orders:updateCustomer', payload),
   },
   kds: {
@@ -112,9 +113,13 @@ contextBridge.exposeInMainWorld('api', {
     resetAdminPin: (payload: any) => ipcRenderer.invoke('system:resetAdminPin', payload),
   },
   onBackupReminder: (callback: () => void) => {
-    ipcRenderer.on('backup:reminderDue', () => { callback(); });
+    const fn = () => { callback(); };
+    ipcRenderer.on('backup:reminderDue', fn);
+    return () => { ipcRenderer.removeListener('backup:reminderDue', fn); };
   },
   onMenuScheduleTriggered: (callback: (data: any) => void) => {
-    ipcRenderer.on('menu:scheduleTriggered', (_event, value) => { callback(value); });
+    const fn = (_event: any, value: any) => { callback(value); };
+    ipcRenderer.on('menu:scheduleTriggered', fn);
+    return () => { ipcRenderer.removeListener('menu:scheduleTriggered', fn); };
   }
 });

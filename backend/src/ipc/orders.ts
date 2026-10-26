@@ -48,7 +48,7 @@ export function registerOrdersIPC() {
       const db = getDB();
       const businessDate = getActiveBusinessDate(db);
       const info = db.prepare(
-        'INSERT INTO orders (table_id, staff_id, covers, note, customer_id, type, status, business_date) VALUES (?, ?, ?, ?, ?, ?, "open", ?)'
+        `INSERT INTO orders (table_id, staff_id, covers, note, customer_id, type, status, business_date) VALUES (?, ?, ?, ?, ?, ?, 'open', ?)`
       ).run(payload.tableId, payload.staffId ?? null, payload.covers ?? 1, payload.note ?? '', payload.customerId ?? null, payload.type ?? 'dine-in', businessDate);
       return { success: true, data: info.lastInsertRowid };
     } catch (e: unknown) {
@@ -56,7 +56,7 @@ export function registerOrdersIPC() {
     }
   });
 
-  ipcMain.handle('orders:updateCustomer', async (_, payload: { orderId: number; customerId: number }) => {
+  ipcMain.handle('orders:updateCustomer', async (_, payload: { orderId: number; customerId: number | null }) => {
     try {
       const db = getDB();
       db.prepare('UPDATE orders SET customer_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(payload.customerId, payload.orderId);
@@ -70,7 +70,8 @@ export function registerOrdersIPC() {
     try {
       const db = getDB();
       const orders = db.prepare(`
-        SELECT o.*, c.name as customer_name
+        SELECT o.*, c.name as customer_name,
+          (SELECT COALESCE(SUM(qty * unit_price), 0) FROM order_items WHERE order_id = o.id) as running_total
         FROM orders o
         LEFT JOIN customers c ON o.customer_id = c.id
         WHERE o.status != 'billed' AND o.status != 'cancelled'
@@ -132,6 +133,16 @@ export function registerOrdersIPC() {
 
         const itemsToPrint: CartItemPayload[] = [];
         for (const item of payload.items) {
+          if (item.id <= 0) {
+            // Open-order item: no menu_items record, use name/price from payload directly
+            db.prepare(`
+              INSERT INTO order_items (order_id, menu_item_id, name, qty, unit_price, cgst_rate, sgst_rate, hsn_code, note, preparation_status, kot_number)
+              VALUES (?, NULL, ?, ?, ?, 0, 0, NULL, ?, 'pending', ?)
+            `).run(orderId, item.name, item.qty, item.price, item.note, nextKotNumber);
+            itemsToPrint.push({ ...item });
+            continue;
+          }
+
           const menuDetails = db.prepare(`SELECT id, name, price, cgst_rate, sgst_rate, hsn_code FROM menu_items WHERE id = ?`).get(item.id) as MenuItemRow | undefined;
           if (menuDetails) {
             db.prepare(`
@@ -186,8 +197,8 @@ export function registerOrdersIPC() {
         }
 
         db.prepare(`UPDATE orders SET status = 'cancelled', note = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(payload.note ?? '', order.id);
-        const orderRecord = db.prepare('SELECT table_id FROM orders WHERE id = ?').get(order.id) as { table_id: number };
-        if (orderRecord && orderRecord.table_id) {
+        const orderRecord = db.prepare('SELECT table_id FROM orders WHERE id = ?').get(order.id) as { table_id: number } | undefined;
+        if (orderRecord?.table_id) {
           db.prepare('UPDATE tables SET custom_name = NULL WHERE id = ?').run(orderRecord.table_id);
         }
         return order.id;

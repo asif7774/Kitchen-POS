@@ -6,8 +6,9 @@ import { useModal } from '../../hooks/useModal';
 import { useToast } from '../../hooks/useToast';
 import { useNavigate } from 'react-router-dom';
 import SettleBalanceModal from './components/SettleBalanceModal';
-import CustomerHistoryModal from './components/CustomerHistoryModal';
 import { useHeader } from '../../contexts/HeaderContext';
+
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/molecules/Table';
 
 const CustomersPage: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -39,6 +40,9 @@ const CustomersPage: React.FC = () => {
 
   const { setHeader } = useHeader();
   useEffect(() => {
+    const totalOutstanding = customers.reduce((sum, c) => sum + c.outstanding_balance, 0);
+    const subtitle = `${customers.length} Customers Total • Total Outstanding: ₹${Math.round(totalOutstanding)}`;
+
     setHeader(
       'Customers', 
       <div className="flex items-center space-x-4">
@@ -52,10 +56,11 @@ const CustomersPage: React.FC = () => {
           />
         </div>
         <Button onClick={handleCreate} variant="primary">Add Customer</Button>
-      </div>
+      </div>,
+      subtitle
     );
-    return () => { setHeader(null, null); };
-  }, [setHeader, handleCreate, searchQuery, searchOptions]);
+    return () => { setHeader(null, null, null); };
+  }, [setHeader, handleCreate, searchQuery, searchOptions, customers]);
 
   const handleEdit = (customer: Customer) => {
     navigate(`/customers/${customer.id}`);
@@ -100,13 +105,7 @@ const CustomersPage: React.FC = () => {
   };
 
   const handleViewHistory = (customer: Customer) => {
-    showModal({
-      title: 'Order History',
-      content: <CustomerHistoryModal customer={customer} />,
-      actions: (
-        <Button variant="outline" onClick={hideModal}>Close</Button>
-      )
-    });
+    navigate(`/customers/${customer.id}/history`);
   };
 
   const filteredCustomers = customers.filter(c => 
@@ -118,52 +117,54 @@ const CustomersPage: React.FC = () => {
   return (
     <>
       <div className="p-6">
-        <div className="bg-white rounded-lg shadow overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-gray-50 border-b">
-              <th className="p-4 font-semibold text-gray-600">Name</th>
-              <th className="p-4 font-semibold text-gray-600">Phone</th>
-              <th className="p-4 font-semibold text-gray-600 text-right">Credit Limit</th>
-              <th className="p-4 font-semibold text-gray-600 text-right">Outstanding</th>
-              <th className="p-4 font-semibold text-gray-600 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Phone</TableHead>
+              <TableHead className="text-right">Credit Limit</TableHead>
+              <TableHead className="text-right">Outstanding</TableHead>
+              <TableHead className="text-right">Total Spend</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {filteredCustomers.map(c => (
-              <tr key={c.id} className="border-b hover:bg-gray-50 transition-colors">
-                <td className="p-4">
-                  <div className="font-medium text-gray-800">{c.name}</div>
+              <TableRow key={c.id}>
+                <TableCell>
+                  <div className="text-sm font-medium text-gray-900">{c.name}</div>
                   <div className="text-sm text-gray-500">{c.email ?? 'No email'}</div>
-                </td>
-                <td className="p-4">{c.phone ?? '-'}</td>
-                <td className="p-4 text-right">₹{c.credit_limit.toFixed(2)}</td>
-                <td className="p-4 text-right">
+                </TableCell>
+                <TableCell className="text-gray-500">{c.phone ?? '-'}</TableCell>
+                <TableCell className="text-gray-900 text-right">₹{Math.round(c.credit_limit)}</TableCell>
+                <TableCell className="text-right">
                   <span className={c.outstanding_balance > 0 ? 'text-red-600 font-bold' : 'text-green-600'}>
-                    ₹{c.outstanding_balance.toFixed(2)}
+                    ₹{Math.round(c.outstanding_balance)}
                   </span>
-                </td>
-                <td className="p-4 text-right space-x-2">
+                </TableCell>
+                <TableCell className="text-right font-medium text-gray-900">
+                  ₹{Math.round(c.total_spend ?? 0)}
+                </TableCell>
+                <TableCell className="text-right font-medium space-x-2">
                   <Button variant="outline" onClick={() => { handleViewHistory(c); }}>History</Button>
                   {c.outstanding_balance > 0 && (
                     <Button variant="outline" onClick={() => { handleSettleBalance(c); }}>Settle</Button>
                   )}
                   <Button variant="outline" onClick={() => { handleEdit(c); }}>Edit</Button>
                   <Button variant="danger" onClick={() => { handleDelete(c.id); }}>Delete</Button>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
             {filteredCustomers.length === 0 && (
-              <tr>
-                <td colSpan={5} className="p-8 text-center text-gray-500">
+              <TableRow>
+                <TableCell colSpan={6} className="text-center text-gray-500 py-12">
                   No customers found. Click "Add Customer" to create one.
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
-    </div>
     </>
   );
 };

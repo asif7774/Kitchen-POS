@@ -63,7 +63,7 @@ export function StockAdjustmentModal({ onClose, onRefresh, item }: Props) {
   return (
     <form id="stock-adjust-form" onSubmit={handleSubmit} className="space-y-4">
 
-      <div className="bg-blue-50 text-blue-800 p-3 rounded-md text-sm mb-4">
+      <div className="bg-emerald-50 text-emerald-800 p-3 rounded-md text-sm mb-4">
         Current Stock: <strong>{item.qty_in_stock} {item.unit}</strong>
       </div>
 

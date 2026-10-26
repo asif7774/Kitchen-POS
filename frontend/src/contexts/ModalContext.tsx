@@ -5,7 +5,7 @@ export interface ModalConfig {
   title?: string;
   content: ReactNode;
   actions?: ReactNode;
-  size?: "sm" | "md" | "lg" | "xl" | "full";
+  size?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "full";
   hideCloseButton?: boolean;
 }
 
