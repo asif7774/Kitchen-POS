@@ -1,11 +1,12 @@
 import { BrowserWindow } from 'electron';
+import { DISCOUNT_APPLICATION } from './billing-totals';
 
 interface KOTPrintItem {
   name: string;
   qty: number;
 }
 
-interface BillPrintPayload {
+export interface BillPrintPayload {
   bill_number: string;
   taxable_amount: number;
   cgst_amount: number;
@@ -127,6 +128,46 @@ export async function printKOT(items: KOTPrintItem[], tableName: string, orderNo
   await printHtml(html);
 }
 
+/**
+ * Renders the summary block so the printed figures reconcile.
+ *
+ * The order of the rows is not cosmetic. Under a pre-tax discount, the stored
+ * taxable_amount is already net of the discount, so printing it as "Subtotal"
+ * and then deducting the discount again below the tax lines states the discount
+ * twice: the receipt reads as total - discount while the customer is charged
+ * total. The rows must therefore follow the same order the discount was applied
+ * in, which is also the order the bill modal shows on screen.
+ */
+export function renderSummary(bill: BillPrintPayload, isGstEnabled: boolean): string {
+  const row = (label: string, value: string, cls = 'summary-row') =>
+    `<div class="${cls}"><span>${label}:</span><span>${value}</span></div>`;
+  const money = (n: number) => `₹${n.toFixed(2)}`;
+
+  const taxRows = isGstEnabled
+    ? row('CGST', money(bill.cgst_amount)) + row('SGST', money(bill.sgst_amount))
+    : '';
+  const hasDiscount = bill.discount_amount > 0;
+
+  if (DISCOUNT_APPLICATION === 'pre-tax') {
+    // taxable_amount is post-discount, so the gross the discount came off is
+    // recovered by adding it back rather than re-summing the lines — per-item
+    // discounts are already inside taxable_amount and must not be dropped.
+    const gross = bill.taxable_amount + bill.discount_amount;
+    return (
+      row('Subtotal', money(gross)) +
+      (hasDiscount ? row('Discount', `-${money(bill.discount_amount)}`) : '') +
+      (hasDiscount ? row('Taxable Amount', money(bill.taxable_amount)) : '') +
+      taxRows
+    );
+  }
+
+  return (
+    row('Subtotal', money(bill.taxable_amount)) +
+    taxRows +
+    (hasDiscount ? row('Discount', `-${money(bill.discount_amount)}`) : '')
+  );
+}
+
 export async function printBill(bill: BillPrintPayload, orderItems: BillItemPrintPayload[], settings: OutletSettings): Promise<void> {
   const html = `
     <!DOCTYPE html>
@@ -175,12 +216,7 @@ export async function printBill(bill: BillPrintPayload, orderItems: BillItemPrin
         `).join('')}
         
         <div class="divider"></div>
-        <div class="summary-row"><span>Subtotal:</span><span>₹${bill.taxable_amount.toFixed(2)}</span></div>
-        ${settings.is_gst_enabled !== false ? `
-        <div class="summary-row"><span>CGST:</span><span>₹${bill.cgst_amount.toFixed(2)}</span></div>
-        <div class="summary-row"><span>SGST:</span><span>₹${bill.sgst_amount.toFixed(2)}</span></div>
-        ` : ''}
-        ${bill.discount_amount > 0 ? `<div class="summary-row"><span>Discount:</span><span>-₹${bill.discount_amount.toFixed(2)}</span></div>` : ''}
+        ${renderSummary(bill, settings.is_gst_enabled !== false)}
         <div class="divider"></div>
         <div class="summary-row fw-bold fs-large"><span>GRAND TOTAL:</span><span>₹${bill.total_amount.toFixed(2)}</span></div>
         <div class="divider"></div>
