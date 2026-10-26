@@ -1,0 +1,215 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="1200" height="400" role="img" aria-label="Kitchen POS — animated overview">
+  <defs>
+    <!-- Brand gradient: green → golden -->
+    <linearGradient id="brand" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22c55e"/>
+      <stop offset="100%" stop-color="#eab308"/>
+    </linearGradient>
+
+    <!-- Background gradient -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+
+    <!-- Sidebar gradient -->
+    <linearGradient id="sidebar" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+
+    <!-- Glow -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <!-- Card shadow -->
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+
+    <!-- Clip path for app window -->
+    <clipPath id="window">
+      <rect x="20" y="20" width="1160" height="360" rx="16"/>
+    </clipPath>
+  </defs>
+
+  <!-- App window background -->
+  <rect x="20" y="20" width="1160" height="360" rx="16" fill="url(#bg)" filter="url(#shadow)"/>
+
+  <!-- Sidebar -->
+  <rect x="20" y="20" width="210" height="360" rx="16" fill="url(#sidebar)"/>
+  <rect x="210" y="20" width="1" height="360" fill="#1e293b"/>
+
+  <!-- Logo area -->
+  <rect x="44" y="44" width="40" height="40" rx="10" fill="url(#brand)"/>
+  <!-- Fork & knife icon in logo -->
+  <line x1="58" y1="53" x2="58" y2="75" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M54 53 Q54 62 58 62 Q62 62 62 53" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <line x1="66" y1="53" x2="66" y2="75" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+  <text x="94" y="60" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="700" fill="white">Kitchen</text>
+  <text x="94" y="76" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="700" fill="url(#brand)">POS</text>
+
+  <!-- Nav items -->
+  <g font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="#94a3b8">
+    <!-- Active: Tables -->
+    <rect x="30" y="108" width="190" height="36" rx="8" fill="#1e293b"/>
+    <circle cx="50" cy="126" r="7" fill="none" stroke="url(#brand)" stroke-width="1.5"/>
+    <line x1="44" y1="126" x2="56" y2="126" stroke="url(#brand)" stroke-width="1.5"/>
+    <line x1="50" y1="120" x2="50" y2="132" stroke="url(#brand)" stroke-width="1.5"/>
+    <text x="68" y="131" fill="white" font-weight="500">Tables</text>
+
+    <rect x="46" y="153" width="6" height="6" rx="1" fill="#64748b"/>
+    <rect x="54" y="153" width="6" height="6" rx="1" fill="#64748b"/>
+    <rect x="46" y="161" width="6" height="6" rx="1" fill="#64748b"/>
+    <rect x="54" y="161" width="6" height="6" rx="1" fill="#64748b"/>
+    <text x="68" y="162">Orders</text>
+
+    <circle cx="50" cy="200" r="7" fill="none" stroke="#64748b" stroke-width="1.5"/>
+    <line x1="47" y1="197" x2="47" y2="203" stroke="#64748b" stroke-width="1.5"/>
+    <line x1="53" y1="197" x2="53" y2="203" stroke="#64748b" stroke-width="1.5"/>
+    <text x="68" y="204">KDS</text>
+
+    <rect x="44" y="220" width="12" height="9" rx="2" fill="none" stroke="#64748b" stroke-width="1.5"/>
+    <line x1="47" y1="229" x2="47" y2="235" stroke="#64748b" stroke-width="1.5"/>
+    <line x1="53" y1="229" x2="53" y2="235" stroke="#64748b" stroke-width="1.5"/>
+    <text x="68" y="230">Menu</text>
+
+    <path d="M44 258 L56 258 M44 263 L53 263" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+    <text x="68" y="263">Reports</text>
+
+    <circle cx="50" cy="294" r="7" fill="none" stroke="#64748b" stroke-width="1.5"/>
+    <path d="M46 294 Q50 290 54 294" stroke="#64748b" stroke-width="1.5" fill="none"/>
+    <text x="68" y="298">Staff</text>
+
+    <circle cx="50" cy="330" r="7" fill="none" stroke="#64748b" stroke-width="1.5"/>
+    <line x1="47" y1="327" x2="47" y2="333" stroke="#64748b" stroke-width="1.5"/>
+    <line x1="53" y1="327" x2="53" y2="333" stroke="#64748b" stroke-width="1.5"/>
+    <line x1="50" y1="324" x2="50" y2="336" stroke="#64748b" stroke-width="1.5"/>
+    <text x="68" y="334">Inventory</text>
+  </g>
+
+  <!-- User chip at bottom -->
+  <circle cx="50" cy="358" r="12" fill="url(#brand)"/>
+  <text x="50" y="363" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="700" fill="white">M</text>
+  <text x="68" y="355" font-family="system-ui" font-size="11" font-weight="600" fill="white">Mock Admin</text>
+  <text x="68" y="368" font-family="system-ui" font-size="10" fill="#64748b">admin</text>
+
+  <!-- ============ MAIN CONTENT ============ -->
+
+  <!-- Header bar -->
+  <text x="240" y="56" font-family="system-ui,-apple-system,sans-serif" font-size="20" font-weight="700" fill="white">Table Management</text>
+  <text x="240" y="74" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#64748b">3 Tables Total • 0 Occupied</text>
+
+  <!-- Add Table button -->
+  <rect x="1080" y="36" width="90" height="34" rx="8" fill="url(#brand)"/>
+  <text x="1125" y="58" text-anchor="middle" font-family="system-ui" font-size="12" font-weight="600" fill="white">+ Add Table</text>
+
+  <!-- Table cards row 1 -->
+  <!-- Card 1 - Available -->
+  <rect x="240" y="96" width="220" height="110" rx="12" fill="#1e293b" stroke="#22c55e" stroke-width="1.5" stroke-opacity="0.4" filter="url(#shadow)"/>
+  <rect x="240" y="96" width="220" height="5" rx="3" fill="url(#brand)"/>
+  <text x="258" y="125" font-family="system-ui" font-size="15" font-weight="700" fill="white">Table 1</text>
+  <text x="258" y="143" font-family="system-ui" font-size="12" fill="#64748b">4 Seats</text>
+  <rect x="258" y="158" width="80" height="22" rx="11" fill="#052e16"/>
+  <text x="298" y="173" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="600" fill="#22c55e">AVAILABLE</text>
+
+  <!-- Card 2 - Occupied (animated pulse) -->
+  <rect x="480" y="96" width="220" height="110" rx="12" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5" stroke-opacity="0.6" filter="url(#shadow)"/>
+  <rect x="480" y="96" width="220" height="5" rx="3" fill="#f59e0b"/>
+  <text x="498" y="125" font-family="system-ui" font-size="15" font-weight="700" fill="white">Table 2</text>
+  <text x="498" y="143" font-family="system-ui" font-size="12" fill="#64748b">6 Seats · ₹450</text>
+  <rect x="498" y="158" width="80" height="22" rx="11" fill="#451a03"/>
+  <text x="538" y="173" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="600" fill="#f59e0b">OCCUPIED</text>
+  <!-- Animated dot -->
+  <circle cx="584" cy="169" r="4" fill="#f59e0b">
+    <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Card 3 - Bill Requested -->
+  <rect x="720" y="96" width="220" height="110" rx="12" fill="#1e293b" stroke="#ef4444" stroke-width="1.5" stroke-opacity="0.6" filter="url(#shadow)"/>
+  <rect x="720" y="96" width="220" height="5" rx="3" fill="#ef4444"/>
+  <text x="738" y="125" font-family="system-ui" font-size="15" font-weight="700" fill="white">Table 3</text>
+  <text x="738" y="143" font-family="system-ui" font-size="12" fill="#64748b">2 Seats · ₹1,240</text>
+  <rect x="738" y="158" width="110" height="22" rx="11" fill="#450a0a"/>
+  <text x="793" y="173" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="600" fill="#ef4444">BILL REQUESTED</text>
+
+  <!-- Card 4 - Available -->
+  <rect x="960" y="96" width="200" height="110" rx="12" fill="#1e293b" stroke="#22c55e" stroke-width="1" stroke-opacity="0.3"/>
+  <rect x="960" y="96" width="200" height="5" rx="3" fill="url(#brand)"/>
+  <text x="978" y="125" font-family="system-ui" font-size="15" font-weight="700" fill="white">Table 4</text>
+  <text x="978" y="143" font-family="system-ui" font-size="12" fill="#64748b">8 Seats</text>
+  <rect x="978" y="158" width="80" height="22" rx="11" fill="#052e16"/>
+  <text x="1018" y="173" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="600" fill="#22c55e">AVAILABLE</text>
+
+  <!-- ============ STATS ROW ============ -->
+  <!-- Stats cards -->
+  <rect x="240" y="232" width="195" height="80" rx="12" fill="#1e293b" filter="url(#shadow)"/>
+  <text x="258" y="257" font-family="system-ui" font-size="11" font-weight="600" fill="#64748b" letter-spacing="0.5">TOTAL ORDERS</text>
+  <text x="258" y="285" font-family="system-ui" font-size="26" font-weight="800" fill="white">
+    24
+    <animate attributeName="opacity" values="0;1" dur="0.6s" begin="0.5s" fill="freeze"/>
+  </text>
+  <text x="330" y="285" font-family="system-ui" font-size="12" fill="#22c55e">↑ 12%</text>
+  <text x="258" y="303" font-family="system-ui" font-size="11" fill="#475569">vs yesterday</text>
+
+  <rect x="455" y="232" width="195" height="80" rx="12" fill="#1e293b" filter="url(#shadow)"/>
+  <text x="473" y="257" font-family="system-ui" font-size="11" font-weight="600" fill="#64748b" letter-spacing="0.5">TOTAL SALES</text>
+  <text x="473" y="285" font-family="system-ui" font-size="26" font-weight="800" fill="white">₹18,450</text>
+  <text x="600" y="285" font-family="system-ui" font-size="12" fill="#22c55e">↑ 8%</text>
+  <text x="473" y="303" font-family="system-ui" font-size="11" fill="#475569">vs yesterday</text>
+
+  <rect x="670" y="232" width="195" height="80" rx="12" fill="#1e293b" filter="url(#shadow)"/>
+  <text x="688" y="257" font-family="system-ui" font-size="11" font-weight="600" fill="#64748b" letter-spacing="0.5">TOTAL CGST</text>
+  <text x="688" y="285" font-family="system-ui" font-size="26" font-weight="800" fill="white">₹831</text>
+  <text x="688" y="303" font-family="system-ui" font-size="11" fill="#475569">GST compliant</text>
+
+  <rect x="885" y="232" width="270" height="80" rx="12" fill="#1e293b" filter="url(#shadow)"/>
+  <text x="903" y="257" font-family="system-ui" font-size="11" font-weight="600" fill="#64748b" letter-spacing="0.5">ACTIVE KDS TICKETS</text>
+  <!-- KDS tickets animated -->
+  <rect x="903" y="267" width="48" height="34" rx="6" fill="#0f172a" stroke="#f59e0b" stroke-width="1"/>
+  <text x="927" y="281" text-anchor="middle" font-family="system-ui" font-size="10" fill="#f59e0b">#42</text>
+  <text x="927" y="294" text-anchor="middle" font-family="system-ui" font-size="9" fill="#64748b">7m</text>
+  <rect x="957" y="267" width="48" height="34" rx="6" fill="#0f172a" stroke="#22c55e" stroke-width="1"/>
+  <text x="981" y="281" text-anchor="middle" font-family="system-ui" font-size="10" fill="#22c55e">#43</text>
+  <text x="981" y="294" text-anchor="middle" font-family="system-ui" font-size="9" fill="#64748b">3m</text>
+  <rect x="1011" y="267" width="48" height="34" rx="6" fill="#0f172a" stroke="#ef4444" stroke-width="1">
+    <animate attributeName="stroke-opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>
+  </rect>
+  <text x="1035" y="281" text-anchor="middle" font-family="system-ui" font-size="10" fill="#ef4444">#41</text>
+  <text x="1035" y="294" text-anchor="middle" font-family="system-ui" font-size="9" fill="#ef4444">16m!</text>
+  <text x="1065" y="295" font-family="system-ui" font-size="11" fill="#475569">+2 more</text>
+
+  <!-- ============ BOTTOM FEATURE BAR ============ -->
+  <rect x="240" y="334" width="920" height="36" rx="8" fill="#111827"/>
+
+  <!-- Feature pills with staggered fade-in -->
+  <g font-family="system-ui,-apple-system,sans-serif" font-size="11" font-weight="500">
+    <g opacity="0"><animate attributeName="opacity" values="0;1" dur="0.4s" begin="0.2s" fill="freeze"/>
+      <circle cx="268" cy="352" r="4" fill="#22c55e"/>
+      <text x="278" y="356" fill="#94a3b8">Offline-first · No subscription</text>
+    </g>
+    <g opacity="0"><animate attributeName="opacity" values="0;1" dur="0.4s" begin="0.6s" fill="freeze"/>
+      <circle cx="468" cy="352" r="4" fill="#3b82f6"/>
+      <text x="478" y="356" fill="#94a3b8">GST + CGST/SGST billing</text>
+    </g>
+    <g opacity="0"><animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.0s" fill="freeze"/>
+      <circle cx="648" cy="352" r="4" fill="#f59e0b"/>
+      <text x="658" y="356" fill="#94a3b8">USB ESC/POS printing</text>
+    </g>
+    <g opacity="0"><animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.4s" fill="freeze"/>
+      <circle cx="818" cy="352" r="4" fill="#a855f7"/>
+      <text x="828" y="356" fill="#94a3b8">Electron · Windows &amp; macOS</text>
+    </g>
+    <g opacity="0"><animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.8s" fill="freeze"/>
+      <circle cx="1018" cy="352" r="4" fill="#ec4899"/>
+      <text x="1028" y="356" fill="#94a3b8">MIT License</text>
+    </g>
+  </g>
+
+  <!-- Window chrome dots -->
+  <circle cx="46" cy="34" r="5" fill="#ef4444" opacity="0.8"/>
+  <circle cx="62" cy="34" r="5" fill="#f59e0b" opacity="0.8"/>
+  <circle cx="78" cy="34" r="5" fill="#22c55e" opacity="0.8"/>
+</svg>

@@ -48,8 +48,8 @@ const OrderPage: React.FC = () => {
       setHeader("Take Away", null, null);
     } else if (tableInfo) {
       const title = tableInfo.custom_name
-        ? `Table Order - ${tableInfo.name} (${tableInfo.custom_name})`
-        : `Table ${tableInfo.name}`;
+        ? `${tableInfo.name} (${tableInfo.custom_name})`
+        : tableInfo.name;
       setHeader(title, null, null);
     } else if (tableId !== null) {
       setHeader(`Table ${tableId}`, null, null);
