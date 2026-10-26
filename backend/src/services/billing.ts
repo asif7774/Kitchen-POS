@@ -1,8 +1,32 @@
 import Store from 'electron-store';
 import { getDB } from '../db';
-import { calcBillTotals, OrderItem } from './gst';
+import { computeBillTotals, BillTotals, OrderItemInput } from './billing-totals';
 
 const store = new Store();
+
+/**
+ * Loads the items a bill is computed from.
+ *
+ * Preview and commit both read through here so they can never disagree about
+ * what is on the bill — a divergence there would reintroduce the defect
+ * computeBillTotals exists to remove.
+ */
+function loadOrderItems(orderId: number): OrderItemInput[] {
+  const db = getDB();
+  return db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(orderId) as OrderItemInput[];
+}
+
+/**
+ * Computes what a bill would come to, without writing anything.
+ *
+ * The operator sees these figures, the payment total is validated against them,
+ * and createBill recomputes the same way — so screen, receipt and stored bill
+ * always agree.
+ */
+export function previewBill(orderId: number, discount: number): BillTotals {
+  const isGstEnabled = store.get('is_gst_enabled', true) as boolean;
+  return computeBillTotals(loadOrderItems(orderId), discount, isGstEnabled);
+}
 
 interface PaymentPayload {
   method: string;
@@ -27,12 +51,8 @@ export function createBill(orderId: number, payments: PaymentPayload[], discount
     ).get() as { max_num: number };
     const billNumber = `INV-${year}-${(maxRow.max_num + 1).toString().padStart(4, '0')}`;
 
-    const items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(orderId) as OrderItem[];
     const isGstEnabled = store.get('is_gst_enabled', true) as boolean;
-    const totals = calcBillTotals(items, isGstEnabled);
-
-    totals.discount_amount += discount;
-    totals.total_amount = Math.round((totals.total_amount - discount) * 100) / 100;
+    const totals = computeBillTotals(loadOrderItems(orderId), discount, isGstEnabled);
 
     const orderRow = db.prepare('SELECT business_date FROM orders WHERE id = ?').get(orderId) as { business_date: string | null };
 

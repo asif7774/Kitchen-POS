@@ -230,3 +230,28 @@ export interface BackupReminderConfig {
   dayOfMonth: number;
   lastRemindedDate: string | null;
 }
+
+/**
+ * Bill figures as computed by the Electron main process.
+ *
+ * These are authoritative. The renderer displays them and validates payment
+ * against them, but never computes tax or a bill total itself — doing so is
+ * what previously let the screen, the printed receipt and the stored bill
+ * disagree with each other.
+ */
+export interface BillLine {
+  order_item_id: number;
+  taxable_amount: number;
+  cgst_amount: number;
+  sgst_amount: number;
+  total_amount: number;
+}
+
+export interface BillTotals {
+  taxable_amount: number;
+  cgst_amount: number;
+  sgst_amount: number;
+  discount_amount: number;
+  total_amount: number;
+  lines: BillLine[];
+}
