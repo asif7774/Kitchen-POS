@@ -1,11 +1,288 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   Typeface — self-hosted, never fetched at runtime.
+   This app must work with no network connection; a CDN font would fail
+   silently on an offline terminal and take the tabular figures with it.
+   Source Sans 3 (SIL OFL 1.1), variable 200–900.
+   latin-ext is required: the Rupee sign (U+20B9) lives in that subset.
+   ========================================================================== */
+@font-face {
+  font-family: "Source Sans 3";
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+  src: url("./assets/fonts/source-sans-3-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Source Sans 3";
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+  src: url("./assets/fonts/source-sans-3-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7,
+    U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
+    U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* ==========================================================================
+   Theme values.
+   Every colour is declared here on :root first, then redefined for dark.
+   No colour may exist only inside a dark block.
+   ========================================================================== */
+:root {
+  /* surfaces — warm, brown-shifted neutrals */
+  --c-canvas: #f4f2ef;
+  --c-surface: #ffffff;
+  --c-surface-2: #eae6e1;
+  --c-rule: #ded8d1;
+
+  /* text */
+  --c-ink: #23201c;
+  --c-ink-dim: #6e675f;
+  --c-ink-faint: #9c948a;
+
+  /* accent — petrol */
+  --c-accent: #1b5e57;
+  --c-accent-hover: #164e48;
+  --c-accent-ink: #ffffff;
+  --c-accent-soft: #ddeae7;
+
+  /* semantic status — operational signalling, independent of brand */
+  --c-available: #1b5e57;
+  --c-available-soft: #ddeae7;
+  --c-occupied: #9a5b16;
+  --c-occupied-soft: #f3e5d3;
+  --c-bill-due: #9e2f2a;
+  --c-bill-due-soft: #f2dfdd;
+  --c-void: #6e675f;
+  --c-void-soft: #eae6e1;
+
+  /* kitchen ticket age */
+  --c-kds-fresh: #1b5e57;
+  --c-kds-fresh-soft: #ddeae7;
+  --c-kds-warn: #9a5b16;
+  --c-kds-warn-soft: #f3e5d3;
+  --c-kds-overdue: #9e2f2a;
+  --c-kds-overdue-soft: #f2dfdd;
+
+  /* general feedback */
+  --c-success: #1b5e57;
+  --c-warning: #9a5b16;
+  --c-danger: #9e2f2a;
+  --c-info: #1f5673;
+
+  /* categorical scale for charts — distinct in both themes */
+  --c-chart-1: #1b5e57;
+  --c-chart-2: #9a5b16;
+  --c-chart-3: #1f5673;
+  --c-chart-4: #7c4a73;
+  --c-chart-5: #8a6d3b;
+  --c-chart-6: #5c6b3f;
+
+  --c-shadow: 35 32 28;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --c-canvas: #161413;
+    --c-surface: #201d1b;
+    --c-surface-2: #2a2624;
+    --c-rule: #332e2b;
+
+    --c-ink: #f0ebe5;
+    --c-ink-dim: #a89f96;
+    --c-ink-faint: #7a716a;
+
+    --c-accent: #5fbfaf;
+    --c-accent-hover: #74cdbe;
+    --c-accent-ink: #10201e;
+    --c-accent-soft: #16302c;
+
+    --c-available: #5fbfaf;
+    --c-available-soft: #16302c;
+    --c-occupied: #d79a4e;
+    --c-occupied-soft: #2e2312;
+    --c-bill-due: #e8766e;
+    --c-bill-due-soft: #301a18;
+    --c-void: #a89f96;
+    --c-void-soft: #2a2624;
+
+    --c-kds-fresh: #5fbfaf;
+    --c-kds-fresh-soft: #16302c;
+    --c-kds-warn: #d79a4e;
+    --c-kds-warn-soft: #2e2312;
+    --c-kds-overdue: #e8766e;
+    --c-kds-overdue-soft: #301a18;
+
+    --c-success: #5fbfaf;
+    --c-warning: #d79a4e;
+    --c-danger: #e8766e;
+    --c-info: #6fa8c9;
+
+    --c-chart-1: #5fbfaf;
+    --c-chart-2: #d79a4e;
+    --c-chart-3: #6fa8c9;
+    --c-chart-4: #c08ab8;
+    --c-chart-5: #cdae72;
+    --c-chart-6: #9bb071;
+
+    --c-shadow: 0 0 0;
+
+    color-scheme: dark;
+  }
+}
+
+/* Explicit choice wins over the system setting, in both directions. */
+:root[data-theme="dark"] {
+  --c-canvas: #161413;
+  --c-surface: #201d1b;
+  --c-surface-2: #2a2624;
+  --c-rule: #332e2b;
+
+  --c-ink: #f0ebe5;
+  --c-ink-dim: #a89f96;
+  --c-ink-faint: #7a716a;
+
+  --c-accent: #5fbfaf;
+  --c-accent-hover: #74cdbe;
+  --c-accent-ink: #10201e;
+  --c-accent-soft: #16302c;
+
+  --c-available: #5fbfaf;
+  --c-available-soft: #16302c;
+  --c-occupied: #d79a4e;
+  --c-occupied-soft: #2e2312;
+  --c-bill-due: #e8766e;
+  --c-bill-due-soft: #301a18;
+  --c-void: #a89f96;
+  --c-void-soft: #2a2624;
+
+  --c-kds-fresh: #5fbfaf;
+  --c-kds-fresh-soft: #16302c;
+  --c-kds-warn: #d79a4e;
+  --c-kds-warn-soft: #2e2312;
+  --c-kds-overdue: #e8766e;
+  --c-kds-overdue-soft: #301a18;
+
+  --c-success: #5fbfaf;
+  --c-warning: #d79a4e;
+  --c-danger: #e8766e;
+  --c-info: #6fa8c9;
+
+  --c-chart-1: #5fbfaf;
+  --c-chart-2: #d79a4e;
+  --c-chart-3: #6fa8c9;
+  --c-chart-4: #c08ab8;
+  --c-chart-5: #cdae72;
+  --c-chart-6: #9bb071;
+
+  --c-shadow: 0 0 0;
+
+  color-scheme: dark;
+}
+
+/* ==========================================================================
+   Tailwind theme — maps the values above to utilities.
+   Utilities resolve through the custom properties, so they follow the theme
+   at runtime without needing a dark: variant on every element.
+   ========================================================================== */
 @theme {
-  --background-image-brand-gradient: linear-gradient(
-    134.82deg,
-    #10b981 23.64%,
-    #eab308 85.47%
-  );
+  --color-canvas: var(--c-canvas);
+  --color-surface: var(--c-surface);
+  --color-surface-2: var(--c-surface-2);
+  --color-rule: var(--c-rule);
+
+  --color-ink: var(--c-ink);
+  --color-ink-dim: var(--c-ink-dim);
+  --color-ink-faint: var(--c-ink-faint);
+
+  --color-accent: var(--c-accent);
+  --color-accent-hover: var(--c-accent-hover);
+  --color-accent-ink: var(--c-accent-ink);
+  --color-accent-soft: var(--c-accent-soft);
+
+  --color-available: var(--c-available);
+  --color-available-soft: var(--c-available-soft);
+  --color-occupied: var(--c-occupied);
+  --color-occupied-soft: var(--c-occupied-soft);
+  --color-bill-due: var(--c-bill-due);
+  --color-bill-due-soft: var(--c-bill-due-soft);
+  --color-void: var(--c-void);
+  --color-void-soft: var(--c-void-soft);
+
+  --color-kds-fresh: var(--c-kds-fresh);
+  --color-kds-fresh-soft: var(--c-kds-fresh-soft);
+  --color-kds-warn: var(--c-kds-warn);
+  --color-kds-warn-soft: var(--c-kds-warn-soft);
+  --color-kds-overdue: var(--c-kds-overdue);
+  --color-kds-overdue-soft: var(--c-kds-overdue-soft);
+
+  --color-success: var(--c-success);
+  --color-warning: var(--c-warning);
+  --color-danger: var(--c-danger);
+  --color-info: var(--c-info);
+
+  --color-chart-1: var(--c-chart-1);
+  --color-chart-2: var(--c-chart-2);
+  --color-chart-3: var(--c-chart-3);
+  --color-chart-4: var(--c-chart-4);
+  --color-chart-5: var(--c-chart-5);
+  --color-chart-6: var(--c-chart-6);
+
+  --font-sans:
+    "Source Sans 3", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+
+  /* Type scale. The previous build set html{font-size:13px}, which silently
+     rescaled every rem in the app and made the scale impossible to reason
+     about. That hack is gone; these steps are set slightly above the sizes it
+     used to render, so legibility improves without inflating dense layouts. */
+  --text-xs: 0.75rem; /* 12px — was rendering ~9.8px */
+  --text-xs--line-height: 1.4;
+  --text-sm: 0.8125rem; /* 13px — was ~11.4px; the app's workhorse size */
+  --text-sm--line-height: 1.45;
+  --text-base: 0.875rem; /* 14px — was ~13px */
+  --text-base--line-height: 1.5;
+  --text-lg: 1rem; /* 16px */
+  --text-lg--line-height: 1.5;
+  --text-xl: 1.125rem; /* 18px */
+  --text-xl--line-height: 1.4;
+  --text-2xl: 1.375rem; /* 22px */
+  --text-2xl--line-height: 1.3;
+  --text-3xl: 1.75rem; /* 28px */
+  --text-3xl--line-height: 1.2;
+  --text-4xl: 2.125rem; /* 34px */
+  --text-4xl--line-height: 1.15;
+
+  /* Three radius steps, replacing the ten values previously in use. */
+  --radius-sm: 6px; /* inputs, chips */
+  --radius-md: 10px; /* cards, panels */
+  --radius-lg: 14px; /* containers, modals */
+
+  --shadow-raised: 0 1px 2px rgb(var(--c-shadow) / 0.05),
+    0 6px 18px rgb(var(--c-shadow) / 0.06);
+  --shadow-overlay: 0 4px 12px rgb(var(--c-shadow) / 0.08),
+    0 16px 48px rgb(var(--c-shadow) / 0.12);
+}
+
+/* `dark:` follows the system setting, but an explicit choice overrides it
+   either way. Most components should not need this — the tokens already
+   swap — it exists for the cases that genuinely differ beyond colour. */
+@custom-variant dark {
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]) *, :root:not([data-theme="light"])) {
+      @slot;
+    }
+  }
+  &:where(:root[data-theme="dark"] *, :root[data-theme="dark"]) {
+    @slot;
+  }
 }
 
 @layer base {
@@ -13,14 +290,30 @@
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-smoothing: antialiased;
     scroll-behavior: smooth;
-    font-size: 13px; /* Proportional scale-down for the entire application */
   }
 
   body {
-    font-display: swap;
+    background-color: var(--c-canvas);
+    color: var(--c-ink);
+    font-family: var(--font-sans);
   }
 
-  /* Slim always-visible scrollbar */
+  /* Figures line up in columns throughout a POS — prices, totals, covers,
+     ticket ages. This is the highest-value typographic setting in the app. */
+  table,
+  input[type="number"],
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Minimum touch target, per ARCHITECTURE.md. Applied to controls rather
+     than universally so dense administrative rows are not forced to reflow;
+     those pad their hit area instead. */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
   ::-webkit-scrollbar {
     width: 4px;
     height: 4px;
@@ -29,15 +322,15 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.18);
+    background: var(--c-ink-faint);
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.35);
+    background: var(--c-ink-dim);
   }
   * {
     scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.18) transparent;
+    scrollbar-color: var(--c-ink-faint) transparent;
   }
 
   .hide-scrollbar {
@@ -47,83 +340,45 @@
     display: none;
   }
 
-  /* Remove the animated background from main as it's not used in our app */
   main {
     @apply min-h-screen w-full;
   }
 }
 
 @layer components {
-  /* Brand Gradient Text (Background image utilities for text) */
+  /* Brand gradient, defined once. It was previously declared three times at
+     two different angles. */
+  .bg-brand-gradient {
+    background-image: linear-gradient(
+      134.82deg,
+      var(--c-accent) 23.64%,
+      var(--c-accent-hover) 85.47%
+    );
+  }
+  .hover\:bg-brand-gradient:hover {
+    background-image: linear-gradient(
+      134.82deg,
+      var(--c-accent-hover) 23.64%,
+      var(--c-accent) 85.47%
+    );
+  }
   .text-brand-gradient {
-    background: linear-gradient(160.82deg, #10b981 23.64%, #eab308 85.47%);
+    background-image: linear-gradient(
+      134.82deg,
+      var(--c-accent) 23.64%,
+      var(--c-accent-hover) 85.47%
+    );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  .hover\:bg-brand-gradient:hover {
-    background: linear-gradient(160.82deg, #059669 23.64%, #ca8a04 85.47%);
-  }
 
-  /* Optimized button component */
-  .btn-primary {
-    @apply w-full sm:w-auto flex-none bg-brand-gradient hover:bg-brand-gradient text-white text-lg leading-6 font-semibold py-3 px-6 border border-transparent rounded-xl focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-emerald-500 focus:outline-none transition-all duration-200 shadow-lg hover:shadow-xl hover:opacity-90;
-  }
-
-  .btn-secondary {
-    @apply w-full sm:w-auto flex-none bg-gray-100 hover:bg-gray-200 text-gray-800 font-mono leading-6 py-3 px-2 sm:px-6 border border-gray-200 rounded-xl flex items-center justify-center space-x-2 sm:space-x-4 focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-gray-300 focus:outline-none transition-all duration-200;
-  }
-
-  /* Card component optimizations */
-  .card {
-    @apply bg-white/5 rounded-lg shadow-lg p-6 relative overflow-hidden h-full transition-all duration-300 hover:shadow-xl hover:bg-white/10;
-  }
-
-  .card-header {
-    @apply text-2xl font-bold text-emerald-500 mb-2;
-  }
-
-  .card-body {
-    @apply text-base text-black flex-1 leading-relaxed;
-  }
-
-  .card-footer {
-    @apply pt-6 mt-auto;
-  }
-
-  .card-link {
-    @apply text-white font-bold transition-all duration-200 tracking-wide hover:text-emerald-400 hover:underline;
-  }
-
-  /* Layout utilities */
   .container-responsive {
     @apply mx-auto;
-  }
-
-  .grid-responsive {
-    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6;
-  }
-
-  /* Typography utilities */
-  .heading-primary {
-    @apply text-6xl lg:text-7xl leading-none font-extrabold tracking-tight text-purple-400;
-  }
-
-  .heading-secondary {
-    @apply text-2xl sm:text-4xl leading-none font-bold tracking-tight text-purple-200;
-  }
-
-  .text-body {
-    @apply text-lg sm:text-xl text-gray-300 font-medium leading-relaxed;
-  }
-
-  .text-code {
-    @apply font-mono text-emerald-500 font-bold bg-gray-800 px-2 py-1 rounded;
   }
 }
 
 @layer utilities {
-  /* Animation keyframes */
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -133,150 +388,27 @@
     }
   }
 
-  @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes bounceGentle {
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
-  }
-
-  @keyframes gradientBg {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
-  }
-
-  /* Animation utilities */
   .animate-fade-in {
     animation: fadeIn 0.5s ease-in-out;
   }
 
-  .animate-slide-up {
-    animation: slideUp 0.3s ease-out;
-  }
-
-  .animate-bounce-gentle {
-    animation: bounceGentle 2s infinite;
-  }
-
-  .animate-gradient-bg {
-    background-size: 200% 200%;
-    animation: gradientBg 15s ease infinite;
-  }
-
-  /* Focus utilities */
-  .focus-ring {
-    @apply focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 focus:outline-none;
-  }
-
-  /* Hover utilities */
   .hover-lift {
     @apply transition-transform duration-200 hover:-translate-y-1;
   }
 
-  .hover-glow {
-    @apply transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25;
-  }
-
-  /* Accessibility utilities */
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
-
-  .sr-only:focus {
-    position: static;
-    width: auto;
-    height: auto;
-    padding: inherit;
-    margin: inherit;
-    overflow: visible;
-    clip: auto;
-    white-space: normal;
-  }
-
-  /* Skip links for accessibility */
-  .skip-link {
-    position: absolute;
-    top: -40px;
-    left: 4px;
-    z-index: 100;
-    background: #2563eb;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: top 0.2s ease-in-out;
-  }
-
-  .skip-link:focus {
-    top: 4px;
-    outline: 2px solid #3b82f6;
-    outline-offset: 2px;
-  }
-
-  .skip-link-second:focus {
-    top: 60px;
-  }
-
-  /* High contrast mode support */
-  @media (prefers-contrast: high) {
-    .text-gray-600 {
-      color: #000000;
-    }
-
-    .text-gray-500 {
-      color: #000000;
-    }
-
-    .border-gray-300 {
-      border-color: #000000;
-    }
-  }
-
-  /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {
-    * {
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
     }
   }
 
-  /* Tooltip Polyfill Adjustments */
+  /* Tooltip polyfill: Tailwind's dialog reset overrides popover positioning. */
   [popover] {
     inset: auto;
-  }
-
-  .tooltip-popover {
-    inset: auto !important; /* Tailwind's dialog reset overrides this */
   }
 }
