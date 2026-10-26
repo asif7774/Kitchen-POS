@@ -1,7 +1,7 @@
 import { Button, Input, Select } from '../../../components/atoms';
 import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { api } from '../../../lib/ipc';
-import { CartItem, Customer } from '../../../types/models';
+import { BillTotals, CartItem, Customer } from '../../../types/models';
 import { useToast } from '../../../hooks/useToast';
 import { CustomerSelect } from '../../../components/organisms/CustomerSelect';
 
@@ -17,54 +17,93 @@ export interface BillModalHandle {
   print: () => void;
 }
 
-const GST_RATE = 0.025; // 2.5% CGST + 2.5% SGST = 5% total GST
-
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
+const PREVIEW_DEBOUNCE_MS = 275;
+
 const BillModal = forwardRef<BillModalHandle, Props>(({ orderId, cart, initialCustomer, onClose }, ref) => {
   const { showToast } = useToast();
 
+  // Cart subtotal, shown as a line-item sum only. It must never feed a tax or
+  // grand-total figure — those come from the main process.
   const taxableTotal = round2(cart.reduce((sum, item) => sum + item.price * item.qty, 0));
   const [discount, setDiscount] = useState(0);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(initialCustomer ?? null);
   const [payments, setPayments] = useState<{ method: string; amount: number }[]>([]);
-  const [isGstEnabled, setIsGstEnabled] = useState(true);
+  const [paymentsTouched, setPaymentsTouched] = useState(false);
 
   const [settings, setSettings] = useState<Record<string, unknown>>({});
+
+  // Authoritative figures. Null until the first preview returns, which is why
+  // confirmation is blocked below until it does.
+  const [totals, setTotals] = useState<BillTotals | null>(null);
+  const [previewing, setPreviewing] = useState(true);
+  const [previewError, setPreviewError] = useState<string | null>(null);
 
   useEffect(() => {
     void api.settings.get().then(res => {
       if (res.success && res.data) {
-        const data = res.data as Record<string, unknown>;
-        setSettings(data);
-        if (typeof data.is_gst_enabled === 'boolean') {
-          setIsGstEnabled(data.is_gst_enabled);
-        }
+        setSettings(res.data as Record<string, unknown>);
       }
     });
   }, []);
 
-  const totalAfterDiscount = round2(Math.max(0, taxableTotal - discount));
-  const cgstTotal = isGstEnabled ? round2(totalAfterDiscount * GST_RATE) : 0;
-  const sgstTotal = isGstEnabled ? round2(totalAfterDiscount * GST_RATE) : 0;
-  const finalTotal = round2(totalAfterDiscount + cgstTotal + sgstTotal);
-
+  // Ask the main process what the bill comes to. Debounced so typing in the
+  // discount field stays responsive, and re-run whenever the cart changes.
   useEffect(() => {
-    setPayments([{ method: 'cash', amount: finalTotal }]);
-  // Only reset payments when the final total changes due to cart/discount changes.
-   
-  }, [finalTotal]);
+    setPreviewing(true);
+    const timer = setTimeout(() => {
+      void api.billing.preview({ orderId, discount }).then(res => {
+        if (res.success && res.data) {
+          setTotals(res.data);
+          setPreviewError(null);
+        } else {
+          setTotals(null);
+          setPreviewError(res.error ?? 'Could not calculate the bill.');
+        }
+        setPreviewing(false);
+      });
+    }, PREVIEW_DEBOUNCE_MS);
+    return () => { clearTimeout(timer); };
+  }, [orderId, discount, cart]);
+
+  const cgstTotal = totals?.cgst_amount ?? 0;
+  const sgstTotal = totals?.sgst_amount ?? 0;
+  const finalTotal = totals?.total_amount ?? 0;
+
+  // Pre-fill a single cash row at the previewed total, but never overwrite a
+  // split the operator has started entering — a debounced preview landing
+  // mid-edit would otherwise wipe it.
+  useEffect(() => {
+    if (!totals || paymentsTouched) {
+      return;
+    }
+    setPayments([{ method: 'cash', amount: totals.total_amount }]);
+  }, [totals, paymentsTouched]);
 
   const currentPaymentsTotal = round2(payments.reduce((sum, p) => sum + (p.amount || 0), 0));
-  const isBalanced = Math.abs(currentPaymentsTotal - finalTotal) < 0.01;
+  // Payments can only balance against figures that actually arrived. Confirmation
+  // is additionally gated on the preview being settled — see handleConfirm.
+  const isBalanced = !!totals && Math.abs(currentPaymentsTotal - finalTotal) < 0.01;
+
+  const lineById = new Map(totals?.lines.map(l => [l.order_item_id, l]) ?? []);
 
   const handlePaymentChange = (index: number, field: string, value: string | number) => {
+    setPaymentsTouched(true);
     setPayments(prev => prev.map((p, i) => i === index ? { ...p, [field]: value } : p));
   };
 
   const handleConfirm = async (shouldPrint: boolean) => {
+    if (previewing || !totals) {
+      showToast({ message: 'Still calculating the bill — one moment', variant: 'warning' });
+      return;
+    }
+    if (previewError) {
+      showToast({ message: previewError, variant: 'error' });
+      return;
+    }
     if (!isBalanced) {
       showToast({ message: 'Payments must balance the grand total', variant: 'warning' });
       return;
@@ -117,16 +156,22 @@ const BillModal = forwardRef<BillModalHandle, Props>(({ orderId, cart, initialCu
         <h3 className="font-bold text-gray-700 border-b pb-2 mb-4">Itemised Breakdown</h3>
         <div className="space-y-3 mb-6">
           {cart.map(item => {
+            // Tax per line comes from the preview, never computed here. If a
+            // line cannot be matched, its tax is omitted rather than guessed —
+            // showing an invented figure is worse than showing none.
+            const line = lineById.get(item.id);
             const base = round2(item.price * item.qty);
-            const c = isGstEnabled ? base * GST_RATE : 0;
-            const s = isGstEnabled ? base * GST_RATE : 0;
             return (
               <div key={item.id} className="flex justify-between text-sm">
                 <div>
                   <p className="font-medium">{item.name} x {item.qty}</p>
-                  {isGstEnabled && <p className="text-xs text-gray-500">CGST: ₹{c.toFixed(2)} | SGST: ₹{s.toFixed(2)}</p>}
+                  {line && (line.cgst_amount > 0 || line.sgst_amount > 0) && (
+                    <p className="text-xs text-gray-500 tabular">
+                      CGST: ₹{line.cgst_amount.toFixed(2)} | SGST: ₹{line.sgst_amount.toFixed(2)}
+                    </p>
+                  )}
                 </div>
-                <p className="font-medium">₹{round2(base + c + s).toFixed(2)}</p>
+                <p className="font-medium tabular">₹{(line?.total_amount ?? base).toFixed(2)}</p>
               </div>
             );
           })}
@@ -134,8 +179,8 @@ const BillModal = forwardRef<BillModalHandle, Props>(({ orderId, cart, initialCu
 
         <div className="border-t pt-3 space-y-2 text-sm">
           <div className="flex justify-between">
-            <span>Taxable Amount</span>
-            <span>₹{taxableTotal.toFixed(2)}</span>
+            <span>Subtotal</span>
+            <span className="tabular">₹{taxableTotal.toFixed(2)}</span>
           </div>
           <div className="flex flex-col gap-1 my-1">
             <div className="flex justify-between items-center mt-2">
@@ -166,21 +211,34 @@ const BillModal = forwardRef<BillModalHandle, Props>(({ orderId, cart, initialCu
               ))}
             </div>
           </div>
-          {isGstEnabled && (
+          {totals && totals.discount_amount > 0 && (
+            <div className="flex justify-between text-gray-600">
+              <span>Taxable Amount</span>
+              <span className="tabular">₹{totals.taxable_amount.toFixed(2)}</span>
+            </div>
+          )}
+          {/* No rate in the label: a bill can mix rates, so one number here
+              would be wrong as soon as it did. */}
+          {(cgstTotal > 0 || sgstTotal > 0) && (
             <>
               <div className="flex justify-between text-gray-600">
-                <span>CGST ({GST_RATE * 100}%)</span>
-                <span>₹{cgstTotal.toFixed(2)}</span>
+                <span>CGST</span>
+                <span className="tabular">₹{cgstTotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
-                <span>SGST ({GST_RATE * 100}%)</span>
-                <span>₹{sgstTotal.toFixed(2)}</span>
+                <span>SGST</span>
+                <span className="tabular">₹{sgstTotal.toFixed(2)}</span>
               </div>
             </>
           )}
+          {previewError && (
+            <p className="text-sm text-red-600 pt-2">{previewError}</p>
+          )}
           <div className="flex justify-between font-bold text-lg pt-2 border-t mt-2">
             <span>Grand Total</span>
-            <span>₹{finalTotal.toFixed(2)}</span>
+            <span className="tabular">
+              {previewing || !totals ? '…' : `₹${finalTotal.toFixed(2)}`}
+            </span>
           </div>
         </div>
       </div>

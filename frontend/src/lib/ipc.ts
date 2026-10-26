@@ -1,4 +1,4 @@
-import { Category, MenuItem, InventoryItem, Order, OrderItem, CartItem, KDSTicket, Shift, RecipeItem, Table, Expense, Staff, BusinessSession, AutoBackupConfig, BackupReminderConfig } from '../types/models';
+import { Category, MenuItem, InventoryItem, Order, OrderItem, CartItem, KDSTicket, Shift, RecipeItem, Table, Expense, Staff, BusinessSession, AutoBackupConfig, BackupReminderConfig, BillTotals } from '../types/models';
 
 export interface IPCResponse<T> {
   success: boolean;
@@ -75,6 +75,24 @@ const mockApi = {
     updateCustomName: () => Promise.resolve({ success: true }),
   },
   billing: {
+    preview: (payload: { orderId: number; discount?: number }) => {
+      // Browser-only mock. The real figures come from the main process; this
+      // mirrors the shape so the UI is exercisable outside Electron.
+      const discount = payload.discount ?? 0;
+      const taxable = Math.max(1000 - discount, 0);
+      const half = Math.round(taxable * 0.025 * 100) / 100;
+      return Promise.resolve({
+        success: true,
+        data: {
+          taxable_amount: taxable,
+          cgst_amount: half,
+          sgst_amount: half,
+          discount_amount: discount,
+          total_amount: Math.round((taxable + half * 2) * 100) / 100,
+          lines: [],
+        },
+      });
+    },
     createBill: () => Promise.resolve({ success: true }),
     getBill: () => Promise.resolve({ success: true, data: {} }),
   },
@@ -237,6 +255,7 @@ export const api = (ipcApi ?? mockApi) as {
     updateCustomName: (payload: { id: number; customName: string | null }) => Promise<IPCResponse<unknown>>;
   };
   billing: {
+    preview: (payload: { orderId: number; discount?: number }) => Promise<IPCResponse<BillTotals>>;
     createBill: (payload: unknown) => Promise<IPCResponse<unknown>>;
     getBill: (payload: unknown) => Promise<IPCResponse<unknown>>;
   };
