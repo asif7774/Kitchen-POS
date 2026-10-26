@@ -160,7 +160,24 @@ paths share one function, the classes of bug above cannot recur.
 
 ### D3 — Discount is applied **pre-tax**
 
-The two sides disagree today, so one must be chosen. Choose the **frontend's** current
+> **Decision status: provisional — an engineering default, not a confirmed tax position.**
+>
+> Asked to settle this, the user replied "do whatever you think is best" (2026-10-26).
+> That delegates the *engineering* choice; it is **not** a statement of the business's GST
+> position, and this document does not record it as one. No tax advisor has reviewed it.
+>
+> **This does not block the rest of the work.** The defect being fixed is that two
+> implementations disagree with each other — see "Why now". Collapsing them into one
+> implementation is tax-neutral and resolves the live bug regardless of which ordering is
+> correct. The ordering is therefore isolated behind a single named constant
+> (`DISCOUNT_APPLICATION`, see below) with test coverage on **both** values, so changing it
+> after a CA confirms is a one-line edit with a passing test suite behind it — not a
+> refactor.
+>
+> **Action required of the business:** confirm the ordering with whoever signs off the GST
+> returns, then set the constant and update this block to record the source.
+
+The two sides disagree today, so one must be chosen. Default to the **frontend's** current
 order: discount reduces the taxable base, then tax is computed on the reduced base.
 
 Reasoning: under Indian GST, tax is charged on the actual transaction value. A discount
@@ -182,6 +199,26 @@ That is the incorrect sequence and must be replaced by applying the discount bef
 > position that contradicts this. The *consistency* requirement is non-negotiable; the
 > specific choice of pre-tax is a reasoned default that a tax professional could
 > override.
+
+#### D3b — The ordering lives behind one named constant
+
+Because D3 is provisional, the choice is expressed once, explicitly, and never inferred
+from where code happens to sit:
+
+```ts
+// backend/src/services/billing.ts
+export type DiscountApplication = 'pre-tax' | 'post-tax';
+
+/** Provisional — see D3. Confirm with the business's GST advisor before relying on it. */
+export const DISCOUNT_APPLICATION: DiscountApplication = 'pre-tax';
+```
+
+`computeBillTotals` branches on this constant. Both branches are covered by tests
+asserting the worked example under each ordering, so flipping the value cannot silently
+produce wrong figures — the suite states exactly what each option yields.
+
+This is the only place the ordering is encoded. No caller re-implements it, and no
+component infers it from a rendered total.
 
 #### D3a — Allocating the discount across lines with different tax rates
 
